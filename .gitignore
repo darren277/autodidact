@@ -1,3 +1,5 @@
 *venv/
 .idea/
 .env
+
+PERSONAL_NOTES.md
