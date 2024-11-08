@@ -4,7 +4,7 @@ import threading
 from flask import Flask, request, Response, render_template
 from flask_sse import sse
 
-from lib.assistant import handle_assistant_response
+from lib.assistant.main import AssistantHandler
 from settings import REDIS_URL
 
 app = Flask(__name__)
@@ -22,11 +22,18 @@ def hello_world():
 @app.route('/ask', methods=['POST'])
 def ask():
     question = request.form['question']
+    assistant_id = request.form.get('assistant_id', None)
+
+    assistant_handler = AssistantHandler(question, assistant_id)
+    assistant_handler.initialize_app(app)
 
     # You can use a unique identifier per user/session
     py_thread_id = request.remote_addr
 
-    threading.Thread(target=handle_assistant_response, args=(app, question, py_thread_id)).start()
+    threading.Thread(
+        target=assistant_handler.run,
+        args=(py_thread_id,)
+    ).start()
 
     return render_template('response.html', question=question, thread_id=py_thread_id)
 

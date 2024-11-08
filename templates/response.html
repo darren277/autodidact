@@ -18,16 +18,6 @@
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
 
-    <!--
-Updating the Markdown
-
-While you can provide initial Markdown inline, after the element is rendered, changing its contents will not cause it to re-render, since its contents are now the parsed HTML (this is a disadvantage of this approach, compared to the Shadow DOM ones).
-
-If you need to update its contents dynamically, use element.mdContent. You can also read that property to get access to the Markdown code that was last rendered, whether it came from the element's contents, or fetched from a URL.
-
-Note that setting mdContent will override any remote URL provided via src.
--->
-
     <script>
         var source = new EventSource("{{ url_for('sse.stream') }}?channel={{ thread_id }}");
 
@@ -35,12 +25,9 @@ Note that setting mdContent will override any remote URL provided via src.
 
         source.addEventListener('assistant_response', function(event) {
             var data = JSON.parse(event.data);
-            console.log(data);
 
             if (data?.type === 'message_delta') {
-                /////const non_tool_case = console.log(data?.message?.data?.delta?.content);
                 var text = data.message;
-                var text = data?.message?.data?.delta?.content[0]?.text?.value;
             }
             else if (data?.type === 'step_delta') {
                 /////var text = data?.message?.data?.delta?.content[0]?.text?.value;
@@ -55,12 +42,7 @@ Note that setting mdContent will override any remote URL provided via src.
             if (text === undefined) {
                 text = 'undefined ';
             }
-            var responseDiv = document.getElementById('response');
-            //responseDiv.innerHTML += text;
-            // RERENDER...
             md_text += text;
-
-            //responseDiv.mdContent = md_text;
             responseDiv.innerHTML = md_text;
         }, false);
 
@@ -74,27 +56,11 @@ Note that setting mdContent will override any remote URL provided via src.
     <p><strong>You asked:</strong> {{ question }}</p>
     <p><strong>Assistant's response:</strong></p>
 
-    <!-- TODO: Wrap in LaTeXable Markdown -->
     <article>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/themes/prism.min.css" integrity="sha512-/mZ1FHPkg6EKcxo0fKXF51ak6Cr2ocgDi5ytaTBjsQZIH/RNs6GF6+oId/vPe3eJB836T36nXwVh/WBl/cWT4w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!--        <md-block id="response">-->
-<!--            ```python-->
-<!--            def test():-->
-<!--                return "Hi"-->
-<!--            ```-->
-<!--        </md-block>-->
         <zero-md>
             <script type="text/markdown" id="response"></script>
         </zero-md>
     </article>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.js" integrity="sha512-aCQNEettKyH8SDQJruz2wZN44qnmyshACcptYnNs0cBU68fRbyZ/NMcTzSK2RbwnyYWqy4TQpjBE5s956Qcotg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-window.Prism = window.Prism || {};
-window.Prism.manual = true;
-console.log("PRISM", Prism);
-</script>
-<script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-<script type="module" src="https://md-block.verou.me/md-block.js"></script></article></div></section>
     <a href="/">Ask another question</a>
 </body>
 </html>
