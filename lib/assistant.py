@@ -99,29 +99,23 @@ class AssistantStateMachine:
     def check_event(self, event):
         if event.event in ['thread.run.failed', 'thread.run.step.failed']:
             self.logger.error(f"{event.event.split('.')[-2].capitalize()} failed with error: {event.data.last_error}")
-            return (False, True)#run_active = False# and loop break...
-        self.logger.debug(f"Event state changed to: {event.event}, Data: {event.data}")
-        if event.event == 'thread.message.delta':
-            # Stream the assistant's response token by token
-            sse.publish({"message": serialize(event), "type": "message_delta"}, type='assistant_response', channel=self.py_thread_id)
-        elif event.event == 'thread.run.step.delta':
-            # Stream the assistant's response token by token
-            tool_call = event.data.delta.step_details.tool_calls[0]
-            print('tool_call', tool_call)
-            tool_call_output = tool_call.function.arguments
-            ###if content: sse.publish({"message": content, "type": "step_delta"}, type='assistant_response', channel=py_thread_id)
+            return False, True, None  # Stop processing
+        elif event.event == 'thread.message.delta':
+            # Stream the assistant's response
+            self.publish(
+                data={"message": serialize(event), "type": "message_delta"},
+                type='assistant_response',
+                channel=self.py_thread_id
+            )
         elif event.event == 'thread.run.requires_action':
             return self.process_tool_calls(event.data.required_action.submit_tool_outputs.tool_calls, event.data.id)
-        elif event.event in ['thread.run.step.completed']:
-            self.logger.debug("Step completed successfully.")# The assistant might continue to produce messages; continue processing.
-            return self.run_active, False, None
         elif event.event == 'thread.run.completed':
-            self.logger.debug("Run completed successfully.")
-            return (False, True, None)#run_active = False; break
+            self.logger.info("Run completed successfully.")
+            return False, True, None  # Stop processing
         else:
-            self.logger.warn(f"Unhandled event type: {event.event}")
-            #continue
-        return (self.run_active, False, None)
+            self.logger.warning(f"Unhandled event type: {event.event}")
+
+        return True, False, None  # Continue processing
 
     def process_tool_call(self, tool_call):
         tool_call_id, function_name, arguments = tool_call.id, tool_call.function.name, tool_call.function.arguments
@@ -135,48 +129,59 @@ class AssistantStateMachine:
             self.logger.error(result)
             self.tool_outputs.append({"tool_call_id": tool_call_id, "output": result})
 
-    def process_tool_calls(self, tool_calls, event_data_id) -> (bool, bool, bool):
+    def process_tool_calls(self, tool_calls, event_data_id):
         # Handle tool calls and submit outputs
         self.tool_outputs = []
-        # is event_data_id == self.run_id?
-        """ NEW RUN IS STARTED HERE (?) """
 
         for tool_call in tool_calls:
             self.process_tool_call(tool_call)
 
         self.run_id = event_data_id
         try:
-            print("DEBUG TOOL OUPUTS", self.tool_outputs)
-            response = client.beta.threads.runs.submit_tool_outputs(thread_id=self.llm_thread.id, run_id=self.run_id, tool_outputs=self.tool_outputs)
-            print(f"-------------------RESPONSE: {response}")
-            self.logger.debug(f"Submitted tool outputs for action: {self.tool_outputs}")
-            return (False, False, None)
-        except openai.BadRequestError as e:
-            self.logger.error(f"Error submitting tool outputs: {e}")
-            return (False, True, None)
+            self.logger.debug(f"Submitting tool outputs: {self.tool_outputs}")
+            response = client.beta.threads.runs.submit_tool_outputs(
+                thread_id=self.llm_thread.id, run_id=self.run_id, tool_outputs=self.tool_outputs
+            )
+            self.logger.debug(f"Submitted tool outputs: {response}")
+
+            # Re-initialize the event stream
+            #self.run = client.beta.threads.runs.continue_events(thread_id=self.llm_thread.id, run_id=self.run_id)
+            #self.run = client.beta.threads.runs.retrieve(thread_id=self.llm_thread.id, run_id=self.run_id)
+
+            return True, False, None  # Continue processing
         except Exception as e:
-            self.logger.error(f"Unexpected error submitting tool outputs: {e}")
-            return (False, True, None)
+            self.logger.error(f"Error submitting tool outputs: {e}")
+            return False, True, None  # Stop processing due to error
 
     def process_run_stream(self):
-        for event in self.run:
-            self.logger.debug(f"Received event: {event.event}, Data: {event.data}")
-            result = self.check_event(event)
-            if result[0]: self.run_active = False
-            if result[1]: break
-            if result[2]: self.publish(**result[2])
-            # Update last event time to prevent timeout
-            self.last_event_time = time.time()
-        self.poll()
-        # I'd like to know what 4052 and 3559 total to.
-        for event in self.run:
-            self.logger.debug(f"Received event: {event.event}, Data: {event.data}")
-            result = self.check_event(event)
-            if result[0]: self.run_active = False
-            if result[1]: break
-            if result[2]: self.publish(**result[2])
-            # Update last event time to prevent timeout
-            self.last_event_time = time.time()
+        while self.run_active:
+            try:
+                #self.run = client.beta.threads.runs.retrieve(thread_id=self.llm_thread.id, run_id=self.run_id, stream=True)
+                # event, yo! ('id', 'run_ozIC5w9fU7k0o3njLfH67bMw')
+
+                for event in self.run:
+                    print('event, yo!', event)
+                    self.logger.debug(f"Received event: {event.event}, Data: {event.data}")
+                    result = self.check_event(event)
+                    if not result[0]:  # run_active
+                        self.run_active = False
+                        break
+                    if result[1]:  # should_break
+                        break
+                    if result[2]:
+                        self.publish(**result[2])
+                    self.last_event_time = time.time()
+                else:
+                    # If the for loop completes naturally, re-enter the loop
+                    continue
+                break  # Break the while loop if inner loop is broken
+            except Exception as e:
+                self.logger.error(f"Exception in process_run_stream: {e}")
+                self.run_active = False
+                break
+
+        if self.run_active:
+            self.poll()
 
     def publish(self, **kwargs): sse.publish(**kwargs)
 
