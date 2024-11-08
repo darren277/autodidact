@@ -34,3 +34,28 @@ tools = [
         },
     }
 ]
+
+
+tools1 = [
+    {
+"type": "function",
+    "function": {
+        "name": "addition",
+        "description": "Add two numbers together",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "description": "The X value to be added.",
+                },
+                "y": {
+                    "type": "number",
+                    "description": "The Y value to be added",
+                },
+            },
+            "required": ["x", "y"]
+        }
+    }
+    }
+]
