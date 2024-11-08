@@ -22,12 +22,7 @@ print(SYSTEM_PROMPT)
 
 
 
-my_assistant = client.beta.assistants.create(
-    instructions=SYSTEM_PROMPT,
-    name=GPT_ASSISTANT_NAME,
-    tools=tools,
-    model=GPT_MODEL_ID
-)
+#my_assistant = client.beta.assistants.create(instructions=SYSTEM_PROMPT, name=GPT_ASSISTANT_NAME, tools=tools, model=GPT_MODEL_ID)
 
 from logger import Logger
 

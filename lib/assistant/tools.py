@@ -10,7 +10,7 @@ def submit_tool_outputs(tool_calls, run_id, thread_id):
         tool_outputs.append({"tool_call_id": tool_call_id, "output": output})
 
     new_event_stream = client.beta.threads.runs.submit_tool_outputs_stream(thread_id=thread_id, run_id=run_id, tool_outputs=tool_outputs)
-    logger.debug("Submitted tool outputs:", tool_outputs)
+    logger.debug(f"Submitted tool outputs: {tool_outputs}")
     return new_event_stream
 
 
