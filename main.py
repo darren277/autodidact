@@ -5,9 +5,19 @@ from flask import Flask, request, Response, render_template
 from flask_sse import sse
 
 from lib.assistant.main import AssistantHandler
-from settings import REDIS_URL
+from settings import REDIS_URL, ENABLE_CORS
+
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+
+if ENABLE_CORS:
+    #CORS(app, supports_credentials=True)
+    #CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["*"]}})
+    CORS(app)
+
+
 
 app.config["REDIS_URL"] = REDIS_URL
 app.register_blueprint(sse, url_prefix='/stream')

@@ -14,6 +14,7 @@ SYSTEM_PROMPT=os.environ.get('SYSTEM_PROMPT', "You are a personal tutor speciali
 
 HOST='0.0.0.0'
 DEBUG=True
+ENABLE_CORS=True
 
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost')
 REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
