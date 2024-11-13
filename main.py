@@ -21,7 +21,12 @@ def hello_world():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    question = request.form['question']
+
+    question = request.form.get('question')
+    if not question:
+        question = request.json.get('question', None)
+        if not question:
+            return Response("Invalid request", status=400)
     assistant_id = request.form.get('assistant_id', None)
 
     assistant_handler = AssistantHandler(question, assistant_id)
