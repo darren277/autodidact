@@ -24,6 +24,8 @@
         var md_text = "";
 
         source.addEventListener('assistant_response', function(event) {
+            const responseDiv = document.getElementById('response');
+
             var data = JSON.parse(event.data);
 
             if (data?.type === 'message_delta') {
