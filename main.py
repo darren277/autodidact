@@ -1,8 +1,10 @@
 """"""
 import threading
 
-from flask import Flask, request, Response, render_template
+from flask import Flask, request, Response, render_template, jsonify
 from flask_sse import sse
+
+import redis
 
 from lib.assistant.main import AssistantHandler
 from settings import REDIS_URL, ENABLE_CORS
@@ -20,7 +22,30 @@ if ENABLE_CORS:
 
 
 app.config["REDIS_URL"] = REDIS_URL
-app.register_blueprint(sse, url_prefix='/stream')
+
+r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+#app.register_blueprint(sse, url_prefix='/stream')
+
+@app.route('/stream1')
+def stream1():
+    def generate():
+        for i in range(5):
+            yield f"data: Event {i}\n\n"
+    return Response(generate(), content_type='text/event-stream')
+
+@app.route('/stream')
+def stream():
+    def generate():
+        pubsub = r.pubsub()
+        pubsub.subscribe('channel')
+        for message in pubsub.listen():
+            yield f"data: {message['data']}\n\n"
+    return Response(generate(), content_type='text/event-stream')
+
+#app.run(host='0.0.0.0', port=8000)
+
+#quit(54)
 
 
 @app.route('/')
@@ -40,6 +65,7 @@ def ask():
     assistant_id = request.form.get('assistant_id', None)
 
     assistant_handler = AssistantHandler(question, assistant_id)
+    assistant_handler._r = r
     assistant_handler.initialize_app(app)
 
     # You can use a unique identifier per user/session
@@ -50,11 +76,16 @@ def ask():
         args=(py_thread_id,)
     ).start()
 
-    return render_template('response.html', question=question, thread_id=py_thread_id)
+    #return render_template('response.html', question=question, thread_id=py_thread_id)
+    return ""
+
 
 
 @app.route('/hello')
 def publish_hello():
-    sse.publish({"message": "Hello!"}, type='greeting')
+    msg = {"message": "Hello!"}
+    print("Publishing message...", msg)
+    sse.publish(msg, type='greeting')
     return "Message sent!"
 
+app.run(host='0.0.0.0', port=8000)
