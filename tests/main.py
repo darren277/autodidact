@@ -8,6 +8,7 @@ SIMPLE_PROMPT = "I'm struggling with understanding how to solve quadratic equati
 PROMPT_TO_ENCOURAGE_DIAGRAM = "I'm struggling with understanding how to solve quadratic equations. Can you explain it to me? I'd appreciate a diagram."
 SIMPLE_ADDITION_TOOL_USE = "I'd like to know what 4052 and 3559 total to."
 ADD_AND_MULTIPLY_TOOL_COMBO = "Add 1234 and 5678 then multiply by 2."
+ADD_AND_MULTIPLY_AND_SQUARE_TOOL_COMBO = "Add 1234 and 5678 then multiply by 2 and then square that."
 
 client = OpenAI()
 
