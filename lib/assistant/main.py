@@ -22,6 +22,9 @@ class AssistantHandler:
 
         self._full_message = ""
 
+        self._r = None
+        self._FLASK_SSE = False
+
     def initialize_app(self, app):
         self._app = app
 
@@ -35,8 +38,17 @@ class AssistantHandler:
                 #asm = AssistantStateMachine(py_thread_id, question, tools)
                 #asm.start()
                 # serialize(event), "type": "message_delta"
-                sse.publish({"message": message[0].text.value, "type": "message_delta"}, type='assistant_response', channel=self._py_thread_id)
+                sse = self._r
+                #sse.publish({"message": message[0].text.value, "type": "message_delta"}, type='assistant_response')#, channel=self._py_thread_id)
+                self.publish(self._py_thread_id, message[0].text.value)
                 ...
+
+    def publish(self, message):
+        if self._FLASK_SSE:
+            sse.publish({"message": message[0].text.value, "type": "message_delta"}, type='assistant_response')  # , channel=self._py_thread_id)
+        else:
+            self._r.publish(self._py_thread_id, message[0].text.value)
+
 
     def run(self, py_thread_id):
         from lib.tools.arithmetic import tools as arithmetic_tools
