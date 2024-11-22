@@ -5,9 +5,19 @@ from flask import Flask, request, Response, render_template
 from flask_sse import sse
 
 from lib.assistant.main import AssistantHandler
-from settings import REDIS_URL
+from settings import REDIS_URL, ENABLE_CORS
+
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+
+if ENABLE_CORS:
+    #CORS(app, supports_credentials=True)
+    #CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["*"]}})
+    CORS(app)
+
+
 
 app.config["REDIS_URL"] = REDIS_URL
 app.register_blueprint(sse, url_prefix='/stream')
@@ -21,7 +31,12 @@ def hello_world():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    question = request.form['question']
+
+    question = request.form.get('question')
+    if not question:
+        question = request.json.get('question', None)
+        if not question:
+            return Response("Invalid request", status=400)
     assistant_id = request.form.get('assistant_id', None)
 
     assistant_handler = AssistantHandler(question, assistant_id)
