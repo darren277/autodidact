@@ -2,7 +2,7 @@
 
 ## Description
 
-TBD...
+An LLM web app built in Python using Flask, Flask-SSE, Redis, and the OpenAI API to facilitate self-education outcomes.
 
 ## How to Use
 
