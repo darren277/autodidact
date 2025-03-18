@@ -80,6 +80,41 @@ def ask():
     return ""
 
 
+'''
+<article>
+    <header>
+        <div class="leftheader">Cues</div>
+        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
+    </header>
+    {% for s, section in enumerate(sections) %}
+    <section>
+        {% for i, part in enumerate(section.parts) %}
+        <div class="leftmargin" id="leftmargin{{i}}">{{part.lm}}</div><div class="main" id="main{{i}}">{{part.main}}</div>
+        {% endfor %}
+        <footer>Summary: {{section.summary}}</footer>
+    </section>
+    {% endfor %}
+</article>
+'''
+
+@app.route('/notes')
+def notes():
+    data = {
+        "date": "2025-03-18",
+        "topic": "Cornell Notes Example",
+        "sections": [
+            {
+                "parts": [
+                    {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum."},
+                    {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities."}
+                ],
+                "summary": "Lorem ipsum blah blah blah."
+            }
+        ]
+    }
+
+    return render_template('notes.html', **data)
+
 
 @app.route('/hello')
 def publish_hello():
