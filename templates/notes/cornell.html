@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+</head>
+<body>
+<article>
+    <header>
+        <div class="leftheader">Cues</div>
+        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
+    </header>
+    {% for s, section in enumerate(sections) %}
+    <section>
+        {% for i, part in enumerate(section.parts) %}
+        <div class="leftmargin" id="leftmargin{{i}}">{{part.lm}}</div><div class="main" id="main{{i}}">{{part.main}}</div>
+        {% endfor %}
+        <footer>Summary: {{section.summary}}</footer>
+    </section>
+    {% endfor %}
+</article>
+</body>
+</html>
