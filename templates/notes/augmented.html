@@ -13,7 +13,7 @@
     </header>
     {% for s, section in enumerate(sections) %}
         {% for i, part in enumerate(section.parts) %}
-        <div class="leftmargin">Note</div>
+        <div class="leftmargin">{% if part.title %}{{part.title}}{% else %}Note{% endif %}</div>
         <div class="main">
             <p>{{part.lm}}</p>
             <button class="collapsible">Show More Details</button>
