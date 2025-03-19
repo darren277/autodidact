@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+}
+
+article {
+    width: 90%;
+    margin: 2rem auto;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #ddd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.leftheader, .rightheader {
+    font-weight: bold;
+}
+
+section {
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* left margin (cues) + main text */
+    gap: 1rem;
+}
+
+/* Left column for cues or quick notes */
+.leftmargin {
+    background-color: #f0f0f0;
+    padding: 0.5rem;
+    border-left: 3px solid #666;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+/* Main column for content */
+.main {
+    background-color: #fff;
+    padding: 0.5rem;
+    border-left: 3px solid #007acc; /* A different color to show distinction */
+    margin-bottom: 1rem;
+}
+
+/* Optional highlight for important keywords or definitions */
+.highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+footer {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #eee;
+    border-top: 2px dashed #999;
+}
+
+footer .summary-box {
+    padding: 1rem;
+    background-color: #fef3bd;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* A small utility class for spacing or emphasis if needed */
+.spaced {
+    margin: 1rem 0;
+}
