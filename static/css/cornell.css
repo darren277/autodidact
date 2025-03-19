@@ -79,6 +79,9 @@ header, footer {
     font-style: italic;
 }
 
+.leftmargin { grid-column: 1; }
+.main { grid-column: 2; }
+
 /* Main content styling (Notes column) */
 .main {
     padding: 10px 15px;

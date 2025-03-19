@@ -12,12 +12,10 @@
         <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
     </header>
     {% for s, section in enumerate(sections) %}
-    <section>
         {% for i, part in enumerate(section.parts) %}
-        <div class="leftmargin" id="leftmargin{{i}}">{{part.lm}}</div><div class="main" id="main{{i}}">{{part.main}}</div>
+        <div class="leftmargin" id="leftmargin{{i+1}}">{{part.lm}}</div><div class="main" id="main{{i+1}}">{{part.main}}</div>
         {% endfor %}
         <footer>Summary: {{section.summary}}</footer>
-    </section>
     {% endfor %}
 </article>
 
