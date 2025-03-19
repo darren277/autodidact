@@ -1,0 +1,273 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f9fc;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    background-image: radial-gradient(circle at 20px 20px, rgba(0, 0, 0, 0.05) 2px, transparent 0);
+    background-size: 40px 40px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    margin: 0;
+    color: #333;
+    font-size: 28px;
+}
+
+.meta {
+    color: #666;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.meta span {
+    margin: 0 10px;
+}
+
+.meta span input {
+    border: none;
+    border-bottom: 1px dashed #999;
+    background: transparent;
+    color: #333;
+    padding: 5px;
+    outline: none;
+    width: 100px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.mind-map {
+    position: relative;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 600px;
+    overflow: hidden;
+}
+
+/* Center node */
+.node-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #3498db;
+    color: white;
+    padding:.875rem;
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 0 0 5px rgba(52, 152, 219, 0.2);
+    transition: all 0.3s ease;
+}
+
+.node-center:hover {
+    box-shadow: 0 0 0 8px rgba(52, 152, 219, 0.3);
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Branches */
+.branch {
+    position: absolute;
+    z-index: 5;
+}
+
+/* Node boxes */
+.node {
+    position: absolute;
+    background-color: white;
+    border-radius: 7px;
+    padding: 12px 16px;
+    max-width: 180px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border-left: 5px solid;
+}
+
+.node:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.node h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.node p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.node-date {
+    border-color: #e74c3c;
+}
+
+.node-idea {
+    border-color: #9b59b6;
+}
+
+.node-event {
+    border-color: #2ecc71;
+}
+
+.node-summary {
+    border-color: #f39c12;
+}
+
+/* Connector lines */
+.connector {
+    position: absolute;
+    background-color: #ddd;
+    height: 2px;
+    transform-origin: left center;
+    z-index: 1;
+}
+
+.connector-date {
+    background-color: rgba(231, 76, 60, 0.3);
+}
+
+.connector-idea {
+    background-color: rgba(155, 89, 182, 0.3);
+}
+
+.connector-event {
+    background-color: rgba(46, 204, 113, 0.3);
+}
+
+.connector-summary {
+    background-color: rgba(243, 156, 18, 0.3);
+}
+
+/* Pulse animation for nodes */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+    }
+}
+
+.node-center {
+    animation: pulse 2s infinite;
+}
+
+/* Extra design elements */
+.background-shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.shape1 {
+    width: 300px;
+    height: 300px;
+    background-color: #3498db;
+    top: -100px;
+    right: -100px;
+}
+
+.shape2 {
+    width: 200px;
+    height: 200px;
+    background-color: #e74c3c;
+    bottom: -50px;
+    left: -50px;
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 100;
+    bottom: 10px;
+    right: 10px;
+}
+
+.mind-map:hover .tooltip {
+    opacity: 1;
+}
+
+/* Footer */
+.footer {
+    margin-top: 20px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.footer h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #f2f2f2;
+    padding-bottom: 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+.footer p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mind-map {
+        min-height: 500px;
+        padding: 20px;
+    }
+
+    .node {
+        padding: 10px;
+        max-width: 150px;
+    }
+
+    .node h3 {
+        font-size: 14px;
+    }
+
+    .node p {
+        font-size: 12px;
+    }
+}
