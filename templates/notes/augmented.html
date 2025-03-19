@@ -14,7 +14,7 @@
     {% for s, section in enumerate(sections) %}
         {% for i, part in enumerate(section.parts) %}
         <div class="leftmargin">{% if part.title %}{{part.title}}{% else %}Note{% endif %}</div>
-        <div class="main">
+        <div class="main color-theme-{{part.category}}">
             <p>{{part.lm}}</p>
             <button class="collapsible">Show More Details</button>
             <div class="content">{{part.main}}</div>

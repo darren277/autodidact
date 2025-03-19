@@ -91,6 +91,18 @@ footer .summary-box {
     display: none; /* Hidden by default */
     background-color: #fefefe;
     padding: 0.5rem;
-    border-left: 3px solid #007acc;
+    /* border-left: 3px solid #007acc; */
     margin-bottom: 1rem;
+}
+
+.color-theme-event {
+    border-left: 6px solid #007acc;
+}
+
+.color-theme-idea {
+    border-left: 6px solid #009688;
+}
+
+.color-theme-question {
+    border-left: 6px solid #ff5722;
 }
