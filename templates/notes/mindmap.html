@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/mindmap.css">
 </head>
 <body>
 <div class="container">
@@ -62,13 +63,13 @@
 
             <div class="tooltip">Click on nodes to expand</div>
 
+            <div class="footer">
+                <h2>Summary Notes</h2>
+                <p>{{section.summary}}</p>
+            </div>
+
         </section>
         {% endfor %}
-    </div>
-
-    <div class="footer">
-        <h2>Summary Notes</h2>
-        <p>{{section.summary}}</p>
     </div>
 </div>
 

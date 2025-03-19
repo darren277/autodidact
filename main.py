@@ -119,6 +119,10 @@ def cornell_notes():
 def digital_notebook():
     return render_template('notes/digital-notebook.html', **data)
 
+@app.route('/mindmap')
+def mindmap():
+    return render_template('notes/mindmap.html', **data)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
