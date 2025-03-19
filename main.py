@@ -123,6 +123,10 @@ def digital_notebook():
 def mindmap():
     return render_template('notes/mindmap.html', **data)
 
+@app.route('/stickynotes')
+def stickynotes():
+    return render_template('notes/stickynotes.html', **data)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
