@@ -127,9 +127,15 @@ def mindmap():
 def stickynotes():
     return render_template('notes/stickynotes.html', **data)
 
+@app.route('/vintage_cards')
+def vintage_cards():
+    return render_template('notes/vintage-cards.html', **data)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
+# add len() to Jinja...
+app.jinja_env.globals.update(len=len)
 
 
 @app.route('/hello')
