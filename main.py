@@ -97,23 +97,27 @@ def ask():
 </article>
 '''
 
-@app.route('/notes')
-def notes():
-    data = {
-        "date": "2025-03-18",
-        "topic": "Cornell Notes Example",
-        "sections": [
-            {
-                "parts": [
-                    {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum."},
-                    {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities."}
-                ],
-                "summary": "Lorem ipsum blah blah blah."
-            }
-        ]
-    }
+data = {
+    "date": "2025-03-18",
+    "topic": "Cornell Notes Example",
+    "sections": [
+        {
+            "parts": [
+                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum."},
+                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities."}
+            ],
+            "summary": "Lorem ipsum blah blah blah."
+        }
+    ]
+}
 
-    return render_template('notes.html', **data)
+@app.route('/cornell_notes')
+def cornell_notes():
+    return render_template('notes/cornell.html', **data)
+
+
+# add enumerate() to Jinja...
+app.jinja_env.globals.update(enumerate=enumerate)
 
 
 @app.route('/hello')
