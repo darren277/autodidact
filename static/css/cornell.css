@@ -1,0 +1,133 @@
+/* Paper-like appearance for the entire page */
+body {
+    background-color: #f8f8f8;
+    padding: 20px;
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.5;
+    color: #333;
+}
+
+/* The note container with paper-like styling */
+article {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 25px 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    border: 1px solid #ddd;
+    min-height: 600px;
+    background-image: linear-gradient(#f2f2f2 1px, transparent 1px);
+    background-size: 100% 25px;
+}
+
+/* Paper texture overlay */
+article::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23f0f0f0' fill-opacity='0.4'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Header section styling */
+header {
+    display: flex;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.leftheader {
+    width: 30%;
+    font-weight: bold;
+    padding-left: 10px;
+    border-right: 1px solid #999;
+}
+
+.rightheader {
+    width: 70%;
+    padding-left: 15px;
+}
+
+/* Main content layout with two columns */
+article {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    grid-auto-rows: auto;
+}
+
+/* Override the grid for header and footer */
+header, footer {
+    grid-column: 1 / -1;
+}
+
+/* Left margin styling (Cue column) */
+.leftmargin {
+    padding: 10px;
+    border-right: 1px solid #999;
+    position: relative;
+    z-index: 2;
+    color: #444;
+    font-style: italic;
+}
+
+/* Main content styling (Notes column) */
+.main {
+    padding: 10px 15px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Footer styling (Summary) */
+footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 2px solid #000;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+}
+
+/* Cornell notes vertical red margin line */
+article::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(30% + 1px);
+    width: 1px;
+    height: 100%;
+    background-color: #cc0000;
+    z-index: 2;
+}
+
+/* Make the note look like it's on a paper with a slight rotation */
+article {
+    transform: rotate(0.2deg);
+}
+
+/* Styling for any emphasized text */
+em {
+    color: #cc0000;
+    font-style: normal;
+    text-decoration: underline;
+}
+
+/* Add some additional elements for a paper-like feel */
+.paper-hole {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 3;
+}
