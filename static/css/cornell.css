@@ -49,7 +49,6 @@ header {
     width: 30%;
     font-weight: bold;
     padding-left: 10px;
-    border-right: 1px solid #999;
 }
 
 .rightheader {
@@ -72,7 +71,6 @@ header, footer {
 /* Left margin styling (Cue column) */
 .leftmargin {
     padding: 10px;
-    border-right: 1px solid #999;
     position: relative;
     z-index: 2;
     color: #444;
