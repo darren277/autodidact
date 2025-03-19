@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/digital-notebook.css">
+</head>
+<body>
+<article>
+    <div class="glow"></div>
+    <div class="notebook">
+        <header>
+            <div class="header">
+                <h1 class="title">Digital Research Notes</h1>
+                <div class="meta">
+                    <span>Date: {{ date }}</span>
+                    <span>Topic: {{ topic }}</span>
+                </div>
+            </div>
+        </header>
+        {% for s, section in enumerate(sections) %}
+        <section>
+            {% for i, part in enumerate(section.parts) %}
+            <div class="content">
+                <div class="note-card">
+                    <h3 class="note-title">{{part.main}}</h3>
+                    <p class="note-content">{{part.main}}</p>
+                </div>
+
+                <div class="twin-note">
+                    <div class="note-card sidebar-note">
+                        <h3 class="note-title">Key Question</h3>
+                        <p class="note-content">{{part.lm}}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="summary">
+                <h2 class="summary-title">Summary</h2>
+                <p class="note-content">{{ section.summary }}<span class="blinking-cursor"></span></p>
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+
+  <div class="cursor"></div>
+
+  <script>
+// Cursor effect
+document.addEventListener('mousemove', (e) => {
+    const cursor = document.querySelector('.cursor');
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    cursor.style.opacity = '1';
+
+    // Fade out effect
+    clearTimeout(cursor.timeout);
+    cursor.timeout = setTimeout(() => {cursor.style.opacity = '0';}, 1500);
+});
+
+// Hide cursor when leaving window
+document.addEventListener('mouseout', () => {
+    const cursor = document.querySelector('.cursor');
+    cursor.style.opacity = '0';
+});
+  </script>
+</article>
+</body>
+</html>

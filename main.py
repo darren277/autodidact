@@ -80,6 +80,63 @@ def ask():
     return ""
 
 
+'''
+<article>
+    <header>
+        <div class="leftheader">Cues</div>
+        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
+    </header>
+    {% for s, section in enumerate(sections) %}
+    <section>
+        {% for i, part in enumerate(section.parts) %}
+        <div class="leftmargin" id="leftmargin{{i}}">{{part.lm}}</div><div class="main" id="main{{i}}">{{part.main}}</div>
+        {% endfor %}
+        <footer>Summary: {{section.summary}}</footer>
+    </section>
+    {% endfor %}
+</article>
+'''
+
+data = {
+    "date": "2025-03-18",
+    "topic": "Cornell Notes Example",
+    "sections": [
+        {
+            "parts": [
+                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum."},
+                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities."}
+            ],
+            "summary": "Lorem ipsum blah blah blah."
+        }
+    ]
+}
+
+@app.route('/cornell_notes')
+def cornell_notes():
+    return render_template('notes/cornell.html', **data)
+
+@app.route('/digital_notebook')
+def digital_notebook():
+    return render_template('notes/digital-notebook.html', **data)
+
+@app.route('/mindmap')
+def mindmap():
+    return render_template('notes/mindmap.html', **data)
+
+@app.route('/stickynotes')
+def stickynotes():
+    return render_template('notes/stickynotes.html', **data)
+
+@app.route('/vintage_cards')
+def vintage_cards():
+    return render_template('notes/vintage-cards.html', **data)
+
+
+# add enumerate() to Jinja...
+app.jinja_env.globals.update(enumerate=enumerate)
+# add len() to Jinja...
+app.jinja_env.globals.update(len=len)
+
 
 @app.route('/hello')
 def publish_hello():

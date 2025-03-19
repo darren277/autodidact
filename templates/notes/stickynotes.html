@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/sticky-notes.css') }}">
+</head>
+<body>
+<article>
+    <div class="cork-board">
+        <h1 class="board-title">{{ title }}</h1>
+        <header>
+            <div class="sticky-note header-note">
+                <div class="pin"></div>
+                <div class="tape tape-top"></div>
+                <h2 class="sticky-title">Course Information</h2>
+                <div class="sticky-content">Date: {{ date }}. Topic: {{ topic }}.</div>
+            </div>
+        </header>
+        {% for s, section in enumerate(sections) %}
+        <section>
+            <div class="sticky-container">
+                {% for i, part in enumerate(section.parts) %}
+                <div class="sticky-note yellow">
+                    <div class="pin"></div>
+                    <div class="tape tape-left"></div>
+                    <h3 class="sticky-title">{{part.lm}}</h3>
+                    <div class="sticky-content">{{part.main}}</div>
+                </div>
+                {% endfor %}
+                <div class="sticky-note footer-note">
+                    <div class="pin"></div>
+                    <div class="tape tape-top"></div>
+                    <h2 class="sticky-title">Summary</h2>
+                    <div class="sticky-content">{{section.summary}}</div>
+                </div>
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</article>
+</body>
+</html>

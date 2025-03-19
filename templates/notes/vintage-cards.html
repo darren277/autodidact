@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/vintage-index-cards.css">
+</head>
+<body>
+<article>
+    <div class="container">
+        <div class="metal-box">
+            <div class="box-title">Research Index</div>
+
+            <div class="card-container">
+                <!-- Header Card -->
+                <div class="index-card header-card">
+                    <div class="card-header">
+                        <span class="card-number">CARD #001</span>
+                        <span class="card-subject">COURSE INFORMATION</span>
+                    </div>
+                    <div class="divider">STUDY REFERENCE</div>
+                    <div class="card-content">Date: <span class="pencil-marks">{{ date }}</span>. Topic: <span class="pencil-marks">{{ topic }}</span>.</div>
+                    <div class="coffee-stain coffee-stain-1"></div>
+                    <div class="worn-edge worn-edge-1"></div>
+                </div>
+
+                <!-- Content Cards -->
+                {% for s, section in enumerate(sections) %}
+                    <section>
+                    {% for i, part in enumerate(section.parts) %}
+                        <div class="index-card">
+                            <div class="card-header">
+                                <span class="card-number">CARD #00{{i+1}}</span>
+                                <span class="card-subject">HISTORICAL RECORD</span>
+                            </div>
+                            <div class="divider">CHRONOLOGY</div>
+                            <div class="card-content">
+                                <strong>Date:</strong> 1967<br>
+                                <strong>Event:</strong> In 1967, the lorems discovered the <span class="highlight">ipsum</span>.
+                                <p>{{part.lm}}</p>
+                                <p>{{part.main}}</p>
+                            </div>
+                            {{ range(1, 3) | random }}
+                            <div class="fingerprint fingerprint-1"></div>
+                            <div class="worn-edge worn-edge-2"></div>
+                        </div>
+
+                        <div class="index-card">
+                            <div class="card-header">
+                                <span class="card-number">CARD #003</span>
+                                <span class="card-subject">INQUIRY</span>
+                            </div>
+                            <div class="divider">RESEARCH QUESTION</div>
+                            <div class="card-content"><strong>Idea:</strong> Could this have resulted in the great lorem ipsum of 1971?</div>
+                            <div class="stamp">IMPORTANT</div>
+                            <div class="coffee-stain coffee-stain-2"></div>
+                        </div>
+
+                        <div class="index-card">
+                            <div class="card-header">
+                                <span class="card-number">CARD #004</span>
+                                <span class="card-subject">DEVELOPMENT</span>
+                            </div>
+                            <div class="divider">CONSEQUENCE</div>
+                            <div class="card-content"><strong>Observation:</strong> The lorems began cultivating <span class="highlight">ipsum</span> in large quantities.</div>
+                            <div class="worn-edge worn-edge-1"></div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Summary Card -->
+                        <div class="index-card summary-card">
+                            <div class="card-header">
+                                <span class="card-number">CARD #00{{len(sections.parts)}}</span>
+                                <span class="card-subject">CONCLUSION</span>
+                            </div>
+                            <div class="divider">SUMMARY</div>
+                            <div class="card-content">{{section.summary}}</div>
+                            <div class="fingerprint fingerprint-1"></div>
+                            <div class="worn-edge worn-edge-2"></div>
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</article>
+</body>
+</html>

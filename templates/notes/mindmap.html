@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/mindmap.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 class="title">{{ title }}</h1>
+        <div class="meta">
+            <span>Date: <input type="text" placeholder="{{ date }} "></span>
+            <span>Topic: <input type="text" placeholder="{{ topic }}"></span>
+        </div>
+    </div>
+
+    <div class="mind-map">
+        <!-- Background shapes -->
+        <div class="background-shape shape1"></div>
+        <div class="background-shape shape2"></div>
+
+        <!-- Center node -->
+        <div class="node-center">{{ topic }}</div>
+
+        {% for s, section in enumerate(sections) %}
+        <section>
+            {% for i, part in enumerate(section.parts) %}
+            <div class="connector connector-date" style="width: 150px; top: 43%; left: 50%; transform: rotate(-45deg);"></div>
+            <div class="node node-date" style="top: 25%; left: 25%;">
+                <h3>{{part.lm}}</h3>
+                <p>{{part.main}}</p>
+            </div>
+            {% endfor %}
+
+            <!-- Node 1: Date -->
+            <div class="connector connector-date" style="width: 150px; top: 43%; left: 50%; transform: rotate(-45deg);"></div>
+            <div class="node node-date" style="top: 25%; left: 25%;">
+                <h3>Historical Context</h3>
+                <p>Date: 1967<br>In 1967, the lorems discovered the ipsum.</p>
+            </div>
+
+            <!-- Node 2: Idea -->
+            <div class="connector connector-idea" style="width: 150px; top: 55%; left: 50%; transform: rotate(45deg);"></div>
+            <div class="node node-idea" style="top: 70%; left: 25%;">
+                <h3>Research Question</h3>
+                <p>Could this have resulted in the great lorem ipsum of 1971?</p>
+            </div>
+
+            <!-- Node 3: Event -->
+            <div class="connector connector-event" style="width: 150px; top: 43%; left: 50%; transform: rotate(-135deg);"></div>
+            <div class="node node-event" style="top: 25%; left: 65%;">
+                <h3>Development</h3>
+                <p>The lorems began cultivating ipsum in large quantities.</p>
+            </div>
+
+            <!-- Node 4: Summary -->
+            <div class="connector connector-summary" style="width: 150px; top: 55%; left: 50%; transform: rotate(135deg);"></div>
+            <div class="node node-summary" style="top: 70%; left: 65%;">
+                <h3>Conclusion</h3>
+                <p>Lorem ipsum blah blah blah.</p>
+            </div>
+
+            <div class="tooltip">Click on nodes to expand</div>
+
+            <div class="footer">
+                <h2>Summary Notes</h2>
+                <p>{{section.summary}}</p>
+            </div>
+
+        </section>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Basic interaction for demonstration
+document.querySelectorAll('.node').forEach(node => {
+    node.addEventListener('click', function() {
+        // Simulate an interaction
+        this.style.transform = 'scale(1.1)';
+        setTimeout(() => {this.style.transform = '';}, 300);
+    });
+});
+</script>
+</body>
+</html>
