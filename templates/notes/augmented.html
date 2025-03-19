@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/cornell.css">
+</head>
+<body>
+<article>
+    <header>
+        <div class="leftheader">Cues</div>
+        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
+    </header>
+    {% for s, section in enumerate(sections) %}
+        {% for i, part in enumerate(section.parts) %}
+        <div class="leftmargin">Note</div>
+        <div class="main">
+            <p>{{part.lm}}</p>
+            <button class="collapsible">Show More Details</button>
+            <div class="content">{{part.main}}</div>
+        </div>
+        {% endfor %}
+        <footer>Summary: {{section.summary}}</footer>
+    {% endfor %}
+</article>
+</body>
+</html>
