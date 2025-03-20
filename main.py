@@ -1,4 +1,5 @@
 """"""
+import json
 import threading
 
 from flask import Flask, request, Response, render_template, jsonify
@@ -7,6 +8,7 @@ from flask_sse import sse
 import redis
 
 from lib.assistant.main import AssistantHandler
+from lib.completions.main import Completions
 from settings import REDIS_URL, ENABLE_CORS
 
 from flask_cors import CORS
@@ -97,14 +99,23 @@ def ask():
 </article>
 '''
 
+class Colors:
+    EVENT = "event"
+    IDEA = "idea"
+    QUESTION = "question"
+
+COLORS = Colors()
+
+
 data = {
     "date": "2025-03-18",
     "topic": "Cornell Notes Example",
     "sections": [
         {
             "parts": [
-                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum."},
-                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities."}
+                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum.", "category": COLORS.EVENT},
+                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities.", "category": COLORS.IDEA},
+                {"title": "Review Question", "lm": "What did the lorems discover in 1967?", "main": "The lorems discovered the ipsum.", "category": COLORS.QUESTION},
             ],
             "summary": "Lorem ipsum blah blah blah."
         }
@@ -130,6 +141,28 @@ def stickynotes():
 @app.route('/vintage_cards')
 def vintage_cards():
     return render_template('notes/vintage-cards.html', **data)
+
+@app.route('/augmented')
+def augmented():
+    return render_template('notes/augmented.html', **data)
+
+
+@app.route('/summarize', methods=['POST'])
+def summarize():
+    data = request.json
+
+    system_prompt = data.get('systemPrompt', None)
+    if not system_prompt:
+        return jsonify({"error": "No system prompt provided."})
+    completions = Completions('gpt-4o', system_prompt)
+
+    user_notes = data.get('userNotes', None)
+    if not user_notes:
+        return jsonify({"error": "No user notes provided."})
+    user_notes_string = json.dumps(user_notes)
+    result = completions.complete(user_notes_string)
+
+    return jsonify(dict(summary=result))
 
 
 # add enumerate() to Jinja...

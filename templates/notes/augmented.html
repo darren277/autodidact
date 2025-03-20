@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="static/css/augmented-notes.css">
+
+    <link crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"></link>
+
+    <!-- Github markdown styles (light/dark) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+    <!-- Highlightjs Github theme (light) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css" />
+
+    <!-- Highlightjs Github theme (prefers dark) -->
+    <link rel="stylesheet" media="(prefers-color-scheme:dark)" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
+
+    <!-- KaTeX styles (needed for math) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css" />
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
+</head>
+<body>
+<article>
+    <header>
+        <div class="leftheader">Cues</div>
+        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
+    </header>
+    {% for s, section in enumerate(sections) %}
+        {% for i, part in enumerate(section.parts) %}
+        <div class="leftmargin">{% if part.title %}{{part.title}}{% else %}Note{% endif %}</div>
+        <div class="main color-theme-{{part.category}}">
+            <p>{{part.lm}}</p>
+            <button class="collapsible">Show More Details</button>
+            <div class="content">{{part.main}}</div>
+        </div>
+        {% endfor %}
+        <footer>Summary: {{section.summary}}</footer>
+    {% endfor %}
+</article>
+
+<!-- Button to trigger the "AI Summarize" request -->
+<button id="summarizeBtn">Summarize with AI</button>
+
+<!-- Where we’ll display the AI’s returned summary, tips, mnemonics, etc. -->
+<div style="padding-bottom: 100px">
+    <zero-md>
+        <script type="text/markdown" id="aiSummary"></script>
+    </zero-md>
+</div>
+
+<script src="static/js/ai-summary.js"></script>
+
+<script>
+// Simple JS to toggle each collapsible
+document.addEventListener('DOMContentLoaded', function () {
+    const collapsibles = document.querySelectorAll('.collapsible');
+    collapsibles.forEach((collapsible) => {
+        collapsible.addEventListener('click', function () {
+            this.classList.toggle('active');
+            const content = this.nextElementSibling;
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
