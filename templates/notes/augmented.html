@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="static/css/augmented-notes.css">
+
+    <link crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"></link>
+
+    <!-- Github markdown styles (light/dark) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+    <!-- Highlightjs Github theme (light) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css" />
+
+    <!-- Highlightjs Github theme (prefers dark) -->
+    <link rel="stylesheet" media="(prefers-color-scheme:dark)" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
+
+    <!-- KaTeX styles (needed for math) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css" />
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
 </head>
 <body>
 <article>
@@ -28,7 +44,11 @@
 <button id="summarizeBtn">Summarize with AI</button>
 
 <!-- Where we’ll display the AI’s returned summary, tips, mnemonics, etc. -->
-<div id="aiSummary"></div>
+<div style="padding-bottom: 100px">
+    <zero-md>
+        <script type="text/markdown" id="aiSummary"></script>
+    </zero-md>
+</div>
 
 <script src="static/js/ai-summary.js"></script>
 
