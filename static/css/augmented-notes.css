@@ -95,6 +95,9 @@ footer .summary-box {
     margin-bottom: 1rem;
 }
 
+
+/* Color themes for different types of notes */
+
 .color-theme-event {
     border-left: 6px solid #007acc;
 }
@@ -105,4 +108,26 @@ footer .summary-box {
 
 .color-theme-question {
     border-left: 6px solid #ff5722;
+}
+
+
+/* AI Summary */
+
+.summary-box {
+    background-color: #fef3bd;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+    button {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+#aiSummary {
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 2px dashed #007acc;
+    background-color: #f9f9f9;
 }
