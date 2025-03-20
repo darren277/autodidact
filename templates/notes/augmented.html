@@ -23,6 +23,15 @@
         <footer>Summary: {{section.summary}}</footer>
     {% endfor %}
 </article>
+
+<!-- Button to trigger the "AI Summarize" request -->
+<button id="summarizeBtn">Summarize with AI</button>
+
+<!-- Where we’ll display the AI’s returned summary, tips, mnemonics, etc. -->
+<div id="aiSummary"></div>
+
+<script src="static/js/ai-summary.js"></script>
+
 <script>
 // Simple JS to toggle each collapsible
 document.addEventListener('DOMContentLoaded', function () {
