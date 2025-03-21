@@ -208,4 +208,21 @@ parsed = parse_cornell_markdown(s)
 print(json.dumps(parsed, indent=2))
 
 
+def merge_adjacent_cells(parsed):
+    new_structure = dict(date=parsed['date'], topic=parsed['topic'], sections=[])
+    for section in parsed['sections']:
+        for i in range(0, len(section['parts']), 2):
+            thing = dict(
+                lm=section['parts'][i]['lm']+section['parts'][i]['main'],
+                main=section['parts'][i+1]['lm']+section['parts'][i+1]['main'],
+                category=section['parts'][i]['category']
+            )
+            new_structure['sections'].append(thing)
+    return new_structure
+
+new_structure = merge_adjacent_cells(parsed)
+print(json.dumps(new_structure, indent=2))
+
+
+
 
