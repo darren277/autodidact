@@ -2,7 +2,7 @@
 import json
 import threading
 
-from flask import Flask, request, Response, render_template, jsonify
+from flask import Flask, request, Response, render_template, jsonify, render_template_string
 from flask_sse import sse
 
 import redis
@@ -164,6 +164,103 @@ def summarize():
 
     return jsonify(dict(summary=result))
 
+
+@app.route('/convert', methods=['GET', 'POST'])
+def convert():
+    from utils.convert_obsidian import convert_to_obsidian, merge_adjacent_cells, parse_cornell_markdown
+    if request.method == 'POST':
+        data = request.json
+        if data:
+            direction = data.get('direction', None)
+
+            if direction != 'json2obsidian' and direction != 'obsidian2json':
+                return jsonify({"error": "Invalid conversion direction."})
+
+            content_string = data.get('content', None)
+
+            if direction == 'obsidian2json':
+                try:
+                    result = merge_adjacent_cells(parse_cornell_markdown(content_string))
+                    return jsonify(result)
+                except Exception as e:
+                    return jsonify({"error": str(e)})
+            elif direction == 'json2obsidian':
+                try:
+                    content = json.loads(content_string)
+                except Exception as e:
+                    return jsonify({"error": f"Error parsing JSON: {str(e)}"})
+                try:
+                    result = convert_to_obsidian(content)
+                    return jsonify(result)
+                except Exception as e:
+                    return jsonify({"error": str(e)})
+            else:
+                return jsonify({"error": "Invalid conversion direction."})
+        else:
+            return jsonify({"error": "No data provided."})
+    else:
+        return render_template_string("""
+<html>
+<head>
+    <title>Convert</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Convert</h1>
+    <form method="POST">
+        <label for="direction">Direction:</label>
+        <select name="direction">
+            <option value="none">Select...</option>
+            <option value="json2obsidian">JSON to Obsidian</option>
+            <option value="obsidian2json">Obsidian to JSON</option>
+        </select>
+        <br>
+        <label for="content">Content:</label>
+        <textarea name="content"></textarea>
+        <br>
+        <button type="submit">Convert</button>
+    </form>
+    
+    <h2>Output</h2>
+    <pre id="output"></pre>
+    
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const response = await fetch('/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            const data = await response.json();
+            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        });
+    </script>
+    
+    <h2>Example JSON</h2>
+    <pre>
+    {{ example_json }}
+    </pre>
+    
+    <h2>Example Obsidian</h2>
+    <pre>
+    {{ example_obsidian }}
+    </pre>
+</body>
+</html>
+""")
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
