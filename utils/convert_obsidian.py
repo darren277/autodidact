@@ -28,59 +28,184 @@ s = """
 
 
 import json
+import re
 
 
-def parse_string(s: str):
-    title_and_date = ""
-    sections = []
-    current_section_parts = []
-    left_column = False
-    right_column = False
-    current_row = 0
-    lines = s.split("\n")
+def parse_cornell_markdown(markdown_text: str):
+    lines = markdown_text.splitlines()
+
+    # Final structure
+    data = {
+        "date": "",
+        "topic": "",
+        "sections": []
+    }
+
     current_section = None
-    for i, line in enumerate(lines):
-        if line.startswith('# '):
-            print("Found title and date")
-            title_and_date = line[2:]
-        elif line.startswith('## '):
-            print("Found section")
-            current_section = dict()
-        elif line.startswith("> [!multi-column]"):
-            print("Found multi-column")
-            if left_column:
-                left_column = False
-                right_column = True
-                current_row = 0
+    in_left_column = False
+    in_right_column = False
+
+    # We'll store the text that belongs to the current callout chunk here
+    current_part = None
+
+    # A small helper to decide the color category from the callout type
+    def get_color_category(callout_type: str):
+        if callout_type == "question":
+            return "COLORS.QUESTION"
+        elif callout_type == "note":
+            return "COLORS.NOTE"
+        else:
+            return "COLORS.UNKNOWN"
+
+    # Regex to parse the top-level date/topic line: # 2025-03-18 - Something
+    title_line_re = re.compile(r"#\s+(\d{4}-\d{2}-\d{2})\s+-\s+(.*)")
+
+    # Now iterate
+    i = 0
+    while i < len(lines):
+        line = lines[i].rstrip()
+
+        # 1) Parse date/topic from first line starting w/ "# "
+        if line.startswith("# "):
+            m = title_line_re.match(line)
+            if m:
+                data["date"] = m.group(1)
+                data["topic"] = m.group(2)
+            i += 1
+            continue
+
+        # 2) Look for a new section
+        if line.startswith("## "):
+            # if there's an old section not appended, do so
+            if current_section and current_section.get("parts"):
+                data["sections"].append(current_section)
+
+            # start a new section
+            current_section = {
+                "parts": [],
+                "summary": ""
+            }
+            i += 1
+            continue
+
+        # 3) Check for multi-column toggles
+        #    e.g. line.startswith("> [!multi-column]")
+        if line.strip().startswith("> [!multi-column]"):
+            # Toggle columns.
+            # This depends on your exact logic for when to start left vs. right
+            if not in_left_column and not in_right_column:
+                # first time we see it in a section => left column
+                in_left_column = True
+                in_right_column = False
             else:
-                left_column = True
-                right_column = False
-                current_row = 0
-        elif line.startswith(">> [!"):
-            if line.startswith(">> [!question]"): category = 'question'
-            elif line.startswith(">> [!note]"): category = 'note'
-            else: category = 'unknown'
-            if left_column:
-                current_section_parts[current_row]['lm'] = line + "\n" + lines[i+1]
-            elif right_column:
-                current_section_parts[current_row]['rm'] = line + "\n" + lines[i+1]
-            current_section_parts[current_row]['category'] = category
-        if line.startswith(">> [!summary]"):
-            section_summary = line + "\n" + lines[i+1]
-            current_section['summary'] = section_summary
-            sections.append(current_section)
-            current_section = dict()
-            left_column = False
-            right_column = False
-            current_row = 0
-            current_section_parts = []
-        current_row += 1
-    return title_and_date, sections
+                # second time => switch to right column
+                in_right_column = True
+                in_left_column = False
+
+            i += 1
+            continue
+
+        # 4) Look for a callout that starts with ">> [!something]"
+        if line.strip().startswith(">> [!"):
+            # if we were already capturing a part, push it into the section
+            if current_part and current_section is not None:
+                current_section["parts"].append(current_part)
+
+            # parse the callout type: question, note, etc.
+            # e.g. ">> [!question]" => question
+            if line.strip().startswith(">> [!question]"):
+                callout_type = "question"
+            elif line.strip().startswith(">> [!note]"):
+                callout_type = "note"
+            else:
+                callout_type = "unknown"
+
+            # Initialize a new part
+            current_part = {
+                "category": get_color_category(callout_type),
+                "lm": "",
+                "main": ""
+            }
+
+            # If there is something like ">> [!question] **Date: 1967**"
+            # you can parse out the text after [!question].
+            # For simplicity let's just collect the entire line minus ">> [!question]"
+            # but you can refine if you want to parse out bold text, etc.
+
+            # remove leading >> [!question] portion
+            # you might want a better pattern or to handle markdown better
+            cleaned_line = re.sub(r">>\s*\[![a-zA-Z]+\]\s*", "", line.strip())
+            cleaned_line = cleaned_line.strip()
+
+            # We'll store that in "lm" if in_left_column else "rm"
+            # but from your snippet you only show "lm" in final. You might want "rm" for the right column.
+            # In your example JSON, you have "lm" in each part, so let's keep it simple:
+            if in_left_column:
+                current_part["lm"] = cleaned_line
+            elif in_right_column:
+                # If you truly want a separate field for the right column,
+                # you might define "rm" or store it in the same "lm" field, up to you.
+                current_part["lm"] = cleaned_line  # or something else
+            else:
+                # fallback if not sure
+                current_part["lm"] = cleaned_line
+
+            # Now we keep going on subsequent lines for “main” until next callout or summary
+            i += 1
+            # read lines until next ">> [!" or next "## " or next "> [!summary]" or next "[!multi-column]"...
+            main_text_buffer = []
+            while i < len(lines):
+                nxt = lines[i]
+                # stop conditions
+                if nxt.strip().startswith(">> [!") or nxt.strip().startswith(
+                        "> [!multi-column]") or nxt.strip().startswith("## ") or nxt.strip().startswith("# "):
+                    # break so outer loop can handle it
+                    break
+                if nxt.strip().startswith("> [!summary]"):
+                    # also break so summary can handle it
+                    break
+                # accumulate text
+                main_text_buffer.append(nxt.lstrip("> "))  # remove leading > if present
+                i += 1
+
+            # assign the main text
+            current_part["main"] = "\n".join(main_text_buffer).strip()
+            continue
+
+        # 5) Look for summary
+        if line.strip().startswith("> [!summary]"):
+            # read subsequent lines as summary
+            summary_buffer = []
+            i += 1
+            while i < len(lines):
+                nxt = lines[i]
+                # break if we see a new callout or new multi-column or new section
+                if nxt.strip().startswith(">> [!") or nxt.strip().startswith(
+                        "> [!multi-column]") or nxt.strip().startswith("## ") or nxt.strip().startswith("# "):
+                    break
+                summary_buffer.append(nxt.lstrip("> "))
+                i += 1
+
+            if current_section is not None:
+                current_section["summary"] = "\n".join(summary_buffer).strip()
+
+            continue
+
+        # if none of the above matched, just increment
+        i += 1
+
+    # if there's a leftover current_section with parts, append it
+    if current_section and current_section.get("parts"):
+        # if we were capturing a part not appended yet
+        if current_part:
+            current_section["parts"].append(current_part)
+        data["sections"].append(current_section)
+
+    return data
 
 
-title_and_date, sections = parse_string(s)
+parsed = parse_cornell_markdown(s)
+print(json.dumps(parsed, indent=2))
 
-print("Title and Date:", title_and_date)
-print("Sections:", json.dumps(sections, indent=2))
 
 
