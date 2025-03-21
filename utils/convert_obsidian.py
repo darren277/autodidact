@@ -7,18 +7,18 @@ s = """
 
 > [!multi-column]
 >
->> [!question] **Date: 1967**
->> This is just a left column callout.
+>> [!event] **Event**
+>> The date was 1967.
 >
->> [!note] **Notes**
+>> [!note] **Details**
 >> In 1967, the lorems discovered the ipsum. This was a groundbreaking discovery that changed how we understand the relationship between lorems and ipsums.
 
 > [!multi-column]
 >
->> [!question] **Idea: Lorem Ipsum**
->> Another left column callout.
+>> [!idea] **Idea**
+>> This may have led to the expansion of the lorems.
 >
->> [!note] **More Notes**
+>> [!note] **Details**
 >> The lorems began cultivating ipsum in large quantities. This led to a period of great prosperity and advancement in lorem technologies throughout the late 1960s.
 
 > [!summary]
@@ -52,6 +52,10 @@ def parse_cornell_markdown(markdown_text: str):
     def get_color_category(callout_type: str):
         if callout_type == "question":
             return "COLORS.QUESTION"
+        elif callout_type == "idea":
+            return "COLORS.IDEA"
+        elif callout_type == "event":
+            return "COLORS.EVENT"
         elif callout_type == "note":
             return "COLORS.NOTE"
         else:
@@ -115,6 +119,10 @@ def parse_cornell_markdown(markdown_text: str):
             # e.g. ">> [!question]" => question
             if line.strip().startswith(">> [!question]"):
                 callout_type = "question"
+            elif line.strip().startswith(">> [!idea]"):
+                callout_type = "idea"
+            elif line.strip().startswith(">> [!event]"):
+                callout_type = "event"
             elif line.strip().startswith(">> [!note]"):
                 callout_type = "note"
             else:
@@ -211,13 +219,15 @@ print(json.dumps(parsed, indent=2))
 def merge_adjacent_cells(parsed):
     new_structure = dict(date=parsed['date'], topic=parsed['topic'], sections=[])
     for section in parsed['sections']:
+        new_section = dict(parts=[], summary=section['summary'])
         for i in range(0, len(section['parts']), 2):
             thing = dict(
-                lm=section['parts'][i]['lm']+section['parts'][i]['main'],
-                main=section['parts'][i+1]['lm']+section['parts'][i+1]['main'],
+                lm=section['parts'][i]['main'],
+                main=section['parts'][i+1]['main'],
                 category=section['parts'][i]['category']
             )
-            new_structure['sections'].append(thing)
+            new_section['parts'].append(thing)
+        new_structure['sections'].append(new_section)
     return new_structure
 
 new_structure = merge_adjacent_cells(parsed)
@@ -225,4 +235,52 @@ print(json.dumps(new_structure, indent=2))
 
 
 
+""" CONVERTING FROM JSON TO OBSIDIAN MULTICOLUMN """
+
+CALLOUT_DICT = {
+    "COLORS.QUESTION": "question",
+    "COLORS.IDEA": "idea",
+    "COLORS.EVENT": "event",
+    "COLORS.NOTE": "note"
+}
+
+def convert_to_obsidian(parsed):
+    obsidian = []
+    date_and_topic_line = f"# {parsed['date']} - {parsed['topic']}"
+    obsidian.append(date_and_topic_line)
+
+    obsidian.append("\n")
+
+    for i, section in enumerate(parsed['sections']):
+        obsidian.append(f"## Section {i+1}")
+        obsidian.append("\n")
+
+        obsidian.append("> [!multi-column]")
+        obsidian.append(">")
+        for part in section['parts']:
+            if part['category'] == 'COLORS.NOTE':
+                obsidian.append(f">> {part['lm']}")
+                obsidian.append(">")
+            else:
+                obsidian.append(f">> [!{CALLOUT_DICT[part['category']]}] **{CALLOUT_DICT[part['category']].upper()}**\n>> {part['lm']}")
+
+        obsidian.append("\n")
+
+        obsidian.append("> [!multi-column]")
+        obsidian.append(">")
+        for part in section['parts']:
+            if part['category'] == 'COLORS.NOTE':
+                obsidian.append(f">> {part['main']}")
+                obsidian.append(">")
+            else:
+                obsidian.append(f">> [!{CALLOUT_DICT[part['category']]}] **{CALLOUT_DICT[part['category']].upper()}**\n>> {part['main']}")
+
+        obsidian.append("\n")
+
+        obsidian.append("> [!summary]")
+        obsidian.append(f"> {section['summary']}")
+    return "\n".join(obsidian)
+
+obsidian = convert_to_obsidian(new_structure)
+print(obsidian)
 
