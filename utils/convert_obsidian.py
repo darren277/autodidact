@@ -21,6 +21,14 @@ s = """
 >> [!note] **Details**
 >> The lorems began cultivating ipsum in large quantities. This led to a period of great prosperity and advancement in lorem technologies throughout the late 1960s.
 
+> [!multi-column]
+>
+>> [!idea] **Question**
+>> How many lorems does it take to screw in an ipsum?
+>
+>> [!note] **Details**
+>> About 42.
+
 > [!summary]
 > Lorem ipsum blah blah blah.
 
@@ -238,10 +246,10 @@ print(json.dumps(new_structure, indent=2))
 """ CONVERTING FROM JSON TO OBSIDIAN MULTICOLUMN """
 
 CALLOUT_DICT = {
-    "COLORS.QUESTION": "question",
-    "COLORS.IDEA": "idea",
-    "COLORS.EVENT": "event",
-    "COLORS.NOTE": "note"
+    "COLORS.QUESTION": "Question",
+    "COLORS.IDEA": "Idea",
+    "COLORS.EVENT": "Event",
+    "COLORS.NOTE": "Note"
 }
 
 def convert_to_obsidian(parsed):
@@ -255,27 +263,14 @@ def convert_to_obsidian(parsed):
         obsidian.append(f"## Section {i+1}")
         obsidian.append("\n")
 
-        obsidian.append("> [!multi-column]")
-        obsidian.append(">")
         for part in section['parts']:
-            if part['category'] == 'COLORS.NOTE':
-                obsidian.append(f">> {part['lm']}")
-                obsidian.append(">")
-            else:
-                obsidian.append(f">> [!{CALLOUT_DICT[part['category']]}] **{CALLOUT_DICT[part['category']].upper()}**\n>> {part['lm']}")
+            obsidian.append("> [!multi-column]")
+            obsidian.append(">")
+            obsidian.append(f">> [!{CALLOUT_DICT[part['category']]}] **{CALLOUT_DICT[part['category']]}**\n>> {part['lm']}")
+            obsidian.append(">")
+            obsidian.append(f">> [!note] **Details**\n>> {part['main']}")
 
-        obsidian.append("\n")
-
-        obsidian.append("> [!multi-column]")
-        obsidian.append(">")
-        for part in section['parts']:
-            if part['category'] == 'COLORS.NOTE':
-                obsidian.append(f">> {part['main']}")
-                obsidian.append(">")
-            else:
-                obsidian.append(f">> [!{CALLOUT_DICT[part['category']]}] **{CALLOUT_DICT[part['category']].upper()}**\n>> {part['main']}")
-
-        obsidian.append("\n")
+            obsidian.append("")
 
         obsidian.append("> [!summary]")
         obsidian.append(f"> {section['summary']}")
