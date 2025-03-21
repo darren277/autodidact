@@ -18,14 +18,14 @@ class TTS:
 
         self.instructions = instructions
 
-    async def speak(self, message: str) -> None:
+    async def speak(self, message: str) -> bytes:
         async with openai.audio.speech.with_streaming_response.create(
             model=self.model,
             voice=self.voice,
             input=message,
             instructions=self.instructions,
-            response_format="pcm",
+            response_format="wav"
         ) as response:
-            #await LocalAudioPlayer().play(response)
-            return response
+            content = await response.read()
+        return content
 
