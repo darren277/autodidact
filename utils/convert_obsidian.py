@@ -221,7 +221,7 @@ def parse_cornell_markdown(markdown_text: str):
 
 
 parsed = parse_cornell_markdown(s)
-print(json.dumps(parsed, indent=2))
+#print(json.dumps(parsed, indent=2))
 
 
 def merge_adjacent_cells(parsed):
@@ -239,7 +239,7 @@ def merge_adjacent_cells(parsed):
     return new_structure
 
 new_structure = merge_adjacent_cells(parsed)
-print(json.dumps(new_structure, indent=2))
+#print(json.dumps(new_structure, indent=2))
 
 
 
@@ -277,5 +277,4 @@ def convert_to_obsidian(parsed):
     return "\n".join(obsidian)
 
 obsidian = convert_to_obsidian(new_structure)
-print(obsidian)
-
+#print(obsidian)
