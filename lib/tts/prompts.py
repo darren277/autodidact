@@ -23,10 +23,12 @@ Input Text:
 Dialogue Format:
 {char1_name}: "Dialogue line."
 {char2_name}: "Dialogue line."
-[Include brief actions or stage directions in brackets occasionally, e.g., [laughs], [scratches head], [points at map].]
 
 Begin dialogue now.
 """
+
+# I don't think these stage directions are going to work at this time:
+# [Include brief actions or stage directions in brackets occasionally, e.g., [laughs], [scratches head], [points at map].]
 
 def construct_dramatized_narrative_prompt(char1_name: str, char1_description: str, char2_name: str, char2_description: str, input_text: str) -> str:
     return DRAMATIZED_NARRATIVE_PROMPT.format(char1_name=char1_name, char1_description=char1_description, char2_name=char2_name, char2_description=char2_description, input_text=input_text)
