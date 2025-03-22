@@ -125,12 +125,12 @@ def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
 
     completions = Completions('gpt-4o', SYSTEM_PROMPT)
     result = completions.complete(prompt)
-    with open("prompt.txt", "w") as f: f.write(result)
+    with open("prompt.txt", "w", encoding='utf-8') as f: f.write(result)
 
     dialogue_input = split_lines(result)
     dialogue = Dialogue(*dialogue_input)
 
-    with open("dialogue.txt", "w") as f: f.write(str(dialogue))
+    with open("dialogue.txt", "w", encoding='utf-8') as f: f.write(str(dialogue))
 
     persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
     persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
@@ -159,12 +159,12 @@ def construct_presentation_from_structured_notes(structured_notes: StructuredNot
     completions = Completions('gpt-4o', SYSTEM_PROMPT)
     result = completions.complete(prompt)
 
-    with open("presentation_prompt.txt", "w") as f: f.write(result)
+    with open("presentation_prompt.txt", "w", encoding='utf-8') as f: f.write(result)
 
     dialogue_input = split_lines(result)
     dialogue = Dialogue(*dialogue_input)
 
-    with open("presentation_dialogue.txt", "w") as f: f.write(str(dialogue))
+    with open("presentation_dialogue.txt", "w", encoding='utf-8') as f: f.write(str(dialogue))
 
     presentation = Conversation(
         dialogue,
