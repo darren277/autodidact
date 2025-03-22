@@ -1,4 +1,12 @@
 """"""
+class Colors:
+    EVENT = "event"
+    IDEA = "idea"
+    QUESTION = "question"
+
+COLORS = Colors()
+
+
 class StructuredNotesPart:
     def __init__(self, lm: str, main: str, category: Colors):
         self.lm = lm

@@ -18,6 +18,8 @@ from settings import REDIS_URL, ENABLE_CORS
 
 from flask_cors import CORS
 
+from utils.typedefs import COLORS
+
 app = Flask(__name__)
 
 
@@ -103,13 +105,6 @@ def ask():
     {% endfor %}
 </article>
 '''
-
-class Colors:
-    EVENT = "event"
-    IDEA = "idea"
-    QUESTION = "question"
-
-COLORS = Colors()
 
 
 data = {
