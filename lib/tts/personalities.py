@@ -17,6 +17,8 @@ voices = [
 
 """ DESCRIPTORS """
 
+## Source attribution note: The following descriptors are from OpenAI's official TTS playground: https://www.openai.fm/
+
 pirate = """
 Voice: Deep and rugged, with a hearty, boisterous quality, like a seasoned sea captain who's seen many voyages.
 
@@ -250,3 +252,45 @@ descriptors = dict(
     serene=serene,
     sympathetic=sympathetic
 )
+
+
+## Made up some names and brief bios for each character.
+
+CHARACTERS_ARRAY = [
+    {"name": "Blackbeard", "description": "Blackbeard is a pirate from the golden age of piracy.", 'descriptors': pirate},
+    {"name": "Chad", "description": "Chad is a chill surfer dude who loves the beach and catching waves.", 'descriptors': chill_surfer},
+    {"name": "Patrick", "description": "Patrick is a 1930's era detective with a sharp mind and a keen eye for detail.", 'descriptors': old_timey},
+    {"name": "Samantha", "description": "Samantha is a fitness instructor who loves helping people achieve their fitness goals.", 'descriptors': fitness_instructor},
+    {"name": "Eleanor", "description": "Eleanor is a medieval knight on a quest to save her kingdom from a dark sorcerer.", 'descriptors': medieval_knight},
+    {"name": "Miles", "description": "Miles is a smooth jazz DJ who knows how to set the mood with his silky voice and cool vibes.", 'descriptors': smooth_jazz_dj},
+    {"name": "Jenny", "description": "Jenny is a high-energy motivator who brings enthusiasm to every task.", 'descriptors': cheerleader},
+    {"name": "Jay", "description": "Jay is a warm and understanding voice that helps customers feel heard and supported.", 'descriptors': sympathetic},
+    {"name": "Chloe", "description": "Chloe is a calming presence that helps listeners relax and unwind.", 'descriptors': serene},
+    {"name": "George", "description": "George is a voice that adds suspense and intrigue to any story.", 'descriptors': dramatic},
+    {"name": "Jim", "description": "Jim is a welcoming voice that guides listeners with care and reassurance.", 'descriptors': friendly},
+    {"name": "Shannon", "description": "Shannon is a voice that conveys genuine empathy and understanding.", 'descriptors': sincere},
+    {"name": "Luke", "description": "Luke is a voice that exudes quiet authority and confidence.", 'descriptors': calm},
+    {"name": "Lenny", "description": "Lenny is a gentle instructor who guides students through each step with patience and warmth.", 'descriptors': patient_teacher},
+    {"name": "Roger", "description": "Roger Story is a magical narrator who takes children on a whimsical adventure.", 'descriptors': bedtime_story},
+    {"name": "Kurt", "description": "Kurt is a fast-talking voice that creates excitement and urgency.", 'descriptors': auctioneer},
+    {"name": "Lisa", "description": "Lisa is a sarcastic and disinterested voice that adds a touch of melancholy to any story.", 'descriptors': emo_teacher}
+]
+
+
+""" CUSTOM DESCRIPTORS """
+
+my_custom_descriptor = """
+Voice: Describe voice...
+
+Punctuation: Describe punctuation...
+
+Delivery: Describe delivery...
+
+Phrasing: Describe phrasing...
+
+Tone: Describe tone...
+"""
+
+#descriptors.update(my_custom_descriptor=my_custom_descriptor)
+
+#CHARACTERS_ARRAY.append({"name": "Custom Character", "description": "Custom character with a unique voice.", 'descriptors': my_custom_descriptor})
