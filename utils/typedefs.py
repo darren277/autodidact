@@ -45,3 +45,7 @@ class StructuredNotes:
             "topic": self.topic,
             "sections": [s.serialize() for s in self.sections]
         }
+
+    def __str__(self):
+        import json
+        return json.dumps(self.serialize())

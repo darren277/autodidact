@@ -9,6 +9,7 @@ from lib.tts.personalities import voices, assign_voice
 
 # Needed to set the OpenAI API key
 from settings import *
+from utils.typedefs import StructuredNotes
 
 openai = AsyncOpenAI()
 
@@ -81,8 +82,19 @@ with open("conversation.wav", "wb") as f: f.write(audio)
 
 
 from lib.tts.personalities import CHARACTERS_ARRAY
-from lib.tts.prompts import construct_dramatized_narrative_prompt
+from lib.tts.prompts import construct_dramatized_narrative_prompt, construct_structured_notes_presentation_prompt
 import random
+
+
+def split_lines(text):
+    dialogue = []
+    for line in text.split('\n'):
+        line = line.strip()
+        if line:
+            name = line.split(':')[0]
+            text = line.split(':')[1].rstrip()
+            dialogue.append((name, text))
+    return dialogue
 
 
 TEST_INPUT_TEXT = "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies."
@@ -105,19 +117,12 @@ def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
 
     completions = Completions('gpt-4o', SYSTEM_PROMPT)
     result = completions.complete(prompt)
-
-    def split_lines(text):
-        dialogue = []
-        for line in text.split('\n'):
-            line = line.strip()
-            if line:
-                name = line.split(':')[0]
-                text = line.split(':')[1].rstrip()
-                dialogue.append((name, text))
-        return dialogue
+    with open("prompt.txt", "w") as f: f.write(result)
 
     dialogue_input = split_lines(result)
     dialogue = Dialogue(*dialogue_input)
+
+    with open("dialogue.txt", "w") as f: f.write(str(dialogue))
 
     persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
     persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
@@ -127,8 +132,37 @@ def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
         **{char1["name"].lower(): persona1, char2["name"].lower(): persona2}
     )
 
-    with open("prompt.txt", "w") as f: f.write(result)
-    with open("dialogue.txt", "w") as f: f.write(str(dialogue))
-
     audio = asyncio.run(dramatic_narrative.construct_audio())
     with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
+
+
+def construct_presentation_from_structured_notes(structured_notes: StructuredNotes or dict):
+    from lib.tts.personalities import MAIN_NARRATOR, MAIN_NARRATOR_VOICE, INNOVATOR, INNOVATOR_VOICE, HISTORIAN, HISTORIAN_VOICE
+
+    main_narrator_persona = TTS("gpt-4o-mini-tts", MAIN_NARRATOR_VOICE, MAIN_NARRATOR["descriptors"])
+    innovator_persona = TTS("gpt-4o-mini-tts", INNOVATOR_VOICE, INNOVATOR["descriptors"])
+    historian_persona = TTS("gpt-4o-mini-tts", HISTORIAN_VOICE, HISTORIAN["descriptors"])
+
+    SYSTEM_PROMPT = """
+    You are an expert writer with a passion for education. You take in a structured set of notes and turn it into a compelling presentation.
+    """
+
+    prompt = construct_structured_notes_presentation_prompt(structured_notes)
+    completions = Completions('gpt-4o', SYSTEM_PROMPT)
+    result = completions.complete(prompt)
+
+    with open("presentation_prompt.txt", "w") as f: f.write(result)
+
+    dialogue_input = split_lines(result)
+    dialogue = Dialogue(*dialogue_input)
+
+    with open("presentation_dialogue.txt", "w") as f: f.write(str(dialogue))
+
+    presentation = Conversation(
+        dialogue,
+        **{MAIN_NARRATOR["name"].lower(): main_narrator_persona, INNOVATOR["name"].lower(): innovator_persona, HISTORIAN["name"].lower(): historian_persona}
+    )
+
+    audio = asyncio.run(presentation.construct_audio())
+    with open("presentation.wav", "wb") as f: f.write(audio)
+
