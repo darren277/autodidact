@@ -61,7 +61,7 @@ class Conversation:
         return audio
 
 
-#'''
+'''
 example_conversation = Conversation(
     Dialogue(
         ("Alice", "Hello, how are you today?"),
@@ -73,4 +73,30 @@ example_conversation = Conversation(
 
 audio = asyncio.run(example_conversation.construct_audio())
 with open("conversation.wav", "wb") as f: f.write(audio)
+'''
+
+
+#'''
+from lib.tts.personalities import CHARACTERS_ARRAY
+from lib.tts.prompts import construct_dramatized_narrative_prompt
+import random
+
+char1 = random.choice(CHARACTERS_ARRAY)
+char2 = random.choice(CHARACTERS_ARRAY)
+
+prompt = construct_dramatized_narrative_prompt(char1["name"], char1["description"], char2["name"], char2["description"], "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies.")
+
+print('PROMPT 1:')
+print(prompt)
+print(5*'-----\n')
+
+SYSTEM_PROMPT = """
+You are an expert writer with a passion for education. You take in a description of some characters and an associated piece of text and turn it into a dialogue between two characters.
+"""
+
+completions = Completions('gpt-4o', SYSTEM_PROMPT)
+result = completions.complete(prompt)
+
+print('result:')
+print(result)
 #'''
