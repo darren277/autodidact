@@ -1,6 +1,7 @@
 """"""
 import json
 import threading
+import asyncio
 
 from flask import Flask, request, Response, render_template, jsonify, render_template_string
 from flask_sse import sse
@@ -9,9 +10,16 @@ import redis
 
 from lib.assistant.main import AssistantHandler
 from lib.completions.main import Completions
+
+from lib.tts.main import TTS
+from lib.tts.personalities import descriptors
+
+from tests.example_structured_notes import data
+
 from settings import REDIS_URL, ENABLE_CORS
 
 from flask_cors import CORS
+
 
 app = Flask(__name__)
 
@@ -99,28 +107,6 @@ def ask():
 </article>
 '''
 
-class Colors:
-    EVENT = "event"
-    IDEA = "idea"
-    QUESTION = "question"
-
-COLORS = Colors()
-
-
-data = {
-    "date": "2025-03-18",
-    "topic": "Cornell Notes Example",
-    "sections": [
-        {
-            "parts": [
-                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum.", "category": COLORS.EVENT},
-                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities.", "category": COLORS.IDEA},
-                {"title": "Review Question", "lm": "What did the lorems discover in 1967?", "main": "The lorems discovered the ipsum.", "category": COLORS.QUESTION},
-            ],
-            "summary": "Lorem ipsum blah blah blah."
-        }
-    ]
-}
 
 @app.route('/cornell_notes')
 def cornell_notes():
@@ -261,6 +247,68 @@ def convert():
 </body>
 </html>
 """)
+
+
+@app.route('/tts', methods=['GET', 'POST'])
+def tts():
+    if request.method == 'GET':
+        return render_template_string("""
+<html>
+<head>
+    <title>TTS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>TTS</h1>
+    <form method="POST">
+        <label for="personality">Personality:</label>
+        <select name="personality">
+            <option value="default">Default</option>
+            <option value="pirate">Pirate</option>
+        </select>
+        <label for="message">Message:</label>
+        <textarea name="message"></textarea>
+        <br>
+        <button type="submit">Speak</button>
+    </form>
+    
+    <h2>Output</h2>
+    <audio controls>
+        <source src="" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const response = await fetch('/tts', {
+                method: 'POST',
+                body: formData
+            });
+            const audio = await response.blob();
+            const audioElement = document.querySelector('audio');
+            audioElement.src = URL.createObjectURL(audio);
+            audioElement.play();
+        });
+    </script>
+</body>
+</html>
+""")
+    else:
+        message = request.form.get('message', 'Hello, world!')
+        _tts = TTS("gpt-4o-mini-tts", "alloy", descriptors['pirate'])
+        audio = asyncio.run(_tts.speak(message))
+        audio_bytes = audio
+        response = Response(audio_bytes, mimetype="audio/wav")
+        response.headers["Content-Disposition"] = "attachment; filename=speech.wav"
+        return response
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
