@@ -298,10 +298,13 @@ def assign_voice(persona):
 ## Personas for narrating structured notes
 
 MAIN_NARRATOR = pick_persona_by_name('Luke')
+MAIN_NARRATOR['name'] = 'Narrator'
 MAIN_NARRATOR_VOICE = assign_voice(MAIN_NARRATOR)
 INNOVATOR = pick_persona_by_name('Jenny')
+INNOVATOR['name'] = 'Innovator'
 INNOVATOR_VOICE = assign_voice(INNOVATOR)
 HISTORIAN = pick_persona_by_name('George')
+HISTORIAN['name'] = 'Historian'
 HISTORIAN_VOICE = assign_voice(HISTORIAN)
 
 
