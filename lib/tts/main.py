@@ -93,6 +93,7 @@ def split_lines(text):
         line = line.strip()
         if line:
             name = line.split(':')[0]
+            if '*' in name: name = name.replace('*', '').lstrip().rstrip()
             try:
                 text = line.split(':')[1].rstrip()
                 current_name = name
