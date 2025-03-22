@@ -86,10 +86,6 @@ char2 = random.choice(CHARACTERS_ARRAY)
 
 prompt = construct_dramatized_narrative_prompt(char1["name"], char1["description"], char2["name"], char2["description"], "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies.")
 
-print('PROMPT 1:')
-print(prompt)
-print(5*'-----\n')
-
 SYSTEM_PROMPT = """
 You are an expert writer with a passion for education. You take in a description of some characters and an associated piece of text and turn it into a dialogue between two characters.
 """
@@ -97,6 +93,27 @@ You are an expert writer with a passion for education. You take in a description
 completions = Completions('gpt-4o', SYSTEM_PROMPT)
 result = completions.complete(prompt)
 
-print('result:')
-print(result)
+def split_lines(text):
+    dialogue = []
+    for line in text.split('\n'):
+        line = line.strip()
+        if line:
+            name = line.split(':')[0]
+            text = line.split(':')[1].rstrip()
+            dialogue.append((name, text))
+    return dialogue
+
+dialogue_input = split_lines(result)
+dialogue = Dialogue(*dialogue_input)
+
+persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
+persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
+
+dramatic_narrative = Conversation(
+    dialogue,
+    **{char1["name"].lower(): persona1, char2["name"].lower(): persona2}
+)
+
+audio = asyncio.run(dramatic_narrative.construct_audio())
+with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
 #'''
