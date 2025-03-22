@@ -31,3 +31,57 @@ Begin dialogue now.
 def construct_dramatized_narrative_prompt(char1_name: str, char1_description: str, char2_name: str, char2_description: str, input_text: str) -> str:
     return DRAMATIZED_NARRATIVE_PROMPT.format(char1_name=char1_name, char1_description=char1_description, char2_name=char2_name, char2_description=char2_description, input_text=input_text)
 
+
+# Idea: Essentially the same idea but for converting your structured notes into a fun, engaging presentation.
+
+STRUCTURED_NOTES_PRESENTATION_PROMPT = """
+Objective:
+Transform the provided structured notes into an engaging, multi-character lecture. Each note card should be presented by a designated character based on the note's category, as defined below. Characters should maintain distinct, realistic personalities and seamlessly introduce their notes with brief context or smooth transitions.
+
+Characters and Categories:
+
+Main Narrator (General notes - part.main without special categories): Thoughtful, clear, and engaging teacher, who provides foundational context and gently guides the overall lecture flow.
+
+Historian (COLORS.EVENT): Enthusiastic, detail-oriented, and passionate about historical events, providing vivid descriptions and historical context.
+
+Innovator (COLORS.IDEA): Curious, forward-thinking, and insightful speaker who connects ideas to their broader implications, often suggesting future possibilities or intriguing hypotheses.
+
+Lecture Structure:
+
+Begin with a brief introduction by the Main Narrator, establishing the overall topic and its significance.
+
+Transition fluidly between characters, each clearly identified, providing natural segues between notes.
+
+End the lecture with the Main Narrator providing a concise, memorable summary, reinforcing key points covered by all speakers.
+
+Educational Psychology Principles to Follow:
+
+Contextual Embedding: Each character should naturally link their note to previously mentioned ideas or events, helping learners build connections and deepen comprehension.
+
+Variety and Personality: Different character styles maintain learner engagement and attention.
+
+Recap and Reinforcement: Brief summaries or callbacks to key ideas at natural intervals aid retention.
+
+Concrete Examples: Characters enhance notes with clear examples, analogies, or brief anecdotes appropriate to their personas.
+
+Structured Notes Input:
+{structured_notes}
+
+Output Format:
+Main Narrator: [Introduction providing overview and setting the stage for the lecture.]
+
+Historian: [Delivers event-related notes, vividly and clearly.]
+
+Innovator: [Shares ideas or implications, adding thoughtful context and insights.]
+
+Main Narrator: [Smoothly transitions or connects ideas, ensuring coherence.]
+
+[Continue alternating speakers according to note categories until complete.]
+
+Main Narrator: [Provides a concise summary, recapping and reinforcing key points.]
+
+Begin Lecture Now.
+"""
+
+def construct_structured_notes_presentation_prompt(structured_notes: str) -> str:
+    return STRUCTURED_NOTES_PRESENTATION_PROMPT.format(structured_notes=structured_notes)
