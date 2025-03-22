@@ -45,6 +45,10 @@ class Dialogue:
     def __init__(self, *lines: Tuple[str, str]):
         self.lines = lines
 
+    def __str__(self):
+        return "\n".join([f"{name}: {text}" for name, text in self.lines])
+
+
 class Conversation:
     '''
     Each persona is represented by a TTS object (and a `name` assigned during instantiation).
@@ -113,6 +117,9 @@ dramatic_narrative = Conversation(
     dialogue,
     **{char1["name"].lower(): persona1, char2["name"].lower(): persona2}
 )
+
+with open("prompt.txt", "w") as f: f.write(result)
+with open("dialogue.txt", "w") as f: f.write(str(dialogue))
 
 audio = asyncio.run(dramatic_narrative.construct_audio())
 with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
