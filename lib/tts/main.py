@@ -80,47 +80,55 @@ with open("conversation.wav", "wb") as f: f.write(audio)
 '''
 
 
-#'''
 from lib.tts.personalities import CHARACTERS_ARRAY
 from lib.tts.prompts import construct_dramatized_narrative_prompt
 import random
 
-char1 = random.choice(CHARACTERS_ARRAY)
-char2 = random.choice(CHARACTERS_ARRAY)
 
-prompt = construct_dramatized_narrative_prompt(char1["name"], char1["description"], char2["name"], char2["description"], "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies.")
+TEST_INPUT_TEXT = "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies."
 
-SYSTEM_PROMPT = """
-You are an expert writer with a passion for education. You take in a description of some characters and an associated piece of text and turn it into a dialogue between two characters.
-"""
+def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
+    '''
+    Construct a dramatic narrative conversation based on the input text.
+    Writes the prompt, dialogue, and audio to files.
+    :param input_text:
+    :return:
+    '''
+    char1 = random.choice(CHARACTERS_ARRAY)
+    char2 = random.choice(CHARACTERS_ARRAY)
 
-completions = Completions('gpt-4o', SYSTEM_PROMPT)
-result = completions.complete(prompt)
+    prompt = construct_dramatized_narrative_prompt(char1["name"], char1["description"], char2["name"], char2["description"], input_text)
 
-def split_lines(text):
-    dialogue = []
-    for line in text.split('\n'):
-        line = line.strip()
-        if line:
-            name = line.split(':')[0]
-            text = line.split(':')[1].rstrip()
-            dialogue.append((name, text))
-    return dialogue
+    SYSTEM_PROMPT = """
+    You are an expert writer with a passion for education. You take in a description of some characters and an associated piece of text and turn it into a dialogue between two characters.
+    """
 
-dialogue_input = split_lines(result)
-dialogue = Dialogue(*dialogue_input)
+    completions = Completions('gpt-4o', SYSTEM_PROMPT)
+    result = completions.complete(prompt)
 
-persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
-persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
+    def split_lines(text):
+        dialogue = []
+        for line in text.split('\n'):
+            line = line.strip()
+            if line:
+                name = line.split(':')[0]
+                text = line.split(':')[1].rstrip()
+                dialogue.append((name, text))
+        return dialogue
 
-dramatic_narrative = Conversation(
-    dialogue,
-    **{char1["name"].lower(): persona1, char2["name"].lower(): persona2}
-)
+    dialogue_input = split_lines(result)
+    dialogue = Dialogue(*dialogue_input)
 
-with open("prompt.txt", "w") as f: f.write(result)
-with open("dialogue.txt", "w") as f: f.write(str(dialogue))
+    persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
+    persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
 
-audio = asyncio.run(dramatic_narrative.construct_audio())
-with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
-#'''
+    dramatic_narrative = Conversation(
+        dialogue,
+        **{char1["name"].lower(): persona1, char2["name"].lower(): persona2}
+    )
+
+    with open("prompt.txt", "w") as f: f.write(result)
+    with open("dialogue.txt", "w") as f: f.write(str(dialogue))
+
+    audio = asyncio.run(dramatic_narrative.construct_audio())
+    with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
