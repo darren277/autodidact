@@ -61,3 +61,16 @@ class Conversation:
         return audio
 
 
+#'''
+example_conversation = Conversation(
+    Dialogue(
+        ("Alice", "Hello, how are you today?"),
+        ("Bob", "I'm doing well, thank you. How about you?")
+    ),
+    alice=TTS("gpt-4o-mini-tts", "alloy", "Speak in a friendly tone."),
+    bob=TTS("gpt-4o-mini-tts", "ballad", "Speak in a calm tone.")
+)
+
+audio = asyncio.run(example_conversation.construct_audio())
+with open("conversation.wav", "wb") as f: f.write(audio)
+#'''
