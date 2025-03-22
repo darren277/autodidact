@@ -70,17 +70,12 @@ Structured Notes Input:
 {structured_notes}
 
 Output Format:
-Main Narrator: [Introduction providing overview and setting the stage for the lecture.]
-
+Narrator: [Introduction providing overview and setting the stage for the lecture.]
 Historian: [Delivers event-related notes, vividly and clearly.]
-
 Innovator: [Shares ideas or implications, adding thoughtful context and insights.]
-
-Main Narrator: [Smoothly transitions or connects ideas, ensuring coherence.]
-
+Narrator: [Smoothly transitions or connects ideas, ensuring coherence.]
 [Continue alternating speakers according to note categories until complete.]
-
-Main Narrator: [Provides a concise summary, recapping and reinforcing key points.]
+Narrator: [Provides a concise summary, recapping and reinforcing key points.]
 
 Begin Lecture Now.
 """
