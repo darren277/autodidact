@@ -14,11 +14,12 @@ from lib.completions.main import Completions
 from lib.tts.main import TTS
 from lib.tts.personalities import descriptors
 
+from tests.example_structured_notes import data
+
 from settings import REDIS_URL, ENABLE_CORS
 
 from flask_cors import CORS
 
-from utils.typedefs import COLORS
 
 app = Flask(__name__)
 
@@ -106,21 +107,6 @@ def ask():
 </article>
 '''
 
-
-data = {
-    "date": "2025-03-18",
-    "topic": "Cornell Notes Example",
-    "sections": [
-        {
-            "parts": [
-                {"lm": "Date: 1967", "main": "In 1967, the lorems discovered the ipsum.", "category": COLORS.EVENT},
-                {"lm": "Idea: Could this have resulted in the great lorem ipsum of 1971?", "main": "The lorems began cultivating ipsum in large quatities.", "category": COLORS.IDEA},
-                {"title": "Review Question", "lm": "What did the lorems discover in 1967?", "main": "The lorems discovered the ipsum.", "category": COLORS.QUESTION},
-            ],
-            "summary": "Lorem ipsum blah blah blah."
-        }
-    ]
-}
 
 @app.route('/cornell_notes')
 def cornell_notes():
