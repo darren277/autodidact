@@ -88,12 +88,19 @@ import random
 
 def split_lines(text):
     dialogue = []
+    current_name = None
     for line in text.split('\n'):
         line = line.strip()
         if line:
             name = line.split(':')[0]
-            text = line.split(':')[1].rstrip()
-            dialogue.append((name, text))
+            try:
+                text = line.split(':')[1].rstrip()
+                current_name = name
+                dialogue.append((name, text))
+            except IndexError:
+                # Assume that the line is a continuation of the previous line
+                text = line
+                dialogue.append((current_name, text))
     return dialogue
 
 
