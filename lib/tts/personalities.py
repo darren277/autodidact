@@ -295,6 +295,16 @@ def assign_voice(persona):
     else: return random.choice(voices)
 
 
+## Personas for narrating structured notes
+
+MAIN_NARRATOR = pick_persona_by_name('Luke')
+MAIN_NARRATOR_VOICE = assign_voice(MAIN_NARRATOR)
+INNOVATOR = pick_persona_by_name('Jenny')
+INNOVATOR_VOICE = assign_voice(INNOVATOR)
+HISTORIAN = pick_persona_by_name('George')
+HISTORIAN_VOICE = assign_voice(HISTORIAN)
+
+
 
 """ CUSTOM DESCRIPTORS """
 
