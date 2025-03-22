@@ -14,6 +14,9 @@ voices = [
     'verse'
 ]
 
+female_voices = ['alloy', 'coral', 'nova', 'sage', 'shimmer']
+male_voices = ['ash', 'ballad', 'echo', 'fable', 'onyx', 'verse']
+
 
 """ DESCRIPTORS """
 
@@ -275,6 +278,22 @@ CHARACTERS_ARRAY = [
     {"name": "Kurt", "description": "Kurt is a fast-talking voice that creates excitement and urgency.", 'descriptors': auctioneer},
     {"name": "Lisa", "description": "Lisa is a sarcastic and disinterested voice that adds a touch of melancholy to any story.", 'descriptors': emo_teacher}
 ]
+
+def pick_persona_by_name(name):
+    for persona in CHARACTERS_ARRAY:
+        if persona["name"].lower() == name.lower():
+            return persona
+    return None
+
+TRADITIONALLY_MALE_NAMES = ['Blackbeard', 'Chad', 'Patrick', 'Miles', 'George', 'Jim', 'Luke', 'Lenny', 'Roger', 'Kurt']
+TRADITIONALLY_FEMALE_NAMES = ['Samantha', 'Eleanor', 'Jenny', 'Chloe', 'Shannon', 'Lisa']
+
+def assign_voice(persona):
+    import random
+    if persona['name'] in TRADITIONALLY_MALE_NAMES: return random.choice(male_voices)
+    elif persona['name'] in TRADITIONALLY_FEMALE_NAMES: return random.choice(female_voices)
+    else: return random.choice(voices)
+
 
 
 """ CUSTOM DESCRIPTORS """
