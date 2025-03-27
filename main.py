@@ -128,28 +128,39 @@ def ask():
 '''
 
 
-@app.route('/cornell_notes')
-def cornell_notes():
+def convert_to_simple_markdown(data):
+    markdown = f"# {data['topic']}\n\n"
+    for section in data['sections']:
+        for part in section['parts']:
+            if 'title' in part:
+                markdown += f"## {part['title']}\n\n"
+            markdown += f"### {part['lm']}\n\n"
+            markdown += f"{part['main']}\n\n"
+    return markdown
+
+
+@app.route('/notes/cornell_notes/<notes_id>')
+def cornell_notes(notes_id):
     return render_template('notes/cornell.html', **data)
 
-@app.route('/digital_notebook')
-def digital_notebook():
+@app.route('/notes/digital_notebook/<notes_id>')
+def digital_notebook(notes_id):
     return render_template('notes/digital-notebook.html', **data)
 
-@app.route('/mindmap')
-def mindmap():
+@app.route('/notes/mindmap/<notes_id>')
+def mindmap(notes_id):
     return render_template('notes/mindmap.html', **data)
 
-@app.route('/stickynotes')
-def stickynotes():
+@app.route('/notes/stickynotes/<notes_id>')
+def stickynotes(notes_id):
     return render_template('notes/stickynotes.html', **data)
 
-@app.route('/vintage_cards')
-def vintage_cards():
+@app.route('/notes/vintage_cards/<notes_id>')
+def vintage_cards(notes_id):
     return render_template('notes/vintage-cards.html', **data)
 
-@app.route('/augmented')
-def augmented():
+@app.route('/notes/augmented/<notes_id>')
+def augmented(notes_id):
     return render_template('notes/augmented.html', **data)
 
 
@@ -596,7 +607,8 @@ def view_lesson(lesson_id):
         completed=True,
     )
     other_lessons = []
-    return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons)
+    notes = convert_to_simple_markdown(data)
+    return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons, user_notes=notes)
 
 @app.route('/preview_lesson/<lesson_id>')
 def preview_lesson(lesson_id):

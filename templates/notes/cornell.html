@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="static/css/cornell.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cornell.css') }}">
 </head>
 <body>
 <article>
@@ -19,6 +19,6 @@
     {% endfor %}
 </article>
 
-<script src="static/js/cornell-paper-holes.js"></script>
+<script src="{{ url_for('static', filename='js/cornell-paper-holes.js') }}"></script>
 </body>
 </html>
