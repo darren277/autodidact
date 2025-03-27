@@ -594,6 +594,22 @@ def view_lesson(lesson_id):
     other_lessons = []
     return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons)
 
+@app.route('/preview_lesson/<lesson_id>')
+def preview_lesson(lesson_id):
+    # Basically, "view_lesson" but as instructor, not student...
+    # TODO...
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
+    return render_template('lessons/preview.html', lesson=lesson)
 
 @app.route('/list_modules')
 def list_modules():
