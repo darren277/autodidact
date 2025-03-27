@@ -427,6 +427,57 @@ def practice():
     return render_template('practice.html', active_page='practice')
 
 
+@app.route('/api/lessons', methods=['GET', 'POST'])
+def api_lessons():
+    from models.lessons import Lesson
+    if request.method == 'GET':
+        lessons = Lesson.query.all()
+        print("DEBUG PRINT /api/lessons:", lessons)
+        return jsonify(lessons)
+    elif request.method == 'POST':
+        data = request.json
+        title = data.get('title', None)
+        content = data.get('content', None)
+        module_id = data.get('module_id', None)
+        if not title or not content or not module_id:
+            return jsonify({"error": "Missing required fields."})
+        lesson = Lesson(title=title, content=content, module_id=module_id)
+        db.session.add(lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson added successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."})
+
+@app.route('/api/lessons/<lesson_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_lesson(lesson_id):
+    from models.lessons import Lesson
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({"error": "Lesson not found."})
+    if request.method == 'GET':
+        return jsonify(lesson)
+    elif request.method == 'PUT':
+        data = request.json
+        title = data.get('title', None)
+        content = data.get('content', None)
+        module_id = data.get('module_id', None)
+        if title:
+            lesson.title = title
+        if content:
+            lesson.content = content
+        if module_id:
+            lesson.module_id = module_id
+        db.session.commit()
+        return jsonify({"message": "Lesson updated successfully."})
+    elif request.method == 'DELETE':
+        db.session.delete(lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson deleted successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."})
+
+
+
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
 # add len() to Jinja...
