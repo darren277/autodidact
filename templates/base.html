@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Educational Platform{% endblock %}</title>
+    <style></style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="logo">autodidact</div>
+        <div class="top-nav">
+            <a href="{{ url_for('dashboard') }}">Home</a>
+            <a href="{{ url_for('dashboard') }}">About</a>
+<!--            <a href="{{ url_for('dashboard') }}">Courses</a>-->
+<!--            <a href="{{ url_for('dashboard') }}">Contact</a>-->
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <nav>
+            <ul class="side-menu">
+                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+<!--                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'progress' %}active{% endif %}">My Progress</a></li>-->
+
+                <div class="side-menu-section">
+                    <div class="side-menu-section-title">Learning Tools</div>
+                    <li><a href="{{ url_for('module', module_id=1) }}" class="{% if active_page == 'module_1' %}active{% endif %}">Lorem Ipsum Dolor</a></li>
+                </div>
+
+                <div class="side-menu-section">
+                    <div class="side-menu-section-title">Resources</div>
+<!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'library' %}active{% endif %}">Resource Library</a></li>-->
+<!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'glossary' %}active{% endif %}">Glossary</a></li>-->
+<!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'faq' %}active{% endif %}">FAQ</a></li>-->
+                </div>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <div class="breadcrumb">
+            <span>Home</span>
+            {% block breadcrumb %}{% endblock %}
+        </div>
+
+        <h1 class="page-title">{% block page_title %}Welcome to the Learning Platform{% endblock %}</h1>
+
+        <div class="content-card">
+            {% block content %}
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius massa vitae semper consectetur. Proin lobortis, nunc nec vehicula posuere, turpis velit scelerisque nisi, et convallis lectus massa eget eros.</p>
+
+            <p>Donec ac erat a orci hendrerit consequat. Cras tincidunt est sapien, et elementum nulla ultricies id. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Integer semper bibendum placerat.</p>
+
+            <h2>Getting Started</h2>
+            <p>Vestibulum ut lectus magna. Integer risus risus, scelerisque ac diam a, sollicitudin elementum metus. Proin ultrices nibh at dui lobortis finibus. Maecenas facilisis nisi sit amet ex lobortis consequat.</p>
+            {% endblock %}
+        </div>
+    </main>
+
+    {% block scripts %}
+    <!-- Any page-specific scripts can be included here -->
+    {% endblock %}
+</body>
+</html>
