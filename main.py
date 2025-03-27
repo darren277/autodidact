@@ -17,10 +17,20 @@ from lib.tts.personalities import descriptors
 from tests.example_structured_notes import data
 
 from settings import REDIS_URL, ENABLE_CORS
+from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
 
 from flask_cors import CORS
 
+from flask_sqlalchemy import SQLAlchemy
+
+
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/{PG_DB}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
 
 
 if ENABLE_CORS:
@@ -417,6 +427,114 @@ def practice():
     return render_template('practice.html', active_page='practice')
 
 
+@app.route('/api/lessons', methods=['GET', 'POST'])
+def api_lessons():
+    from models.lessons import Lesson, Module
+    if request.method == 'GET':
+        lessons = Lesson.query.all()
+        print("DEBUG PRINT /api/lessons:", lessons)
+        return jsonify([lesson.json() for lesson in lessons])
+    elif request.method == 'POST':
+        data = request.json
+        title = data.get('title', None)
+        content = data.get('content', None)
+        module_id = data.get('module_id', None)
+        if not title or not content or not module_id:
+            return jsonify({"error": "Missing required fields."}), 400
+
+        # check if module exists...
+        module = Module.query.get(module_id)
+        if not module:
+            return jsonify({"error": "Module not found."}), 400
+
+        lesson = Lesson(title=title, content=content, module_id=module_id)
+        db.session.add(lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson added successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+@app.route('/api/lessons/<lesson_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_lesson(lesson_id):
+    from models.lessons import Lesson
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({"error": "Lesson not found."}), 404
+    if request.method == 'GET':
+        return jsonify(lesson.json())
+    elif request.method == 'PUT':
+        data = request.json
+        title = data.get('title', None)
+        content = data.get('content', None)
+        module_id = data.get('module_id', None)
+
+        missing_fields = []
+
+        if title: lesson.title = title
+        else: missing_fields.append("title")
+
+        if content: lesson.content = content
+        else: missing_fields.append("content")
+
+        if module_id: lesson.module_id = module_id
+        else: missing_fields.append("module_id")
+
+        if missing_fields:
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
+        db.session.commit()
+        return jsonify({"message": "Lesson updated successfully."})
+    elif request.method == 'DELETE':
+        db.session.delete(lesson)
+        db.session.commit()
+        return jsonify({"message": "Lesson deleted successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+
+@app.route('/api/modules', methods=['GET', 'POST'])
+def api_modules():
+    from models.lessons import Module
+    if request.method == 'GET':
+        modules = Module.query.all()
+        return jsonify([module.json() for module in modules])
+    elif request.method == 'POST':
+        data = request.json
+        title = data.get('title', None)
+        if not title:
+            return jsonify({"error": "Missing required fields."}), 400
+
+        module = Module(title=title)
+        db.session.add(module)
+        db.session.commit()
+        return jsonify({"message": "Module added successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+@app.route('/api/modules/<module_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_module(module_id):
+    from models.lessons import Module
+    module = Module.query.get(module_id)
+    if not module:
+        return jsonify({"error": "Module not found."}), 404
+    if request.method == 'GET':
+        return jsonify(module.json())
+    elif request.method == 'PUT':
+        data = request.json
+        title = data.get('title', None)
+        if title:
+            module.title = title
+        db.session.commit()
+        return jsonify({"message": "Module updated successfully."})
+    elif request.method == 'DELETE':
+        db.session.delete(module)
+        db.session.commit()
+        return jsonify({"message": "Module deleted successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+
+
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
 # add len() to Jinja...
@@ -430,4 +548,3 @@ def publish_hello():
     sse.publish(msg, type='greeting')
     return "Message sent!"
 
-app.run(host='0.0.0.0', port=8000)
