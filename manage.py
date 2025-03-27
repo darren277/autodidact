@@ -1,9 +1,11 @@
 """"""
 import sys
-from main import app, db
+from main import app
+from models.lessons import db
 
 def create():
     with app.app_context():
+        print("ABOUT TO CREATE ALL TABLES...")
         db.create_all()
 
 def drop():
