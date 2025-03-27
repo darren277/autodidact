@@ -429,7 +429,7 @@ def practice():
 
 @app.route('/api/lessons', methods=['GET', 'POST'])
 def api_lessons():
-    from models.lessons import Lesson
+    from models.lessons import Lesson, Module
     if request.method == 'GET':
         lessons = Lesson.query.all()
         print("DEBUG PRINT /api/lessons:", lessons)
@@ -440,20 +440,26 @@ def api_lessons():
         content = data.get('content', None)
         module_id = data.get('module_id', None)
         if not title or not content or not module_id:
-            return jsonify({"error": "Missing required fields."})
+            return jsonify({"error": "Missing required fields."}), 400
+
+        # check if module exists...
+        module = Module.query.get(module_id)
+        if not module:
+            return jsonify({"error": "Module not found."}), 400
+
         lesson = Lesson(title=title, content=content, module_id=module_id)
         db.session.add(lesson)
         db.session.commit()
         return jsonify({"message": "Lesson added successfully."})
     else:
-        return jsonify({"error": "Invalid request method."})
+        return jsonify({"error": "Invalid request method."}), 400
 
 @app.route('/api/lessons/<lesson_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_lesson(lesson_id):
     from models.lessons import Lesson
     lesson = Lesson.query.get(lesson_id)
     if not lesson:
-        return jsonify({"error": "Lesson not found."})
+        return jsonify({"error": "Lesson not found."}), 404
     if request.method == 'GET':
         return jsonify(lesson)
     elif request.method == 'PUT':
@@ -474,7 +480,7 @@ def api_lesson(lesson_id):
         db.session.commit()
         return jsonify({"message": "Lesson deleted successfully."})
     else:
-        return jsonify({"error": "Invalid request method."})
+        return jsonify({"error": "Invalid request method."}), 400
 
 
 
