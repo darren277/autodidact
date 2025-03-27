@@ -541,6 +541,12 @@ def api_module(module_id):
         return jsonify({"error": "Invalid request method."}), 400
 
 
+@app.route('/list_lessons')
+def list_lessons():
+    from models.lessons import Lesson
+    lessons = Lesson.query.all()
+    return render_template('lessons/list.html', lessons=lessons, total_pages=1)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
