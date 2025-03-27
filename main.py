@@ -430,4 +430,3 @@ def publish_hello():
     sse.publish(msg, type='greeting')
     return "Message sent!"
 
-app.run(host='0.0.0.0', port=8000)
