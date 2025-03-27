@@ -55,19 +55,13 @@
                         </span>
                     </div>
                     <div class="col-actions">
-                        <a href="{{ url_for('lesson_preview', lesson_id=lesson.id) }}" class="action-btn preview" title="Preview">
-                            <i class="icon-eye"></i>
-                        </a>
                         <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="action-btn edit" title="Edit">
                             <i class="icon-edit"></i>
                         </a>
-                        <a href="{{ url_for('duplicate_lesson', lesson_id=lesson.id) }}" class="action-btn duplicate" title="Duplicate">
-                            <i class="icon-copy"></i>
-                        </a>
-                        <button class="action-btn delete" title="Delete" data-lesson-id="{{ lesson.id }}"
-                                data-lesson-title="{{ lesson.title }}" onclick="confirmDelete(this)">
-                            <i class="icon-trash"></i>
-                        </button>
+<!--                        <button class="action-btn delete" title="Delete" data-lesson-id="{{ lesson.id }}"-->
+<!--                                data-lesson-title="{{ lesson.title }}" onclick="confirmDelete(this)">-->
+<!--                            <i class="icon-trash"></i>-->
+<!--                        </button>-->
                     </div>
                 </div>
             {% else %}
