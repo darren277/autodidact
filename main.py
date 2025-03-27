@@ -67,9 +67,9 @@ def stream():
 #quit(54)
 
 
-@app.route('/')
-def hello_world():
-    return render_template('index.html')
+@app.route('/chat')
+def chat():
+    return render_template('chat.html')
     #return open('templates/index.html').read()
 
 
