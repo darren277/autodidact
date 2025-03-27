@@ -27,3 +27,5 @@ PG_PORT = os.environ.get('PG_PORT', 5432)
 PG_USER = os.environ.get('PG_USER', 'myusername')
 PG_PASS = os.environ.get('PG_PASS', 'mypassword')
 PG_DB = os.environ.get('PG_DB', 'autodidact')
+
+APP_SECRET_KEY = 'some super secret key that is changed before deployment'

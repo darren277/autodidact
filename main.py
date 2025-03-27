@@ -16,12 +16,14 @@ from lib.tts.personalities import descriptors
 
 from tests.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
 
 from flask_cors import CORS
 
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__)
@@ -30,6 +32,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{PG_USER}:{PG_PASS}@{PG_H
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+csrf = CSRFProtect(app)
+
+app.secret_key = APP_SECRET_KEY
+
 
 
 
@@ -532,6 +539,116 @@ def api_module(module_id):
         return jsonify({"message": "Module deleted successfully."})
     else:
         return jsonify({"error": "Invalid request method."}), 400
+
+
+@app.route('/list_lessons')
+def list_lessons():
+    from models.lessons import Lesson
+    #lessons = Lesson.query.all()
+    demo_lessons = [
+        {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."},
+        {"id": 2, "title": "Lesson 2", "content": "This is the content for Lesson 2."},
+        {"id": 3, "title": "Lesson 3", "content": "This is the content for Lesson 3."},
+        {"id": 4, "title": "Lesson 4", "content": "This is the content for Lesson 4."},
+        {"id": 5, "title": "Lesson 5", "content": "This is the content for Lesson 5."}
+    ]
+    lessons = demo_lessons
+    return render_template('lessons/list.html', lessons=lessons, total_pages=1)
+
+@app.route('/create_lesson')
+def create_lesson():
+    raise NotImplementedError
+    return render_template('lessons/add.html')
+
+@app.route('/edit_lesson/<lesson_id>')
+def edit_lesson(lesson_id):
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
+    return render_template('lessons/edit.html', lesson=lesson)
+
+@app.route('/view_lesson/<lesson_id>')
+def view_lesson(lesson_id):
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
+    user_progress = dict(
+        completed=True,
+    )
+    other_lessons = []
+    return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons)
+
+@app.route('/preview_lesson/<lesson_id>')
+def preview_lesson(lesson_id):
+    # Basically, "view_lesson" but as instructor, not student...
+    # TODO...
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
+    return render_template('lessons/preview.html', lesson=lesson)
+
+@app.route('/list_modules')
+def list_modules():
+    from models.lessons import Module
+    #modules = Module.query.all()
+    demo_modules = [
+        {"id": 1, "title": "Module 1"},
+        {"id": 2, "title": "Module 2"},
+        {"id": 3, "title": "Module 3"},
+        {"id": 4, "title": "Module 4"},
+        {"id": 5, "title": "Module 5"}
+    ]
+    modules = demo_modules
+    return render_template('modules/list.html', modules=modules, total_pages=1)
+
+@app.route('/create_module')
+def create_module():
+    raise NotImplementedError
+    return render_template('modules/add.html')
+
+@app.route('/edit_module/<module_id>')
+def edit_module(module_id):
+    from models.lessons import Module
+    module = Module.query.get(module_id)
+    return render_template('modules/edit.html', module=module)
+
+@app.route('/view_module/<module_id>')
+def view_module(module_id):
+    from models.lessons import Module
+    #module = Module.query.get(module_id)
+    module = {"id": 1, "title": "Module 1"}
+    return render_template('modules/view.html', module=module)
+
+@app.route('/module_complete/<module_id>')
+def module_complete(module_id):
+    from models.lessons import Module
+    #module = Module.query.get(module_id)
+    module = {"id": 1, "title": "Module 1"}
+    return render_template('modules/complete.html', module=module)
 
 
 

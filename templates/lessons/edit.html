@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lesson.id %}Edit Lesson: {{ lesson.title }}{% else %}Create New Lesson{% endif %} | Educational Platform
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/edit.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Admin</span>
+    <span><a href="{{ url_for('list_lessons') }}">Lessons</a></span>
+    <span>{% if lesson.id %}Edit{% else %}Create{% endif %} Lesson</span>
+{% endblock %}
+
+{% block page_title %}
+    {% if lesson.id %}Edit Lesson: {{ lesson.title }}{% else %}Create New Lesson{% endif %}
+{% endblock %}
+
+{% block content %}
+    <form id="lesson-form" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if lesson.id %}
+            <input type="hidden" name="lesson_id" value="{{ lesson.id }}">
+        {% endif %}
+
+        <div class="form-layout">
+            <div class="main-column">
+                <div class="content-card">
+                    <div class="form-group">
+                        <label for="title" class="required">Lesson Title</label>
+                        <input type="text" id="title" name="title" value="{{ lesson.title }}" required
+                               class="form-control" placeholder="Enter lesson title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="overview" class="required">Overview</label>
+                        <textarea id="overview" name="overview" class="form-control" rows="3"
+                                  placeholder="Brief description of this lesson" required>{{ lesson.overview }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="learning_objectives" class="required">Learning Objectives</label>
+                        <div class="learning-objectives-container">
+                            <div id="learning-objectives-list">
+                                {% if lesson.learning_objectives %}
+                                    {% for objective in lesson.learning_objectives %}
+                                        <div class="objective-item">
+                                            <input type="text" name="learning_objectives[]" value="{{ objective }}"
+                                                   class="form-control" placeholder="Learning objective">
+                                            <button type="button" class="remove-objective" title="Remove objective">✕</button>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="objective-item">
+                                        <input type="text" name="learning_objectives[]" class="form-control"
+                                               placeholder="Learning objective">
+                                        <button type="button" class="remove-objective" title="Remove objective">✕</button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" id="add-objective" class="btn-outline-small">
+                                <i class="icon-plus-small"></i> Add Objective
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-section-header">
+                        <h2>Lesson Content</h2>
+                        <div class="editor-controls">
+                            <button type="button" class="btn-outline-small" id="toggle-preview">Preview</button>
+                            <button type="button" class="btn-outline-small" id="toggle-fullscreen">
+                                <i class="icon-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="editor-container">
+                        <div id="editor-tabs" class="editor-tabs">
+                            <button type="button" class="tab-btn active" data-tab="content">Main Content</button>
+                            <button type="button" class="tab-btn" data-tab="examples">Examples</button>
+                            <button type="button" class="tab-btn" data-tab="exercises">Exercises</button>
+                        </div>
+
+                        <div id="tab-content" class="tab-content active">
+                            <textarea id="content" name="content" class="form-control editor-textarea"
+                                      rows="15">{{ lesson.content }}</textarea>
+                        </div>
+
+                        <div id="tab-examples" class="tab-content">
+                            <textarea id="examples" name="examples" class="form-control editor-textarea"
+                                      rows="15">{{ lesson.examples }}</textarea>
+                        </div>
+
+                        <div id="tab-exercises" class="tab-content">
+                            <textarea id="exercises" name="exercises" class="form-control editor-textarea"
+                                      rows="15">{{ lesson.exercises }}</textarea>
+                        </div>
+
+                        <div id="markdown-preview" class="markdown-preview">
+                            <!-- Preview will be shown here -->
+                        </div>
+                    </div>
+
+                    <div class="form-section-footer">
+                        <div class="markdown-help">
+                            <button type="button" id="toggle-markdown-help" class="btn-text">
+                                <i class="icon-help"></i> Markdown Help
+                            </button>
+                            <div id="markdown-help-panel" class="markdown-help-panel">
+                                <div class="help-row">
+                                    <div class="help-syntax"># Heading 1</div>
+                                    <div class="help-description">Primary heading</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">## Heading 2</div>
+                                    <div class="help-description">Secondary heading</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">**bold text**</div>
+                                    <div class="help-description">Bold text</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">*italic text*</div>
+                                    <div class="help-description">Italic text</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">[Link text](https://example.com)</div>
+                                    <div class="help-description">Hyperlink</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">![Alt text](image.jpg)</div>
+                                    <div class="help-description">Image</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">- List item</div>
+                                    <div class="help-description">Unordered list</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">1. List item</div>
+                                    <div class="help-description">Ordered list</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">```code block```</div>
+                                    <div class="help-description">Code block</div>
+                                </div>
+                                <div class="help-row">
+                                    <div class="help-syntax">> Blockquote</div>
+                                    <div class="help-description">Blockquote</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-section-header">
+                        <h2>Media & Attachments</h2>
+                    </div>
+
+                    <div class="media-container">
+                        <div class="media-section">
+                            <h3>Featured Image</h3>
+                            <div class="featured-image-upload">
+                                <div id="featured-image-preview" class="image-preview
+                                      {% if lesson.featured_image %}has-image{% endif %}">
+                                    {% if lesson.featured_image %}
+                                        <img src="{{ lesson.featured_image }}" alt="Featured image">
+                                    {% else %}
+                                        <div class="placeholder-text">No image selected</div>
+                                    {% endif %}
+                                </div>
+                                <div class="image-upload-controls">
+                                    <label for="featured_image" class="btn-outline-small">
+                                        <i class="icon-upload"></i>
+                                        {% if lesson.featured_image %}Change{% else %}Upload{% endif %}
+                                    </label>
+                                    <input type="file" id="featured_image" name="featured_image"
+                                           accept="image/*" style="display: none">
+                                    {% if lesson.featured_image %}
+                                        <button type="button" id="remove-featured-image" class="btn-text-small">
+                                            <i class="icon-trash-small"></i> Remove
+                                        </button>
+                                        <input type="hidden" name="remove_featured_image" id="remove_featured_image" value="0">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="media-section">
+                            <h3>Attachments</h3>
+                            <div id="attachments-container">
+                                {% if lesson.attachments %}
+                                    {% for attachment in lesson.attachments %}
+                                        <div class="attachment-item" data-id="{{ attachment.id }}">
+                                            <div class="attachment-icon">
+                                                <i class="icon-file"></i>
+                                            </div>
+                                            <div class="attachment-info">
+                                                <div class="attachment-name">{{ attachment.name }}</div>
+                                                <div class="attachment-size">{{ attachment.size_formatted }}</div>
+                                            </div>
+                                            <div class="attachment-actions">
+                                                <button type="button" class="remove-attachment btn-text-small"
+                                                        data-id="{{ attachment.id }}">
+                                                    <i class="icon-trash-small"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" name="existing_attachments[]" value="{{ attachment.id }}">
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                            <div class="attachment-upload">
+                                <label for="attachment_files" class="btn-outline-small">
+                                    <i class="icon-upload"></i> Add Files
+                                </label>
+                                <input type="file" id="attachment_files" name="attachment_files[]"
+                                       multiple style="display: none">
+                                <div class="attachment-help">
+                                    Allowed file types: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP (Max 10MB)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-column">
+                <div class="content-card">
+                    <div class="form-actions">
+                        <button type="submit" name="action" value="save" class="btn btn-primary save-btn">
+                            <i class="icon-save"></i> Save
+                        </button>
+                        <button type="submit" name="action" value="publish" class="btn publish-btn">
+                            <i class="icon-publish"></i> {% if lesson.published %}Update{% else %}Publish{% endif %}
+                        </button>
+                        {% if lesson.id %}
+                            <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}"
+                               class="btn-outline preview-btn" target="_blank">
+                                <i class="icon-preview"></i> Preview
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-group">
+                        <label for="module_id" class="required">Module</label>
+                        <select id="module_id" name="module_id" class="form-control select" required>
+                            <option value="">Select a module</option>
+                            {% for module in modules %}
+                                <option value="{{ module.id }}"
+                                        {% if lesson.module_id == module.id %}selected{% endif %}>
+                                    {{ module.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lesson_order" class="required">Order</label>
+                        <input type="number" id="lesson_order" name="lesson_order"
+                               value="{{ lesson.order|default(1) }}"
+                               min="1" step="1" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <div class="status-display">
+                            <div class="status-dot {% if lesson.published %}published{% else %}draft{% endif %}"></div>
+                            <span>{{ 'Published' if lesson.published else 'Draft' }}</span>
+                        </div>
+                    </div>
+
+                    {% if lesson.id %}
+                        <div class="form-group">
+                            <label>Created</label>
+                            <div class="meta-info">{{ lesson.created_at|default('') }}</div>
+                        </div>
+                    {% endif %}
+
+                    {% if lesson.id and lesson.updated_at %}
+                        <div class="form-group">
+                            <label>Last Updated</label>
+                            <div class="meta-info">{{ lesson.updated_at }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-group">
+                        <label for="estimated_time">Estimated Duration</label>
+                        <div class="time-input-group">
+                            <input type="number" id="estimated_hours" name="estimated_hours"
+                                   value="{{ lesson.estimated_time.hours|default(0) }}"
+                                   min="0" class="form-control time-input">
+                            <span class="time-label">hours</span>
+                            <input type="number" id="estimated_minutes" name="estimated_minutes"
+                                   value="{{ lesson.estimated_time.minutes|default(0) }}"
+                                   min="0" max="59" class="form-control time-input">
+                            <span class="time-label">min</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulty">Difficulty Level</label>
+                        <select id="difficulty" name="difficulty" class="form-control select">
+                            <option value="beginner" {% if lesson.difficulty == 'beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="intermediate" {% if lesson.difficulty == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                            <option value="advanced" {% if lesson.difficulty == 'advanced' %}selected{% endif %}>Advanced</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" name="tags" value="{{ lesson.tags|join(', ') }}"
+                               class="form-control" placeholder="Enter tags separated by commas">
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <h3>Related Content</h3>
+
+                    <div class="form-group">
+                        <label for="prerequisites">Prerequisites</label>
+                        <select id="prerequisites" name="prerequisites[]" multiple class="form-control select-multiple">
+                            {% for other_lesson in other_lessons %}
+                                <option value="{{ other_lesson.id }}"
+                                        {% if other_lesson.id in lesson.prerequisites %}selected{% endif %}>
+                                    {{ other_lesson.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Select lessons that should be completed before this one</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="related_lessons">Related Lessons</label>
+                        <select id="related_lessons" name="related_lessons[]" multiple class="form-control select-multiple">
+                            {% for other_lesson in other_lessons %}
+                                <option value="{{ other_lesson.id }}"
+                                        {% if other_lesson.id in lesson.related_lessons %}selected{% endif %}>
+                                    {{ other_lesson.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-help">Recommended additional content for this topic</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/edit-lessons.js') }}"></script>
+{% endblock %}

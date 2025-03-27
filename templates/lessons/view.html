@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} | {{ lesson.module_title }} | Educational Platform{% endblock %}
+
+{% block breadcrumb %}
+    <span><a href="{{ url_for('list_modules') }}">Modules</a></span>
+    <span><a href="{{ url_for('view_module', module_id=lesson.module_id) }}">{{ lesson.module_title }}</a></span>
+    <span>{{ lesson.title }}</span>
+{% endblock %}
+
+{% block content %}
+    <div class="lesson-container">
+        <div class="lesson-main">
+            <div class="lesson-header">
+                <h1 class="lesson-title">{{ lesson.title }}</h1>
+
+                <div class="lesson-meta">
+                    <div class="meta-item">
+                        <div class="meta-icon">⏱️</div>
+                        <div class="meta-text">
+                            {% if lesson.estimated_time.hours > 0 %}
+                                {{ lesson.estimated_time.hours }} hr
+                                {% if lesson.estimated_time.minutes > 0 %}
+                                    {{ lesson.estimated_time.minutes }} min
+                                {% endif %}
+                            {% else %}
+                                {{ lesson.estimated_time.minutes }} min
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="meta-item difficulty-{{ lesson.difficulty }}">
+                        <div class="meta-icon">📊</div>
+                        <div class="meta-text">
+                            {{ lesson.difficulty|title }}
+                        </div>
+                    </div>
+
+                    {% if lesson.tags %}
+                        <div class="meta-item">
+                            <div class="meta-icon">🏷️</div>
+                            <div class="meta-text tags">
+                                {% for tag in lesson.tags %}
+                                    <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="lesson-progress-wrapper">
+                <div class="lesson-progress">
+                    <div class="progress-bar">
+                        <div class="progress-indicator" style="width: {{ user_progress.percentage }}%;">
+                            <span class="progress-text">{{ user_progress.percentage }}% Complete</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-progress" data-action="mark-complete"
+                            {% if user_progress.completed %}disabled{% endif %}>
+                        {% if user_progress.completed %}
+                            <i class="icon-check"></i> Completed
+                        {% else %}
+                            Mark as Complete
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+
+            <div class="lesson-tabs">
+                <button type="button" class="tab-button active" data-tab="content">Lesson Content</button>
+                <button type="button" class="tab-button" data-tab="examples">Examples</button>
+                <button type="button" class="tab-button" data-tab="exercises">Exercises</button>
+                <button type="button" class="tab-button" data-tab="resources">Resources</button>
+            </div>
+
+            <div class="lesson-content-wrapper">
+                <div class="tab-content active" id="tab-content">
+                    {% if lesson.learning_objectives %}
+                        <div class="learning-objectives">
+                            <h2>Learning Objectives</h2>
+                            <ul>
+                                {% for objective in lesson.learning_objectives %}
+                                    <li>{{ objective }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="lesson-content">
+                        {{ lesson.content_html|safe }}
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-examples">
+                    {% if lesson.examples_html %}
+                        <div class="lesson-examples">
+                            {{ lesson.examples_html|safe }}
+                        </div>
+                    {% else %}
+                        <div class="empty-tab-content">
+                            <p>No examples are available for this lesson.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="tab-content" id="tab-exercises">
+                    {% if lesson.exercises_html %}
+                        <div class="lesson-exercises">
+                            {{ lesson.exercises_html|safe }}
+                        </div>
+                    {% else %}
+                        <div class="empty-tab-content">
+                            <p>No exercises are available for this lesson.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="tab-content" id="tab-resources">
+                    <div class="resources-section">
+                        <h2>Attachments</h2>
+
+                        {% if lesson.attachments %}
+                            <div class="attachments-list">
+                                {% for attachment in lesson.attachments %}
+                                    <div class="attachment-card">
+                                        <div class="attachment-icon">
+                                            <i class="icon-file-{{ attachment.extension }}"></i>
+                                        </div>
+                                        <div class="attachment-details">
+                                            <div class="attachment-name">{{ attachment.name }}</div>
+                                            <div class="attachment-meta">
+                                                <span class="attachment-size">{{ attachment.size_formatted }}</span>
+                                                <span class="attachment-type">{{ attachment.type }}</span>
+                                            </div>
+                                        </div>
+                                        <a href="{{ url_for('download_attachment', attachment_id=attachment.id) }}"
+                                           class="btn-download" download>
+                                            <i class="icon-download"></i> Download
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="no-resources">No attachments available for this lesson.</p>
+                        {% endif %}
+
+                        {% if lesson.related_lessons %}
+                            <h2>Related Lessons</h2>
+                            <div class="related-lessons-list">
+                                {% for related in lesson.related_lessons %}
+                                    <div class="related-lesson-card">
+                                        <h3 class="related-lesson-title">
+                                            <a href="{{ url_for('lesson', lesson_id=related.id) }}">
+                                                {{ related.title }}
+                                            </a>
+                                        </h3>
+                                        <p class="related-lesson-overview">{{ related.overview }}</p>
+                                        <div class="related-lesson-module">
+                                            <i class="icon-module"></i> {{ related.module_title }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lesson-footer">
+                <div class="lesson-navigation">
+                    {% if prev_lesson %}
+                        <a href="{{ url_for('lesson', lesson_id=prev_lesson.id) }}" class="nav-button prev">
+                            <i class="icon-arrow-left"></i>
+                            <div class="nav-content">
+                                <div class="nav-label">Previous Lesson</div>
+                                <div class="nav-title">{{ prev_lesson.title }}</div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="nav-spacer"></div>
+                    {% endif %}
+
+                    {% if next_lesson %}
+                        <a href="{{ url_for('lesson', lesson_id=next_lesson.id) }}" class="nav-button next">
+                            <div class="nav-content">
+                                <div class="nav-label">Next Lesson</div>
+                                <div class="nav-title">{{ next_lesson.title }}</div>
+                            </div>
+                            <i class="icon-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('module_complete', module_id=lesson.module_id) }}" class="nav-button complete">
+                            <div class="nav-content">
+                                <div class="nav-label">Complete Module</div>
+                                <div class="nav-title">Finish & Take Quiz</div>
+                            </div>
+                            <i class="icon-check-circle"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="lesson-sidebar">
+            <div class="sidebar-card toc-card">
+                <h3 class="sidebar-title">Table of Contents</h3>
+                <div class="toc-content" id="toc-content">
+                    <!-- Generated dynamically by JS -->
+                    <div class="toc-loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="sidebar-card notes-card">
+                <div class="card-header">
+                    <h3 class="sidebar-title">Your Notes</h3>
+                    <button type="button" id="save-notes" class="btn-small btn-outline" disabled>Save</button>
+                </div>
+
+                <textarea id="user-notes" class="notes-textarea"
+                          placeholder="Take notes as you learn...">{{ user_notes }}</textarea>
+
+                <div class="notes-status" id="notes-status"></div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3 class="sidebar-title">Ask a Question</h3>
+                <form id="question-form" class="question-form">
+                    <textarea id="question-text" class="question-textarea"
+                              placeholder="Have a question about this lesson?"></textarea>
+                    <button type="submit" class="btn btn-primary">Submit Question</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/view-lesson.js') }}"></script>
+{% endblock %}
