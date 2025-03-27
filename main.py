@@ -560,6 +560,12 @@ def create_lesson():
     raise NotImplementedError
     return render_template('lessons/add.html')
 
+@app.route('/edit_lesson/<lesson_id>')
+def edit_lesson(lesson_id):
+    from models.lessons import Lesson
+    lesson = Lesson.query.get(lesson_id)
+    return render_template('lessons/edit.html', lesson=lesson)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
