@@ -492,6 +492,48 @@ def api_lesson(lesson_id):
         return jsonify({"error": "Invalid request method."}), 400
 
 
+@app.route('/api/modules', methods=['GET', 'POST'])
+def api_modules():
+    from models.lessons import Module
+    if request.method == 'GET':
+        modules = Module.query.all()
+        return jsonify([module.json() for module in modules])
+    elif request.method == 'POST':
+        data = request.json
+        title = data.get('title', None)
+        if not title:
+            return jsonify({"error": "Missing required fields."}), 400
+
+        module = Module(title=title)
+        db.session.add(module)
+        db.session.commit()
+        return jsonify({"message": "Module added successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+@app.route('/api/modules/<module_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_module(module_id):
+    from models.lessons import Module
+    module = Module.query.get(module_id)
+    if not module:
+        return jsonify({"error": "Module not found."}), 404
+    if request.method == 'GET':
+        return jsonify(module.json())
+    elif request.method == 'PUT':
+        data = request.json
+        title = data.get('title', None)
+        if title:
+            module.title = title
+        db.session.commit()
+        return jsonify({"message": "Module updated successfully."})
+    elif request.method == 'DELETE':
+        db.session.delete(module)
+        db.session.commit()
+        return jsonify({"message": "Module deleted successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
