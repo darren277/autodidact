@@ -544,7 +544,15 @@ def api_module(module_id):
 @app.route('/list_lessons')
 def list_lessons():
     from models.lessons import Lesson
-    lessons = Lesson.query.all()
+    #lessons = Lesson.query.all()
+    demo_lessons = [
+        {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."},
+        {"id": 2, "title": "Lesson 2", "content": "This is the content for Lesson 2."},
+        {"id": 3, "title": "Lesson 3", "content": "This is the content for Lesson 3."},
+        {"id": 4, "title": "Lesson 4", "content": "This is the content for Lesson 4."},
+        {"id": 5, "title": "Lesson 5", "content": "This is the content for Lesson 5."}
+    ]
+    lessons = demo_lessons
     return render_template('lessons/list.html', lessons=lessons, total_pages=1)
 
 @app.route('/create_lesson')
