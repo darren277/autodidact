@@ -563,7 +563,16 @@ def create_lesson():
 @app.route('/edit_lesson/<lesson_id>')
 def edit_lesson(lesson_id):
     from models.lessons import Lesson
-    lesson = Lesson.query.get(lesson_id)
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
     return render_template('lessons/edit.html', lesson=lesson)
 
 @app.route('/view_lesson/<lesson_id>')
