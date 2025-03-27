@@ -262,6 +262,15 @@ def convert():
 </html>
 """)
 
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html', active_page='dashboard')
+
+@app.route('/practice')
+def practice():
+    return render_template('practice.html', active_page='practice')
+
+
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
 # add len() to Jinja...
