@@ -233,9 +233,23 @@
                     <li><a href="{{ url_for('vintage_cards', notes_id=lesson.id) }}">View Vintage Cards</a></li>
                 </ul>
 
-                <button type="button" id="generate-audio-presentation" class="btn-small btn-outline" disabled>Generate Audio Presentation (Coming Soon)</button>
+                {% if audio_notes %}
+                    <button type="button" id="generate-audio-presentation-disabled" class="btn-small btn-outline" disabled>Generate Audio Presentation (Already Generated - See Below)</button>
+                {% else %}
+                    <button type="button" id="generate-audio-presentation" class="btn-small btn-outline">Generate Audio Presentation</button>
+                {% endif %}
+                <br/>
                 <button type="button" id="import-from-obsidian" class="btn-small btn-outline" disabled>Import from Obsidian (Coming Soon)</button>
+                <br/>
                 <button type="button" id="generate-anki-cards" class="btn-small btn-outline" disabled>Generate Anki Cards (Coming Soon)</button>
+                <br/>
+
+                {% if audio_notes %}
+                    <audio controls>
+                        <source src="{{ url_for('audio_notes', file_name=audio_notes) }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                {% endif %}
             </div>
 
             <div class="sidebar-card">
@@ -252,4 +266,24 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/view-lesson.js') }}"></script>
+
+<script>
+    document.getElementById('generate-audio-presentation').addEventListener('click', function () {
+        fetch("{{ url_for('generate_audio', lesson_id=lesson.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('generate-audio-presentation').disabled = true;
+                    document.getElementById('generate-audio-presentation').innerText = 'Generate Audio Presentation (Already Generated - See Below)';
+                    document.getElementById('generate-audio-presentation-disabled').disabled = true;
+                }
+            });
+    });
+</script>
 {% endblock %}

@@ -608,7 +608,32 @@ def view_lesson(lesson_id):
     )
     other_lessons = []
     notes = convert_to_simple_markdown(data)
-    return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons, user_notes=notes)
+    audio_notes = 'presentation'
+    return render_template(
+        'lessons/view.html',
+        lesson=lesson,
+        user_progress=user_progress,
+        other_lessons=other_lessons,
+        user_notes=notes,
+        audio_notes=audio_notes
+    )
+
+
+@app.route('/audio_notes/<file_name>')
+def audio_notes(file_name):
+    audio_base_path = 'tests/'
+    audio_file = f'{audio_base_path}{file_name}.wav'
+    return Response(open(audio_file, 'rb').read(), mimetype="audio/wav")
+
+@app.route('/generate_audio/<lesson_id>')
+def generate_audio(lesson_id):
+    # get userId from session and concatenate with lesson_id...
+    user_id = 1
+    file_name = f'{user_id}_{lesson_id}'
+    audio_base_path = 'tests/'
+    audio_file = f'{audio_base_path}{file_name}.wav'
+    return Response(open(audio_file, 'rb').read(), mimetype="audio/wav")
+
 
 @app.route('/preview_lesson/<lesson_id>')
 def preview_lesson(lesson_id):
