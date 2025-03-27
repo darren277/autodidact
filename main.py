@@ -547,6 +547,11 @@ def list_lessons():
     lessons = Lesson.query.all()
     return render_template('lessons/list.html', lessons=lessons, total_pages=1)
 
+@app.route('/create_lesson')
+def create_lesson():
+    raise NotImplementedError
+    return render_template('lessons/add.html')
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
