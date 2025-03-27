@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Educational Platform{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Dashboard</span>
+{% endblock %}
+
+{% block page_title %}Student Dashboard{% endblock %}
+
+{% block content %}
+    <div class="dashboard-summary">
+        <div class="summary-card">
+            <h3>Your Progress</h3>
+            <div class="progress-bar">
+                <div class="progress" style="width: 65%;">65%</div>
+            </div>
+            <p>You've completed 13 of 20 lessons</p>
+        </div>
+
+        <div class="summary-card">
+            <h3>Next Session</h3>
+            <p>Lorem Ipsum Dolor: Advanced Concepts</p>
+            <p><strong>Last accessed:</strong> 2 days ago</p>
+            <a href="{{ url_for('module', module_id=3) }}" class="btn-continue">Continue Learning</a>
+        </div>
+
+        <div class="summary-card">
+            <h3>Achievements</h3>
+            <p><span class="badge">5</span> Modules completed</p>
+            <p><span class="badge">12</span> Quizzes passed</p>
+        </div>
+    </div>
+
+    <h2>Recent Activity</h2>
+    <div class="activity-list">
+        <div class="activity-item">
+            <div class="activity-icon">📝</div>
+            <div class="activity-details">
+                <h4>Quiz Completed</h4>
+                <p>Sit Amet Consectetur: Basics Quiz</p>
+                <span class="activity-time">Yesterday at 3:45 PM</span>
+            </div>
+            <div class="activity-score">85%</div>
+        </div>
+
+        <div class="activity-item">
+            <div class="activity-icon">📚</div>
+            <div class="activity-details">
+                <h4>Lesson Completed</h4>
+                <p>Adipiscing Elit: Introduction</p>
+                <span class="activity-time">3 days ago at 2:15 PM</span>
+            </div>
+        </div>
+
+        <div class="activity-item">
+            <div class="activity-icon">🏆</div>
+            <div class="activity-details">
+                <h4>Achievement Unlocked</h4>
+                <p>Fast Learner: Complete 3 lessons in one day</p>
+                <span class="activity-time">5 days ago at 7:30 PM</span>
+            </div>
+        </div>
+    </div>
+
+    <h2>Recommended Next Steps</h2>
+    <div class="recommendations">
+        <div class="recommendation-card">
+            <h3>Continue Your Journey</h3>
+            <p>Pick up where you left off in the Adipiscing Elit module</p>
+            <a href="{{ url_for('module', module_id=3) }}" class="btn">Go to Module</a>
+        </div>
+
+        <div class="recommendation-card">
+            <h3>Practice Makes Perfect</h3>
+            <p>Revisit the concepts you learned with these practice exercises</p>
+            <a href="{{ url_for('practice') }}" class="btn">Practice Now</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
