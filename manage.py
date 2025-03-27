@@ -9,7 +9,9 @@ def create():
         db.create_all()
 
 def drop():
-    raise NotImplementedError
+    with app.app_context():
+        print("ABOUT TO DROP ALL TABLES...")
+        db.drop_all()
 
 
 if __name__ == "__main__":

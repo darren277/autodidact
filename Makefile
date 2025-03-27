@@ -11,3 +11,6 @@ w2:
 
 create:
 	python manage.py create
+
+drop:
+	python manage.py drop
