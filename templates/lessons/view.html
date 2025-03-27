@@ -222,6 +222,20 @@
                           placeholder="Take notes as you learn...">{{ user_notes }}</textarea>
 
                 <div class="notes-status" id="notes-status"></div>
+
+                <h3>Alternative Views</h3>
+                <ul>
+                    <li><a href="{{ url_for('cornell_notes', notes_id=lesson.id) }}">View as Cornell (Paper) Notes</a></li>
+                    <li><a href="{{ url_for('digital_notebook', notes_id=lesson.id) }}">View Digital Notebook</a></li>
+                    <li><a href="{{ url_for('augmented', notes_id=lesson.id) }}">View Augmented Notes</a></li>
+                    <li><a href="{{ url_for('mindmap', notes_id=lesson.id) }}">View MindMap</a></li>
+                    <li><a href="{{ url_for('stickynotes', notes_id=lesson.id) }}">View Sticky Notes</a></li>
+                    <li><a href="{{ url_for('vintage_cards', notes_id=lesson.id) }}">View Vintage Cards</a></li>
+                </ul>
+
+                <button type="button" id="generate-audio-presentation" class="btn-small btn-outline" disabled>Generate Audio Presentation (Coming Soon)</button>
+                <button type="button" id="import-from-obsidian" class="btn-small btn-outline" disabled>Import from Obsidian (Coming Soon)</button>
+                <button type="button" id="generate-anki-cards" class="btn-small btn-outline" disabled>Generate Anki Cards (Coming Soon)</button>
             </div>
 
             <div class="sidebar-card">
