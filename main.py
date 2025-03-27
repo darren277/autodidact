@@ -627,11 +627,13 @@ def audio_notes(file_name):
 
 @app.route('/generate_audio/<lesson_id>')
 def generate_audio(lesson_id):
-    # get userId from session and concatenate with lesson_id...
+    # TODO: get userId from session and concatenate with lesson_id...
     user_id = 1
     file_name = f'{user_id}_{lesson_id}'
     audio_base_path = 'tests/'
     audio_file = f'{audio_base_path}{file_name}.wav'
+    # fetch notes from database...
+    # TODO: construct_presentation_from_structured_notes(structured_notes: StructuredNotes or dict)
     return Response(open(audio_file, 'rb').read(), mimetype="audio/wav")
 
 
