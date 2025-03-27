@@ -541,6 +541,31 @@ def api_module(module_id):
         return jsonify({"error": "Invalid request method."}), 400
 
 
+@app.route('/list_lessons')
+def list_lessons():
+    from models.lessons import Lesson
+    #lessons = Lesson.query.all()
+    demo_lessons = [
+        {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."},
+        {"id": 2, "title": "Lesson 2", "content": "This is the content for Lesson 2."},
+        {"id": 3, "title": "Lesson 3", "content": "This is the content for Lesson 3."},
+        {"id": 4, "title": "Lesson 4", "content": "This is the content for Lesson 4."},
+        {"id": 5, "title": "Lesson 5", "content": "This is the content for Lesson 5."}
+    ]
+    lessons = demo_lessons
+    return render_template('lessons/list.html', lessons=lessons, total_pages=1)
+
+@app.route('/create_lesson')
+def create_lesson():
+    raise NotImplementedError
+    return render_template('lessons/add.html')
+
+@app.route('/edit_lesson/<lesson_id>')
+def edit_lesson(lesson_id):
+    from models.lessons import Lesson
+    lesson = Lesson.query.get(lesson_id)
+    return render_template('lessons/edit.html', lesson=lesson)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
