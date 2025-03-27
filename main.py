@@ -566,6 +566,13 @@ def edit_lesson(lesson_id):
     lesson = Lesson.query.get(lesson_id)
     return render_template('lessons/edit.html', lesson=lesson)
 
+@app.route('/view_lesson/<lesson_id>')
+def view_lesson(lesson_id):
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    return render_template('lessons/view.html', lesson=lesson)
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
