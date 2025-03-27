@@ -1,5 +1,7 @@
 """"""
 import requests
+from settings import PORT
+
 
 def test_create_lesson():
     data = {
@@ -8,14 +10,14 @@ def test_create_lesson():
         "module_id": 1
     }
 
-    response = requests.post('http://localhost:8000/api/lessons', json=data)
+    response = requests.post(f'http://localhost:{PORT}/api/lessons', json=data)
 
     print(response.status_code)
     print(response.json())
 
 
 def test_get_lessons():
-    response = requests.get('http://localhost:8000/api/lessons')
+    response = requests.get(f'http://localhost:{PORT}/api/lessons')
 
     print(response.status_code)
     print(response.json())
@@ -28,14 +30,14 @@ def test_update_lesson():
         "module_id": 1
     }
 
-    response = requests.put('http://localhost:8000/api/lessons/1', json=data)
+    response = requests.put(f'http://localhost:{PORT}/api/lessons/1', json=data)
 
     print(response.status_code)
     print(response.json())
 
 
 def test_delete_lesson():
-    response = requests.delete('http://localhost:8000/api/lessons/1')
+    response = requests.delete(f'http://localhost:{PORT}/api/lessons/1')
 
     print(response.status_code)
     print(response.json())
