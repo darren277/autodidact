@@ -467,12 +467,21 @@ def api_lesson(lesson_id):
         title = data.get('title', None)
         content = data.get('content', None)
         module_id = data.get('module_id', None)
-        if title:
-            lesson.title = title
-        if content:
-            lesson.content = content
-        if module_id:
-            lesson.module_id = module_id
+
+        missing_fields = []
+
+        if title: lesson.title = title
+        else: missing_fields.append("title")
+
+        if content: lesson.content = content
+        else: missing_fields.append("content")
+
+        if module_id: lesson.module_id = module_id
+        else: missing_fields.append("module_id")
+
+        if missing_fields:
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
         db.session.commit()
         return jsonify({"message": "Lesson updated successfully."})
     elif request.method == 'DELETE':
