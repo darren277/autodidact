@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to My App</h1>
+        <div class="login-box">
+            <h2>Sign in with:</h2>
+            <button class="google-btn" onclick="window.location.href = '{{ url_for('login') }}'">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                Sign in with Google
+            </button>
+        </div>
+    </div>
+</body>
+</html>

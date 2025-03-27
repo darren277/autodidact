@@ -1,9 +1,12 @@
 """"""
+import base64
 import json
 import threading
 import asyncio
+from urllib import parse
 
-from flask import Flask, request, Response, render_template, jsonify, render_template_string
+import requests
+from flask import Flask, request, Response, render_template, jsonify, render_template_string, session, redirect, url_for
 from flask_sse import sse
 
 import redis
@@ -16,8 +19,9 @@ from lib.tts.personalities import descriptors
 
 from tests.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, LOGOUT_URI, COGNITO_LOGIN_URL
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
+from settings import COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI, CLIENT_SECRET
 
 from flask_cors import CORS
 
@@ -74,9 +78,9 @@ def stream():
 #quit(54)
 
 
-@app.route('/')
-def hello_world():
-    return render_template('index.html')
+@app.route('/chat')
+def chat():
+    return render_template('chat.html')
     #return open('templates/index.html').read()
 
 
@@ -649,6 +653,72 @@ def module_complete(module_id):
     #module = Module.query.get(module_id)
     module = {"id": 1, "title": "Module 1"}
     return render_template('modules/complete.html', module=module)
+
+
+@app.route('/')
+def index():
+    if 'user' in session:
+        return render_template('profile.html', user=session['user'])
+    return render_template('login.html')
+
+
+@app.route('/login')
+def login():
+    return redirect(COGNITO_LOGIN_URL)
+
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+
+    token_url = f'https://{COGNITO_DOMAIN}/oauth2/token'
+
+    auth_string = f'{CLIENT_ID}:{CLIENT_SECRET}'
+    auth_header = base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
+
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Basic {auth_header}'
+    }
+
+    body = {
+        'grant_type': 'authorization_code',
+        'client_id': CLIENT_ID,
+        'code': code,
+        'redirect_uri': REDIRECT_URI
+    }
+
+    response = requests.post(token_url, headers=headers, data=body)
+
+    if response.status_code == 200:
+        tokens = response.json()
+
+        user_info_url = f'https://{COGNITO_DOMAIN}/oauth2/userInfo'
+        headers = {
+            'Authorization': f'Bearer {tokens["access_token"]}'
+        }
+
+        user_response = requests.get(user_info_url, headers=headers)
+
+        if user_response.status_code == 200:
+            user_info = user_response.json()
+            session['user'] = user_info
+            return redirect(url_for('index'))
+
+    return 'Authentication Error', 400
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+
+    logout_url = (
+        f'https://{COGNITO_DOMAIN}/logout?'
+        f'client_id={CLIENT_ID}&'
+        f'logout_uri={parse.quote(LOGOUT_URI)}'
+    )
+
+    return redirect(logout_url)
 
 
 
