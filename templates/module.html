@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | Educational Platform{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Learning Modules</span>
+    <span>{{ page_title }}</span>
+{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+    <div class="module-header">
+        <div class="module-progress">
+            <div class="progress-text">Module Progress: {{ module_progress.completed }}/{{ module_progress.total }} Lessons</div>
+            <div class="progress-bar">
+                <div class="progress" style="width: 40%;">{{ module_progress.percentage }}%</div>
+            </div>
+        </div>
+        <div class="module-actions">
+            <a href="{{ module_download_materials_link }}" class="btn-outline">Download Materials</a>
+            <a href="{{ module_take_quiz_link }}" class="btn">Take Quiz</a>
+        </div>
+    </div>
+
+    <div class="module-description">
+        {{ module_description|safe }}
+    </div>
+
+    <div class="lesson-list">
+        <h2>Module Lessons</h2>
+
+        {% for lesson_card in lesson_cards %}
+            <div class="lesson-card {{ lesson_card.status }}">
+                <div class="lesson-status">{{ lesson_card.icon }}</div>
+                <div class="lesson-content">
+                    <h3>{{ lesson_card.title }}</h3>
+                    <p>{{ lesson_card.description }}</p>
+                    <div class="lesson-meta">
+                        <span>Duration: {{ lesson_card.duration }}</span>
+                        <span>{{ lesson_card.status }}</span>
+                    </div>
+                </div>
+                <div class="lesson-actions">
+                    <a href="#" class="btn">{{ lesson_card.action }}</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="module-resources">
+        <h2>Additional Resources</h2>
+        <ul class="resource-list">
+            {% for resource in resources %}
+                <li>
+                    <div class="resource-icon">{{ resource.icon }}</div>
+                    <div class="resource-details">
+                        <h4>{{ resource.title }}</h4>
+                        <p>{{ resource.description }}</p>
+                    </div>
+                    <a href="{{ resource.link }}" class="resource-link">{{ resource.action }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

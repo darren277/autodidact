@@ -20,7 +20,6 @@ from settings import REDIS_URL, ENABLE_CORS
 
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 
 
@@ -308,6 +307,114 @@ def tts():
         response = Response(audio_bytes, mimetype="audio/wav")
         response.headers["Content-Disposition"] = "attachment; filename=speech.wav"
         return response
+
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html', active_page='dashboard')
+
+@app.route('/module/<module_id>')
+def module(module_id):
+    module_progress = {
+        "completed": 2,
+        "total": 5,
+        "percentage": 40
+    }
+
+    module_1_lesson_cards = [
+        {
+            "status": "completed",
+            "icon": "✓",
+            "title": "1. Introduction to Lorem Ipsum",
+            "description": "Learn the basic principles and history of Lorem Ipsum.",
+            "duration": "15 min",
+            "action": "Review"
+        },
+        {
+            "status": "completed",
+            "icon": "✓",
+            "title": "2. Dolor Sit Amet Techniques",
+            "description": "Explore various techniques used in Dolor Sit Amet methodology.",
+            "duration": "20 min",
+            "action": "Review"
+        },
+        {
+            "status": "current",
+            "icon": "•",
+            "title": "3. Practical Applications",
+            "description": "Apply your knowledge to real-world scenarios and case studies.",
+            "duration": "25 min",
+            "action": "Continue"
+        },
+        {
+            "status": "",
+            "icon": "",
+            "title": "4. Advanced Concepts",
+            "description": "Dive deeper into complex aspects of Lorem Ipsum Dolor.",
+            "duration": "30 min",
+            "action": "Start"
+        },
+        {
+            "status": "",
+            "icon": "",
+            "title": "5. Review & Assessment",
+            "description": "Consolidate your learning and test your knowledge.",
+            "duration": "20 min",
+            "action": "Start"
+        },
+        {
+            "status": "completed",
+            "icon": "✓",
+            "title": "6. Final Exam",
+            "description": "Test your knowledge with a comprehensive exam.",
+            "duration": "1 hour",
+            "action": "Review"
+        }
+    ]
+
+    module_1_resources = [
+        {
+            "icon": "📄",
+            "title": "Lorem Ipsum: A Comprehensive Guide",
+            "description": "A detailed reference document covering all aspects of Lorem Ipsum",
+            "link": "#",
+            "action": "View"
+        },
+        {
+            "icon": "🎥",
+            "title": "Video Tutorial: Dolor Sit Amet in Practice",
+            "description": "Watch an expert demonstrate key techniques",
+            "link": "#",
+            "action": "Watch"
+        },
+        {
+            "icon": "🔗",
+            "title": "External Reading: History of Lorem Ipsum",
+            "description": "An in-depth article on the origins and evolution of Lorem Ipsum",
+            "link": "#",
+            "action": "Visit"
+        }
+    ]
+
+    return render_template(
+        f'module.html',
+        active_page=f'module_{module_id}',
+        title="Module 1: Introduction to Lorem Ipsum",
+        page_title="Module 1: Introduction to Lorem Ipsum",
+        module_progress=module_progress,
+        module_download_materials_link="#",
+        module_take_quiz_link="#",
+        module_description="""
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius massa vitae semper consectetur. Proin lobortis, nunc nec vehicula posuere, turpis velit scelerisque nisi, et convallis lectus massa eget eros.</p>
+        <p>This module will cover fundamental concepts of Lorem Ipsum and provide practical exercises to reinforce your understanding.</p>
+        """,
+        lesson_cards=module_1_lesson_cards,
+        resources=module_1_resources
+    )
+
+@app.route('/practice')
+def practice():
+    return render_template('practice.html', active_page='practice')
 
 
 # add enumerate() to Jinja...
