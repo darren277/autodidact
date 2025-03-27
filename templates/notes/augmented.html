@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="static/css/augmented-notes.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/css/augmented-notes.css') }}">
 
     <link crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"></link>
 
@@ -50,7 +50,7 @@
     </zero-md>
 </div>
 
-<script src="static/js/ai-summary.js"></script>
+<script src="{{ url_for('static', filename='/js/ai-summary.js') }}"></script>
 
 <script>
 // Simple JS to toggle each collapsible
