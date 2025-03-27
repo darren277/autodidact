@@ -566,6 +566,66 @@ def edit_lesson(lesson_id):
     lesson = Lesson.query.get(lesson_id)
     return render_template('lessons/edit.html', lesson=lesson)
 
+@app.route('/view_lesson/<lesson_id>')
+def view_lesson(lesson_id):
+    from models.lessons import Lesson
+    #lesson = Lesson.query.get(lesson_id)
+    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
+    lesson.update(
+        estimated_time=dict(
+            hours=1,
+            minutes=30
+        ),
+        difficulty="Intermediate",
+        tags=["Python", "Programming", "Web Development"]
+    )
+    user_progress = dict(
+        completed=True,
+    )
+    other_lessons = []
+    return render_template('lessons/view.html', lesson=lesson, user_progress=user_progress, other_lessons=other_lessons)
+
+
+@app.route('/list_modules')
+def list_modules():
+    from models.lessons import Module
+    #modules = Module.query.all()
+    demo_modules = [
+        {"id": 1, "title": "Module 1"},
+        {"id": 2, "title": "Module 2"},
+        {"id": 3, "title": "Module 3"},
+        {"id": 4, "title": "Module 4"},
+        {"id": 5, "title": "Module 5"}
+    ]
+    modules = demo_modules
+    return render_template('modules/list.html', modules=modules, total_pages=1)
+
+@app.route('/create_module')
+def create_module():
+    raise NotImplementedError
+    return render_template('modules/add.html')
+
+@app.route('/edit_module/<module_id>')
+def edit_module(module_id):
+    from models.lessons import Module
+    module = Module.query.get(module_id)
+    return render_template('modules/edit.html', module=module)
+
+@app.route('/view_module/<module_id>')
+def view_module(module_id):
+    from models.lessons import Module
+    #module = Module.query.get(module_id)
+    module = {"id": 1, "title": "Module 1"}
+    return render_template('modules/view.html', module=module)
+
+@app.route('/module_complete/<module_id>')
+def module_complete(module_id):
+    from models.lessons import Module
+    #module = Module.query.get(module_id)
+    module = {"id": 1, "title": "Module 1"}
+    return render_template('modules/complete.html', module=module)
+
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
