@@ -13,6 +13,14 @@ class Lesson(db.Model):
     def __repr__(self):
         return f"Lesson('{self.title}')"
 
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'content': self.content,
+            'module_id': self.module_id
+        }
+
 
 class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -21,6 +29,13 @@ class Module(db.Model):
 
     def __repr__(self):
         return f"Module('{self.title}')"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'lessons': [lesson.json() for lesson in self.lessons]
+        }
 
 
 class Notes(db.Model):
@@ -32,6 +47,13 @@ class Notes(db.Model):
     def __repr__(self):
         return f"Notes('{self.content}')"
 
+    def json(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'lesson_id': self.lesson_id
+        }
+
 
 class Quiz(db.Model):
     # Quizzes have a one to one relationship with a lesson
@@ -41,4 +63,11 @@ class Quiz(db.Model):
 
     def __repr__(self):
         return f"Quiz('{self.content}')"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'lesson_id': self.lesson_id
+        }
 

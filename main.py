@@ -433,7 +433,7 @@ def api_lessons():
     if request.method == 'GET':
         lessons = Lesson.query.all()
         print("DEBUG PRINT /api/lessons:", lessons)
-        return jsonify(lessons)
+        return jsonify([lesson.json() for lesson in lessons])
     elif request.method == 'POST':
         data = request.json
         title = data.get('title', None)
@@ -461,7 +461,7 @@ def api_lesson(lesson_id):
     if not lesson:
         return jsonify({"error": "Lesson not found."}), 404
     if request.method == 'GET':
-        return jsonify(lesson)
+        return jsonify(lesson.json())
     elif request.method == 'PUT':
         data = request.json
         title = data.get('title', None)
