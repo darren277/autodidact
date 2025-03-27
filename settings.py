@@ -29,3 +29,17 @@ PG_PASS = os.environ.get('PG_PASS', 'mypassword')
 PG_DB = os.environ.get('PG_DB', 'autodidact')
 
 APP_SECRET_KEY = 'some super secret key that is changed before deployment'
+
+
+# AWS Cognito Configuration
+AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+COGNITO_DOMAIN = os.environ.get('COGNITO_DOMAIN', 'your-domain')
+USER_POOL_ID = os.environ.get('USER_POOL_ID', 'your-user-pool-id')
+CLIENT_ID = os.environ.get('USER_POOL_CLIENT_ID', 'your-app-client-id')
+CLIENT_SECRET = os.environ.get('USER_POOL_CLIENT_SECRET', 'your-app-client-secret')
+
+
+REDIRECT_URI = 'http://localhost:5055/callback' if DEBUG else 'https://autodidact.apphosting.services/callback'
+COGNITO_LOGIN_URL = f'https://{COGNITO_DOMAIN}/oauth2/authorize?client_id={CLIENT_ID}&response_type=code&scope=openid+email+profile&redirect_uri={REDIRECT_URI}&identity_provider=Google'
+
+LOGOUT_URI = "http://localhost:5055/" if DEBUG else "https://autodidact.apphosting.services/"
