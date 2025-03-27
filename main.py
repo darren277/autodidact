@@ -16,12 +16,14 @@ from lib.tts.personalities import descriptors
 
 from tests.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
 
 from flask_cors import CORS
 
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_wtf.csrf import CSRFProtect
 
 
 app = Flask(__name__)
@@ -30,6 +32,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{PG_USER}:{PG_PASS}@{PG_H
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+csrf = CSRFProtect(app)
+
+app.secret_key = APP_SECRET_KEY
+
 
 
 
