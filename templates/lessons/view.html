@@ -3,8 +3,8 @@
 {% block title %}{{ lesson.title }} | {{ lesson.module_title }} | Educational Platform{% endblock %}
 
 {% block breadcrumb %}
-    <span><a href="{{ url_for('modules') }}">Modules</a></span>
-    <span><a href="{{ url_for('module', module_id=lesson.module_id) }}">{{ lesson.module_title }}</a></span>
+    <span><a href="{{ url_for('list_modules') }}">Modules</a></span>
+    <span><a href="{{ url_for('view_module', module_id=lesson.module_id) }}">{{ lesson.module_title }}</a></span>
     <span>{{ lesson.title }}</span>
 {% endblock %}
 
