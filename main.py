@@ -618,6 +618,14 @@ def view_module(module_id):
     module = {"id": 1, "title": "Module 1"}
     return render_template('modules/view.html', module=module)
 
+@app.route('/module_complete/<module_id>')
+def module_complete(module_id):
+    from models.lessons import Module
+    #module = Module.query.get(module_id)
+    module = {"id": 1, "title": "Module 1"}
+    return render_template('modules/complete.html', module=module)
+
+
 
 # add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
