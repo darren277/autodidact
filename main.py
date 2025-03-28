@@ -416,7 +416,7 @@ def module(module_id):
             "icon": "🎥",
             "title": "Video Tutorial: Dolor Sit Amet in Practice",
             "description": "Watch an expert demonstrate key techniques",
-            "link": "#",
+            "link": "/annotated_media/1",
             "action": "Watch"
         },
         {
