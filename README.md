@@ -2,7 +2,9 @@
 
 ## Description
 
-An LLM web app built in Python using Flask, Flask-SSE, Redis, and the OpenAI API to facilitate self-education outcomes.
+You are are the teacher and the student. An LLM enriched learning platform for designing lesson plans for others or for yourself.
+
+An LLM rich web app built in Python using Flask, Flask-SSE, Redis, and the OpenAI API to facilitate self-education outcomes.
 
 ## How to Use
 
