@@ -108,27 +108,48 @@ def ask():
 def stream():
     """Stream endpoint that uses Redis pub/sub for real-time updates."""
     channel = request.args.get('channel')
-
     if not channel:
         return Response("Channel parameter is required", status=400)
 
+    # We'll listen for partial messages on `channel`
+    # and for a final "complete" message on `channel + '_complete'`.
+    primary_channel = channel
+    complete_channel = f"{channel}_complete"
+
     def generate():
         pubsub = r.pubsub()
-        pubsub.subscribe(channel)
+        # Subscribe to both channels
+        pubsub.subscribe(primary_channel, complete_channel)
 
         # Send a content type header for SSE
         yield "Content-Type: text/event-stream\n\n"
 
         try:
-            # Keep the connection open and stream messages
             for message in pubsub.listen():
+                # Redis pubsub returns various message types; we're interested in "message"
                 if message['type'] == 'message':
-                    data = message['data'].decode('utf-8')
-                    yield f"data: {data}\n\n"
+                    raw_data = message['data']
+                    if not raw_data:
+                        continue
 
-            # Send a completion event when done
-            yield "event: complete\ndata: {}\n\n"
+                    # Convert from bytes to string if necessary
+                    data_str = raw_data.decode('utf-8')
+                    this_channel = message['channel'].decode('utf-8')
 
+                    # Check which channel triggered the event
+                    if this_channel == primary_channel:
+                        # This is our partial (streaming) content
+                        # No explicit "event:" line => default event is "message"
+                        yield f"data: {data_str}\n\n"
+
+                    elif this_channel == complete_channel:
+                        # This is the final message
+                        # We'll send event: complete
+                        yield "event: complete\n"
+                        yield f"data: {data_str}\n\n"
+
+                        # If you want to close out after final message:
+                        # break
         except GeneratorExit:
             # Clean up when the client disconnects
             pubsub.unsubscribe()

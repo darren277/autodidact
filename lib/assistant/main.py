@@ -105,7 +105,7 @@ class AssistantHandler:
 
             # Optionally send a completion signal
             if self._r and self._py_thread_id:
-                self._r.publish(f"{self._py_thread_id}_complete", json.dumps({"complete": True}))
+                self._r.publish(f"{self._py_thread_id}_complete", json.dumps({"complete": True, "full_message": self._full_message}))
 
         except Exception as e:
             logger.error(f"Error running assistant: {str(e)}")

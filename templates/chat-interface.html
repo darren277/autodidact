@@ -31,11 +31,17 @@
             overflow-y: auto;
             padding: 10px;
         }
-        .question {
+        .message {
+            margin-bottom: 20px;
+        }
+        .user-message {
             background-color: #f0f0f0;
             padding: 10px;
             border-radius: 5px;
-            margin-bottom: 10px;
+        }
+        .assistant-message {
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
         }
         #question-form {
             display: flex;
@@ -67,11 +73,7 @@
         <h1>Interactive Learning Companion</h1>
 
         <div id="message-history">
-            <article>
-                <zero-md>
-                    <script type="text/markdown" id="chat-content"></script>
-                </zero-md>
-            </article>
+            <!-- Messages will be added here -->
         </div>
 
         <form id="question-form">
@@ -89,14 +91,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('question-form');
             const messageHistory = document.getElementById('message-history');
-            const chatContent = document.getElementById('chat-content');
             const loading = document.getElementById('loading');
             let currentEventSource = null;
-            let messageContent = "";
+            let currentZeroMd = null;
+            let currentAssistantMessageElement = null;
+            let currentMarkdownScriptTag = null;
+            let chatMessages = [];
 
-            // Initialize chat content from localStorage if available
-            if (localStorage.getItem('chatHistory')) {
-                chatContent.textContent = localStorage.getItem('chatHistory');
+            // Restore chat history from localStorage if available
+            if (localStorage.getItem('chatMessages')) {
+                try {
+                    const messages = JSON.parse(localStorage.getItem('chatMessages'));
+                    messages.forEach(msg => {
+                        if (msg.type === 'user') {
+                            addUserMessage(msg.content);
+                        } else if (msg.type === 'assistant') {
+                            addAssistantMessage(msg.content, true);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error restoring chat history:', error);
+                    localStorage.removeItem('chatMessages');
+                }
             }
 
             form.addEventListener('submit', function(e) {
@@ -107,14 +123,17 @@
 
                 if (!question) return;
 
-                // Add user question to chat
-                const currentContent = chatContent.textContent;
-                const newContent = currentContent +
-                    (currentContent ? '\n\n' : '') +
-                    `**You:** ${question}\n\n**Assistant:**`;
+                // Add user message
+                addUserMessage(question);
 
-                chatContent.textContent = newContent;
-                localStorage.setItem('chatHistory', newContent);
+                // Add to chat messages array
+                chatMessages.push({type: 'user', content: question});
+
+                // Start assistant message
+                currentAssistantMessageElement = addAssistantMessage("", false);
+
+                // Save chat history
+                saveChatToLocalStorage();
 
                 // Scroll to bottom
                 messageHistory.scrollTop = messageHistory.scrollHeight;
@@ -155,28 +174,100 @@
                 });
             });
 
+            function addUserMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `<p><strong>You:</strong> ${text}</p>`;
+                messageHistory.appendChild(messageDiv);
+                return messageDiv;
+            }
+
+            function addAssistantMessage(initialText, isHistory = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant-message';
+
+                // Create header
+                const header = document.createElement('p');
+                header.innerHTML = '<strong>Assistant:</strong>';
+                messageDiv.appendChild(header);
+
+                // Create the zero-md element for markdown rendering
+                const zeroMd = document.createElement('zero-md');
+
+                // Create a script tag inside zero-md for the markdown content
+                const scriptTag = document.createElement('script');
+                scriptTag.type = 'text/markdown';
+                // Ensure newlines are preserved
+                scriptTag.textContent = initialText;
+
+                // Append script tag to zero-md
+                zeroMd.appendChild(scriptTag);
+
+                // Append zero-md to message
+                messageDiv.appendChild(zeroMd);
+
+                // Append message to history
+                messageHistory.appendChild(messageDiv);
+
+                // Store references if this is a new message (not from history)
+                if (!isHistory) {
+                    currentZeroMd = zeroMd;
+                    currentMarkdownScriptTag = scriptTag;
+                }
+
+                return messageDiv;
+            }
+
             function startEventSource(threadId) {
-                messageContent = "";
+                let assistantResponse = "";
 
                 // Create a new EventSource
                 currentEventSource = new EventSource(`/stream?channel=${threadId}`);
 
                 currentEventSource.addEventListener('message', function(event) {
                     const data = event.data;
+                    console.log('Raw SSE data:', data);
 
-                    if (data) {
+                    if (data && currentMarkdownScriptTag) {
                         // Append to the assistant's message
-                        messageContent += data;
+                        assistantResponse += data;
 
-                        // Update chat display
-                        const currentText = chatContent.textContent;
-                        const messageStart = currentText.lastIndexOf('**Assistant:**');
-
-                        if (messageStart !== -1) {
-                            const newText = currentText.substring(0, messageStart + 14) + " " + messageContent;
-                            chatContent.textContent = newText;
-                            localStorage.setItem('chatHistory', newText);
+                        // Important: We need to preserve newlines and formatting
+                        // First remove the current script tag
+                        if (currentMarkdownScriptTag.parentNode) {
+                            currentMarkdownScriptTag.parentNode.removeChild(currentMarkdownScriptTag);
                         }
+
+                        // Create a new script tag with the updated content
+                        const newScriptTag = document.createElement('script');
+                        newScriptTag.type = 'text/markdown';
+
+                        // Use textContent to preserve newlines
+                        newScriptTag.textContent = assistantResponse;
+
+                        // Append the new script tag
+                        currentZeroMd.appendChild(newScriptTag);
+
+                        // Update our reference
+                        currentMarkdownScriptTag = newScriptTag;
+
+                        // Force zero-md to re-render
+                        currentZeroMd.src = '';  // Reset the src
+                        setTimeout(() => {
+                            // Trigger re-render after a small delay
+                            currentZeroMd.setAttribute('data-timestamp', Date.now());
+                        }, 10);
+
+                        // Update the chat messages array
+                        const lastIndex = chatMessages.length - 1;
+                        if (lastIndex >= 0 && chatMessages[lastIndex].type === 'assistant') {
+                            chatMessages[lastIndex].content = assistantResponse;
+                        } else {
+                            chatMessages.push({type: 'assistant', content: assistantResponse});
+                        }
+
+                        // Save chat history
+                        saveChatToLocalStorage();
 
                         // Scroll to bottom
                         messageHistory.scrollTop = messageHistory.scrollHeight;
@@ -190,15 +281,47 @@
                 });
 
                 currentEventSource.addEventListener('complete', function(event) {
+                    console.log('COMPLETE event:', event);
+                    try {
+                        const parsedData = JSON.parse(event.data);
+                        if (parsedData.full_message) {
+                            // Use parsedData.full_message
+                            assistantResponse = parsedData.full_message;
+                            //currentResponseDiv.textContent = parsedData.full_message;
+                            // rerender the markdown
+                            if (currentMarkdownScriptTag.parentNode) {
+                                currentMarkdownScriptTag.parentNode.removeChild(currentMarkdownScriptTag);
+                            }
+                            const newScriptTag = document.createElement('script');
+                            newScriptTag.type = 'text/markdown';
+                            newScriptTag.textContent = parsedData.full_message;
+                            currentZeroMd.appendChild(newScriptTag);
+                            currentMarkdownScriptTag = newScriptTag;
+                            currentZeroMd.src = '';
+                            setTimeout(() => {
+                                currentZeroMd.setAttribute('data-timestamp', Date.now());
+                            }, 10);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing complete event data:', err);
+                    }
+
+                    // Now finish up
                     currentEventSource.close();
                     loading.style.display = 'none';
                 });
             }
 
+            // Save messages to localStorage
+            function saveChatToLocalStorage() {
+                localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+            }
+
             // Function to clear chat history
             window.clearChat = function() {
-                chatContent.textContent = '';
-                localStorage.removeItem('chatHistory');
+                messageHistory.innerHTML = '';
+                chatMessages = [];
+                localStorage.removeItem('chatMessages');
             };
         });
     </script>
