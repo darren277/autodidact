@@ -43,3 +43,5 @@ REDIRECT_URI = 'http://localhost:5055/callback' if DEBUG else 'https://autodidac
 COGNITO_LOGIN_URL = f'https://{COGNITO_DOMAIN}/oauth2/authorize?client_id={CLIENT_ID}&response_type=code&scope=openid+email+profile&redirect_uri={REDIRECT_URI}&identity_provider=Google'
 
 LOGOUT_URI = "http://localhost:5055/" if DEBUG else "https://autodidact.apphosting.services/"
+
+BLOOMS_LLM_ENDPOINT = os.environ.get('BLOOMS_LLM_ENDPOINT', 'http://localhost:5055/blooms_llm')

@@ -6,6 +6,8 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/edit.css') }}">
+
+<meta name="topic" content="{{ topic }}">
 {% endblock %}
 
 {% block breadcrumb %}
@@ -62,6 +64,10 @@
                             </div>
                             <button type="button" id="add-objective" class="btn-outline-small">
                                 <i class="icon-plus-small"></i> Add Objective
+                            </button>
+<!--                            button to auto generate learning objective -->
+                            <button type="button" id="auto-generate-objective" class="btn-outline-small">
+                                <i class="icon-plus-small"></i> Auto Generate Objective
                             </button>
                         </div>
                     </div>
@@ -359,4 +365,35 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/edit-lessons.js') }}"></script>
+
+<script>
+    function autoGenerateObjective() {
+        const levels = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
+        const level = prompt('Select a Bloom\'s taxonomy level:', levels.join(', '));
+        if (!level) return;
+
+        const topic = document.querySelector('meta[name="topic"]').content;
+        const url = `/lo_chat?stage=${level}&topic=${encodeURIComponent(topic)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('objective', data.objective);
+                const objective = data.objective;
+                const learningObjectivesList = document.getElementById('learning-objectives-list');
+                const objectiveItem = document.createElement('div');
+                objectiveItem.classList.add('objective-item');
+                objectiveItem.innerHTML = `
+                    <input type="text" name="learning_objectives[]" value="${objective}" class="form-control" placeholder="Learning objective">
+                    <button type="button" class="remove-objective" title="Remove objective">✕</button>
+                `;
+                learningObjectivesList.appendChild(objectiveItem);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    document.getElementById('auto-generate-objective').addEventListener('click', autoGenerateObjective);
+</script>
 {% endblock %}

@@ -13,6 +13,7 @@ import redis
 
 from lib.assistant.main import AssistantHandler
 from lib.completions.main import Completions
+from lib.edu.blooms import lo_chat
 
 from lib.tts.main import TTS
 from lib.tts.personalities import descriptors
@@ -588,7 +589,8 @@ def edit_lesson(lesson_id):
         difficulty="Intermediate",
         tags=["Python", "Programming", "Web Development"]
     )
-    return render_template('lessons/edit.html', lesson=lesson)
+    topic = "Python Programming"
+    return render_template('lessons/edit.html', lesson=lesson, topic=topic)
 
 @app.route('/view_lesson/<lesson_id>')
 def view_lesson(lesson_id):
@@ -692,6 +694,37 @@ def module_complete(module_id):
     #module = Module.query.get(module_id)
     module = {"id": 1, "title": "Module 1"}
     return render_template('modules/complete.html', module=module)
+
+fmt1 = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation']
+fmt2 = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create']
+
+mapping_fmt2_to_fmt1 = {
+    'Remember': 'Knowledge',
+    'Understand': 'Comprehension',
+    'Apply': 'Application',
+    'Analyze': 'Analysis',
+    'Evaluate': 'Evaluation',
+    'Create': 'Synthesis'
+}
+
+@app.route('/lo_chat')
+def lo_chat_endpoint():
+    stage = request.args.get('stage', None)
+    topic = request.args.get('topic', None)
+
+    if not stage or not topic:
+        return jsonify({"error": "Invalid request."}), 400
+
+    if stage.lower() not in [stg.lower() for stg in fmt1+fmt2]:
+        return jsonify({"error": "Invalid stage."}), 400
+
+    if stage in fmt2:
+        stage = mapping_fmt2_to_fmt1[stage]
+
+    response = lo_chat(stage, topic)
+
+    return jsonify(dict(objective=response))
+
 
 
 @app.route('/')
