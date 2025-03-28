@@ -6,6 +6,7 @@
 <body>
     <h1>Interactive Learning Companion</h1>
     <form action="/ask" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <textarea name="question" rows="5" cols="60" placeholder="Type your question here..."></textarea><br>
         <input type="submit" value="Ask">
     </form>
