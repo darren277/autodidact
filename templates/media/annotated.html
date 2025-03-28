@@ -1,0 +1,136 @@
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        video {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .annotations {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 1px solid #ccc;
+        }
+        .annotation-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .annotation-item.active {
+            background-color: #ffd700;
+            font-weight: bold;
+        }
+        .segment-note {
+            display: none;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-left: 4px solid #4287f5;
+            margin: 10px 0;
+        }
+        .segment-note.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p>{{ description }}</p>
+    <video id="videoPlayer" controls>
+        <source src="{{ media.media_url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="segment-notes">
+        <h2>Segment Notes</h2>
+        {% for segment in media.segments %}
+        <div class="segment-note" data-start="{{ segment.start }}" data-end="{{ segment.end }}">
+            <h3>{{ segment.title }}</h3>
+            <p>{{ segment.notes }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="annotations">
+        <h2>Annotations</h2>
+        <ul id="annotationList">
+            {% for annotation in media.annotations %}
+            <li class="annotation-item" data-time="{{ annotation.time_seconds }}">
+                <span class="timestamp">{{ annotation.time_human_readable }}</span>: {{ annotation.content }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const annotationItems = document.querySelectorAll('.annotation-item');
+            const segmentNotes = document.querySelectorAll('.segment-note');
+
+            // Function to highlight the current annotation based on video time
+            function updateAnnotationHighlight() {
+                const currentTime = videoPlayer.currentTime;
+                console.log('Current time:', currentTime);
+
+                // Find and highlight the appropriate annotation
+                let activeAnnotationFound = false;
+                annotationItems.forEach(item => {
+                    const annotationTime = parseFloat(item.getAttribute('data-time'));
+                    console.log('Annotation time:', annotationTime);
+
+                    // Check if this annotation is within 2 seconds of the current time
+                    // You can adjust this threshold as needed
+                    if (Math.abs(currentTime - annotationTime) < 2) {
+                        console.log('Active annotation:', item);
+                        item.classList.add('active');
+                        activeAnnotationFound = true;
+
+                        // Optionally scroll to the active annotation
+                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        console.log('Inactive annotation:', item);
+                        item.classList.remove('active');
+                    }
+                });
+
+                // Update segment notes visibility
+                segmentNotes.forEach(note => {
+                    const startTime = parseFloat(note.getAttribute('data-start'));
+                    const endTime = parseFloat(note.getAttribute('data-end'));
+
+                    if (currentTime >= startTime && currentTime <= endTime) {
+                        note.classList.add('active');
+                    } else {
+                        note.classList.remove('active');
+                    }
+                });
+            }
+
+            // Add click event to annotations to jump to that time in the video
+            annotationItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const jumpTime = parseFloat(this.getAttribute('data-time'));
+                    videoPlayer.currentTime = jumpTime;
+                    videoPlayer.play();
+                });
+            });
+
+            // Listen for timeupdate event to update annotation highlights
+            videoPlayer.addEventListener('timeupdate', updateAnnotationHighlight);
+
+            // Initial update
+            updateAnnotationHighlight();
+        });
+    </script>
+</body>
+</html>
