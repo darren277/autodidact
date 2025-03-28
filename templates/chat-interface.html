@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Learning Companion</title>
+    <link crossorigin="anonymous" referrerpolicy="no-referrer" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"></link>
+
+    <!-- Github markdown styles (light/dark) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+    <!-- Highlightjs Github theme (light) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css" />
+
+    <!-- Highlightjs Github theme (prefers dark) -->
+    <link rel="stylesheet" media="(prefers-color-scheme:dark)" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
+
+    <!-- KaTeX styles (needed for math) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css" />
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
+
+    <style>
+        #chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #message-history {
+            border: 1px solid #ccc;
+            height: 400px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .question {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        #question-form {
+            display: flex;
+            flex-direction: column;
+        }
+        #question-form textarea {
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        #question-form button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #question-form button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Interactive Learning Companion</h1>
+
+        <div id="message-history">
+            <article>
+                <zero-md>
+                    <script type="text/markdown" id="chat-content"></script>
+                </zero-md>
+            </article>
+        </div>
+
+        <form id="question-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="question" id="question-input" rows="5" cols="60" placeholder="Type your question here..."></textarea>
+            <button type="submit">Ask</button>
+        </form>
+
+        <div id="loading" class="loading">
+            <i class="fa fa-spinner fa-spin"></i> Assistant is thinking...
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('question-form');
+            const messageHistory = document.getElementById('message-history');
+            const chatContent = document.getElementById('chat-content');
+            const loading = document.getElementById('loading');
+            let currentEventSource = null;
+            let messageContent = "";
+
+            // Initialize chat content from localStorage if available
+            if (localStorage.getItem('chatHistory')) {
+                chatContent.textContent = localStorage.getItem('chatHistory');
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const questionInput = document.getElementById('question-input');
+                const question = questionInput.value.trim();
+
+                if (!question) return;
+
+                // Add user question to chat
+                const currentContent = chatContent.textContent;
+                const newContent = currentContent +
+                    (currentContent ? '\n\n' : '') +
+                    `**You:** ${question}\n\n**Assistant:**`;
+
+                chatContent.textContent = newContent;
+                localStorage.setItem('chatHistory', newContent);
+
+                // Scroll to bottom
+                messageHistory.scrollTop = messageHistory.scrollHeight;
+
+                // Clear input and show loading
+                questionInput.value = '';
+                loading.style.display = 'block';
+
+                // Close previous event source if exists
+                if (currentEventSource) {
+                    currentEventSource.close();
+                }
+
+                // Send the question to server
+                fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.thread_id) {
+                        // Start listening for SSE events
+                        startEventSource(data.thread_id);
+                    } else {
+                        console.error('No thread_id received');
+                        loading.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                });
+            });
+
+            function startEventSource(threadId) {
+                messageContent = "";
+
+                // Create a new EventSource
+                currentEventSource = new EventSource(`/stream?channel=${threadId}`);
+
+                currentEventSource.addEventListener('message', function(event) {
+                    const data = event.data;
+
+                    if (data) {
+                        // Append to the assistant's message
+                        messageContent += data;
+
+                        // Update chat display
+                        const currentText = chatContent.textContent;
+                        const messageStart = currentText.lastIndexOf('**Assistant:**');
+
+                        if (messageStart !== -1) {
+                            const newText = currentText.substring(0, messageStart + 14) + " " + messageContent;
+                            chatContent.textContent = newText;
+                            localStorage.setItem('chatHistory', newText);
+                        }
+
+                        // Scroll to bottom
+                        messageHistory.scrollTop = messageHistory.scrollHeight;
+                    }
+                });
+
+                currentEventSource.addEventListener('error', function(event) {
+                    console.error('EventSource error:', event);
+                    currentEventSource.close();
+                    loading.style.display = 'none';
+                });
+
+                currentEventSource.addEventListener('complete', function(event) {
+                    currentEventSource.close();
+                    loading.style.display = 'none';
+                });
+            }
+
+            // Function to clear chat history
+            window.clearChat = function() {
+                chatContent.textContent = '';
+                localStorage.removeItem('chatHistory');
+            };
+        });
+    </script>
+</body>
+</html>
