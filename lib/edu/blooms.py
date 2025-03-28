@@ -223,6 +223,25 @@ class LOController:
         return los
 
 
+
+LO_PROMPT = 'You are a helpful tutor on all topics. You are helping a student generate a learning objective for a lesson. The student is asking you to use Bloom\'s Taxonomy to generate a learning objective for a specific stage and topic. The student has will ask you to generate a learning objective for a particular taxonomy stage and a specific topic'
+LO_PROMPT += 'You are to provide only the learning objective and no context or explanation prior to it, as the learning objective will be added directly to the lesson plan.'
+
+
+
+def lo_chat(stage: str, topic: str) -> str:
+    if stage.lower() not in [stg.lower() for stg in BloomsTaxonomy().d().keys()]:
+        raise ValueError(f"Invalid stage: {stage}")
+
+    message = f"Using Bloom's Taxonomy, generate a learning objective for {stage} stage, {topic} topic"
+
+    from lib.completions.main import Completions
+    from settings import GPT_MODEL_ID
+
+    assistant_message = Completions(model=GPT_MODEL_ID, system_prompt=LO_PROMPT).complete(message)
+    return assistant_message
+
+
 def test():
     from settings import BLOOMS_LLM_ENDPOINT
     lo_controller = LOController(BLOOMS_LLM_ENDPOINT)
