@@ -42,6 +42,8 @@ csrf = CSRFProtect(app)
 
 app.secret_key = APP_SECRET_KEY
 
+DEFAULT_ASSISTANT_ID = "asst_X0dIT6aOTHFQgJNE923sjv8E"
+
 
 
 
@@ -58,57 +60,81 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 #app.register_blueprint(sse, url_prefix='/stream')
 
-@app.route('/stream1')
-def stream1():
-    def generate():
-        for i in range(5):
-            yield f"data: Event {i}\n\n"
-    return Response(generate(), content_type='text/event-stream')
-
-@app.route('/stream')
-def stream():
-    def generate():
-        pubsub = r.pubsub()
-        pubsub.subscribe('channel')
-        for message in pubsub.listen():
-            yield f"data: {message['data']}\n\n"
-    return Response(generate(), content_type='text/event-stream')
-
-#app.run(host='0.0.0.0', port=8000)
-
-#quit(54)
 
 
 @app.route('/chat')
 def chat():
-    return render_template('chat.html')
-    #return open('templates/index.html').read()
+    return render_template('chat-interface.html')
 
 
 @app.route('/ask', methods=['POST'])
 def ask():
+    # Extract question from form or JSON data
+    if request.is_json:
+        data = request.get_json()
+        question = data.get('question')
+    else:
+        question = request.form.get('question')
 
-    question = request.form.get('question')
     if not question:
-        question = request.json.get('question', None)
-        if not question:
-            return Response("Invalid request", status=400)
-    assistant_id = request.form.get('assistant_id', None)
+        return jsonify({"error": "No question provided"}), 400
 
+    assistant_id = request.form.get('assistant_id', DEFAULT_ASSISTANT_ID)
+
+    # Generate a unique thread ID based on client IP and timestamp
+    from datetime import datetime
+    import hashlib
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    thread_id = hashlib.md5(f"{request.remote_addr}_{timestamp}".encode()).hexdigest()
+
+    # Initialize the assistant handler
     assistant_handler = AssistantHandler(question, assistant_id)
     assistant_handler._r = r
-    assistant_handler.initialize_app(app)
+    assistant_handler._FLASK_SSE = False  # Use Redis directly
+    assistant_handler._py_thread_id = thread_id
 
-    # You can use a unique identifier per user/session
-    py_thread_id = request.remote_addr
-
+    # Start a background thread to process the assistant response
     threading.Thread(
         target=assistant_handler.run,
-        args=(py_thread_id,)
+        args=(thread_id,)
     ).start()
 
-    #return render_template('response.html', question=question, thread_id=py_thread_id)
-    return ""
+    # Return the thread ID to the client
+    return jsonify({"thread_id": thread_id})
+
+
+@app.route('/stream')
+def stream():
+    """Stream endpoint that uses Redis pub/sub for real-time updates."""
+    channel = request.args.get('channel')
+
+    if not channel:
+        return Response("Channel parameter is required", status=400)
+
+    def generate():
+        pubsub = r.pubsub()
+        pubsub.subscribe(channel)
+
+        # Send a content type header for SSE
+        yield "Content-Type: text/event-stream\n\n"
+
+        try:
+            # Keep the connection open and stream messages
+            for message in pubsub.listen():
+                if message['type'] == 'message':
+                    data = message['data'].decode('utf-8')
+                    yield f"data: {data}\n\n"
+
+            # Send a completion event when done
+            yield "event: complete\ndata: {}\n\n"
+
+        except GeneratorExit:
+            # Clean up when the client disconnects
+            pubsub.unsubscribe()
+            pubsub.close()
+
+    return Response(generate(), mimetype='text/event-stream')
 
 
 '''
