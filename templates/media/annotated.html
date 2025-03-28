@@ -55,7 +55,7 @@
         {% for segment in media.segments %}
         <div class="segment-note" data-start="{{ segment.start }}" data-end="{{ segment.end }}">
             <h3>{{ segment.title }}</h3>
-            <p>{{ segment.note }}</p>
+            <p>{{ segment.notes }}</p>
         </div>
         {% endfor %}
     </div>
@@ -65,14 +65,13 @@
         <ul id="annotationList">
             {% for annotation in media.annotations %}
             <li class="annotation-item" data-time="{{ annotation.time_seconds }}">
-                <span class="timestamp">{{ annotation.time }}</span>: {{ annotation.content }}
+                <span class="timestamp">{{ annotation.time_human_readable }}</span>: {{ annotation.content }}
             </li>
             {% endfor %}
         </ul>
     </div>
 
     <script>
-        // TODO: Current time and actual time seem out of sync... 90 seconds current time should be 1:30 in the video...
         document.addEventListener('DOMContentLoaded', function() {
             const videoPlayer = document.getElementById('videoPlayer');
             const annotationItems = document.querySelectorAll('.annotation-item');
@@ -92,12 +91,14 @@
                     // Check if this annotation is within 2 seconds of the current time
                     // You can adjust this threshold as needed
                     if (Math.abs(currentTime - annotationTime) < 2) {
+                        console.log('Active annotation:', item);
                         item.classList.add('active');
                         activeAnnotationFound = true;
 
                         // Optionally scroll to the active annotation
                         item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     } else {
+                        console.log('Inactive annotation:', item);
                         item.classList.remove('active');
                     }
                 });
