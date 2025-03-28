@@ -1,5 +1,6 @@
 """"""
-from flask_sse import sse
+import json
+from typing import Optional, List, Dict
 
 from lib.assistant.initialize import logger
 from lib.assistant.process_run_events import process_run_events
@@ -10,54 +11,108 @@ DEFAULT_ASSISTANT_ID = "asst_X0dIT6aOTHFQgJNE923sjv8E"
 
 
 class AssistantHandler:
-    def __init__(self, prompt: str, assistant_id: str or None, tools: [dict] = None):
+    def __init__(self, prompt: str, assistant_id: Optional[str] = None, tools: Optional[List[Dict]] = None):
+        """
+        Initialize the AssistantHandler with a prompt and optional assistant ID and tools.
+
+        Args:
+            prompt: The user's question or prompt
+            assistant_id: The OpenAI Assistant ID to use (optional)
+            tools: List of tools to make available to the assistant (optional)
+        """
         self.prompt = prompt
-        # TODO: This should not default to a constant in production.
-        self.assistant_id = assistant_id or DEFAULT_ASSISTANT_ID
-        self.tools = tools
+        self.assistant_id = assistant_id
+        self.tools = tools or []
 
-        self._app = None
-        self._logger = logger
-        self._py_thread_id = None
-
+        # Internal state
         self._full_message = ""
-
-        self._r = None
-        self._FLASK_SSE = False
-
-    def initialize_app(self, app):
-        self._app = app
+        self._py_thread_id = None
+        self._r = None  # Redis client
+        self._FLASK_SSE = False  # Flag to determine which streaming method to use
 
     def front_end_callback(self, message):
-        logger.debug(f"Assistant: {message}")
-        self._full_message += message[0].text.value
+        """
+        Callback function that processes each message chunk from the OpenAI API.
 
-        #def handle_assistant_response(app, question: str, py_thread_id):
-        if self._app:
-            with self._app.app_context():
-                #asm = AssistantStateMachine(py_thread_id, question, tools)
-                #asm.start()
-                # serialize(event), "type": "message_delta"
-                sse = self._r
-                #sse.publish({"message": message[0].text.value, "type": "message_delta"}, type='assistant_response')#, channel=self._py_thread_id)
-                self.publish(self._py_thread_id, message[0].text.value)
-                ...
+        This method publishes the message chunk to the appropriate channel
+        for streaming to the frontend.
 
-    def publish(self, message):
+        Args:
+            message: Message chunk from the OpenAI API
+        """
+        if not message or not hasattr(message[0], 'text') or not hasattr(message[0].text, 'value'):
+            logger.warning("Received invalid message format")
+            return
+
+        # Extract the text from the message
+        text_value = message[0].text.value
+        logger.debug(f"Assistant: {text_value}")
+
+        # Append to the full message
+        self._full_message += text_value
+
+        # Publish the message chunk for streaming
+        self.publish(text_value)
+
+    def publish(self, message_text):
+        """
+        Publish a message to the appropriate streaming channel.
+
+        Args:
+            message_text: Text content to publish
+        """
         if self._FLASK_SSE:
-            sse.publish({"message": message[0].text.value, "type": "message_delta"}, type='assistant_response')  # , channel=self._py_thread_id)
+            # When using Flask-SSE (not recommended based on your experience)
+            from flask_sse import sse
+            sse.publish(
+                {"message": message_text, "type": "message_delta"},
+                type='assistant_response'
+            )
         else:
-            self._r.publish(self._py_thread_id, message[0].text.value)
+            # When using Redis directly (recommended)
+            if self._r and self._py_thread_id:
+                self._r.publish(self._py_thread_id, message_text)
+            else:
+                logger.error("Cannot publish: Redis or thread_id not set")
 
+    def run(self, thread_id: str):
+        """
+        Run the assistant with the provided prompt and stream the response.
 
-    def run(self, py_thread_id):
-        from lib.tools.arithmetic import tools as arithmetic_tools
+        Args:
+            thread_id: Unique identifier for this conversation
+        """
+        # Store the thread ID for publishing
+        self._py_thread_id = thread_id
 
-        self._py_thread_id = py_thread_id
+        try:
+            # Start the assistant run - replace with your actual implementation
+            event_stream, openai_thread_id = start_assistant_run(
+                self.prompt,
+                self.assistant_id,
+                self.tools
+            )
 
-        tools = self.tools or arithmetic_tools
-        event_stream, thread_id = start_assistant_run(self.prompt, self.assistant_id, tools)
-        process_run_events(event_stream, thread_id, self.front_end_callback)
+            # Process events and call the callback for each message chunk
+            process_run_events(
+                event_stream,
+                openai_thread_id,
+                self.front_end_callback
+            )
 
-        self._logger.debug(f"Full message: {self._full_message}")
+            # Log the complete message when done
+            logger.debug(f"Full message: {self._full_message}")
+
+            # Optionally send a completion signal
+            if self._r and self._py_thread_id:
+                self._r.publish(f"{self._py_thread_id}_complete", json.dumps({"complete": True, "full_message": self._full_message}))
+
+        except Exception as e:
+            logger.error(f"Error running assistant: {str(e)}")
+            # Try to notify the client about the error
+            if self._r and self._py_thread_id:
+                self._r.publish(
+                    self._py_thread_id,
+                    f"An error occurred while processing your request: {str(e)}"
+                )
 
