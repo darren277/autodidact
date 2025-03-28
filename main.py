@@ -588,7 +588,8 @@ def edit_lesson(lesson_id):
         difficulty="Intermediate",
         tags=["Python", "Programming", "Web Development"]
     )
-    return render_template('lessons/edit.html', lesson=lesson)
+    topic = "Python Programming"
+    return render_template('lessons/edit.html', lesson=lesson, topic=topic)
 
 @app.route('/view_lesson/<lesson_id>')
 def view_lesson(lesson_id):
