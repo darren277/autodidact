@@ -694,6 +694,35 @@ def module_complete(module_id):
     return render_template('modules/complete.html', module=module)
 
 
+
+@app.route('/annotated_media/<media_id>')
+def annotated_media(media_id):
+    media = {
+        "title": "Video Tutorial: Dolor Sit Amet in Practice",
+        "description": "Watch an expert demonstrate key techniques",
+        "media_url": "/static/media/KurzgesagtVideoIn1200Hours.mp4",
+        "annotations": [
+            {
+                "time": "0:00",
+                "content": "Introduction to Dolor Sit Amet"
+            },
+            {
+                "time": "1:30",
+                "content": "Demonstration of Technique 1"
+            },
+            {
+                "time": "3:15",
+                "content": "Discussion of Technique 2"
+            },
+            {
+                "time": "5:00",
+                "content": "Q&A Session"
+            }
+        ]
+    }
+    return render_template('media/annotated.html', media=media)
+
+
 @app.route('/')
 def index():
     if 'user' in session:
