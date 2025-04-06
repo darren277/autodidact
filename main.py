@@ -17,6 +17,9 @@ from lib.edu.blooms import lo_chat
 
 from lib.tts.main import TTS
 from lib.tts.personalities import descriptors
+from routes.api.courses import courses_route, course_route
+from routes.api.lessons import lessons_route, lesson_route
+from routes.api.modules import modules_route, module_route
 
 from utils.example_structured_notes import data
 
@@ -518,173 +521,29 @@ def practice():
 
 @app.route('/api/lessons', methods=['GET', 'POST'])
 def api_lessons():
-    from models.lessons import Lesson, Module
-    if request.method == 'GET':
-        lessons = Lesson.query.all()
-        print("DEBUG PRINT /api/lessons:", lessons)
-        return jsonify([lesson.json() for lesson in lessons])
-    elif request.method == 'POST':
-        data = request.json
-        title = data.get('title', None)
-        content = data.get('content', None)
-        module_id = data.get('module_id', None)
-        if not title or not content or not module_id:
-            return jsonify({"error": "Missing required fields."}), 400
-
-        # check if module exists...
-        module = Module.query.get(module_id)
-        if not module:
-            return jsonify({"error": "Module not found."}), 400
-
-        lesson = Lesson(title=title, content=content, module_id=module_id)
-
-        # Optional fields: start_date, end_date...
-        if data.get('start_date', None): lesson.start_date = data['start_date']
-        if data.get('end_date', None): lesson.end_date = data['end_date']
-
-        db.session.add(lesson)
-        db.session.commit()
-        return jsonify({"message": "Lesson added successfully."})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return lessons_route(db)
 
 @app.route('/api/lessons/<lesson_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_lesson(lesson_id):
-    from models.lessons import Lesson
-    lesson = Lesson.query.get(lesson_id)
-    if not lesson:
-        return jsonify({"error": "Lesson not found."}), 404
-    if request.method == 'GET':
-        return jsonify(lesson.json())
-    elif request.method == 'PUT':
-        data = request.json
-        title = data.get('title', None)
-        content = data.get('content', None)
-        module_id = data.get('module_id', None)
-
-        missing_fields = []
-
-        if title: lesson.title = title
-        else: missing_fields.append("title")
-
-        if content: lesson.content = content
-        else: missing_fields.append("content")
-
-        if module_id: lesson.module_id = module_id
-        else: missing_fields.append("module_id")
-
-        if missing_fields:
-            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-        db.session.commit()
-        return jsonify({"message": "Lesson updated successfully."})
-    elif request.method == 'DELETE':
-        db.session.delete(lesson)
-        db.session.commit()
-        return jsonify({"message": "Lesson deleted successfully."})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return lesson_route(db, lesson_id)
 
 
 @app.route('/api/modules', methods=['GET', 'POST'])
 def api_modules():
-    from models.lessons import Module
-    if request.method == 'GET':
-        modules = Module.query.all()
-        return jsonify([module.json() for module in modules])
-    elif request.method == 'POST':
-        data = request.json
-        title = data.get('title', None)
-        course_id = data.get('course_id', None)
-        if not title or not course_id:
-            return jsonify({"error": "Missing required fields."}), 400
-
-        # Optional fields: start_date, end_date...
-        start_date = data.get('start_date', None)
-        end_date = data.get('end_date', None)
-        description = data.get('description', None)
-
-        # check if course exists...
-        from models.lessons import Course
-        course = Course.query.get(course_id)
-        if not course:
-            return jsonify({"error": "Course not found."}), 400
-
-        module = Module(title=title, course_id=course_id)
-
-        if start_date: module.start_date = start_date
-        if end_date: module.end_date = end_date
-        if description: module.description = description
-
-        db.session.add(module)
-        db.session.commit()
-        return jsonify({"message": "Module added successfully.", "module_id": module.id})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return modules_route(db)
 
 @app.route('/api/modules/<module_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_module(module_id):
-    from models.lessons import Module
-    module = Module.query.get(module_id)
-    if not module:
-        return jsonify({"error": "Module not found."}), 404
-    if request.method == 'GET':
-        return jsonify(module.json())
-    elif request.method == 'PUT':
-        data = request.json
-        title = data.get('title', None)
-        if title:
-            module.title = title
-        db.session.commit()
-        return jsonify({"message": "Module updated successfully."})
-    elif request.method == 'DELETE':
-        db.session.delete(module)
-        db.session.commit()
-        return jsonify({"message": "Module deleted successfully."})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return module_route(db, module_id)
 
 
 @app.route('/api/courses', methods=['GET', 'POST'])
 def api_courses():
-    from models.lessons import Course
-    if request.method == 'GET':
-        courses = Course.query.all()
-        return jsonify([course.json() for course in courses])
-    elif request.method == 'POST':
-        data = request.json
-        title = data.get('title', None)
-        if not title:
-            return jsonify({"error": "Missing required fields."}), 400
-
-        course = Course(title=title)
-        db.session.add(course)
-        db.session.commit()
-        return jsonify({"message": "Course added successfully.", "course_id": course.id})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return courses_route(db)
 
 @app.route('/api/courses/<course_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_course(course_id):
-    from models.lessons import Course
-    course = Course.query.get(course_id)
-    if not course:
-        return jsonify({"error": "Course not found."}), 404
-    if request.method == 'GET':
-        return jsonify(course.json())
-    elif request.method == 'PUT':
-        data = request.json
-        title = data.get('title', None)
-        if title:
-            course.title = title
-        db.session.commit()
-        return jsonify({"message": "Course updated successfully."})
-    elif request.method == 'DELETE':
-        db.session.delete(course)
-        db.session.commit()
-        return jsonify({"message": "Course deleted successfully."})
-    else:
-        return jsonify({"error": "Invalid request method."}), 400
+    return course_route(db, course_id)
 
 
 @app.route('/list_lessons')
