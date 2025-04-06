@@ -1,16 +1,9 @@
 """"""
-import json
-import asyncio
 from flask import Flask, request, Response, render_template, jsonify, session, redirect
 from flask_sse import sse
 
 import redis
 
-from lib.completions.main import Completions
-from lib.edu.blooms import lo_chat
-
-from lib.tts.main import TTS
-from lib.tts.personalities import descriptors
 from routes.api.courses import courses_route, course_route
 from routes.api.lessons import lessons_route, lesson_route
 from routes.api.modules import modules_route, module_route
@@ -21,8 +14,9 @@ from routes.lo import lo_route
 from routes.summarize import summarize_route
 from routes.tts import tts_route
 from utils.convert_to_markdown import convert_to_simple_markdown
+from utils.example_lesson import example_lesson
 from utils.example_media_annotation import example_media_annotation
-from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
+from utils.example_module import example_module
 
 from utils.example_structured_notes import data
 
@@ -131,20 +125,11 @@ def dashboard():
 
 @app.route('/module/<module_id>')
 def module(module_id):
+    module_data = example_module
     return render_template(
         f'module.html',
         active_page=f'module_{module_id}',
-        title="Module 1: Introduction to Lorem Ipsum",
-        page_title="Module 1: Introduction to Lorem Ipsum",
-        module_progress=example_module_progress,
-        module_download_materials_link="#",
-        module_take_quiz_link="#",
-        module_description="""
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius massa vitae semper consectetur. Proin lobortis, nunc nec vehicula posuere, turpis velit scelerisque nisi, et convallis lectus massa eget eros.</p>
-        <p>This module will cover fundamental concepts of Lorem Ipsum and provide practical exercises to reinforce your understanding.</p>
-        """,
-        lesson_cards=example_module_lesson_cards,
-        resources=example_module_resources
+        **module_data
     )
 
 @app.route('/practice')
@@ -192,41 +177,21 @@ def create_lesson():
 def edit_lesson(lesson_id):
     from models.lessons import Lesson
     #lesson = Lesson.query.get(lesson_id)
-    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
-    lesson.update(
-        estimated_time=dict(
-            hours=1,
-            minutes=30
-        ),
-        difficulty="Intermediate",
-        tags=["Python", "Programming", "Web Development"]
-    )
-    topic = "Python Programming"
-    return render_template('lessons/edit.html', lesson=lesson, topic=topic)
+    lesson = example_lesson
+    return render_template('lessons/edit.html', lesson=lesson, topic=lesson['topic'])
 
 @app.route('/view_lesson/<lesson_id>')
 def view_lesson(lesson_id):
     from models.lessons import Lesson
     #lesson = Lesson.query.get(lesson_id)
-    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
-    lesson.update(
-        estimated_time=dict(
-            hours=1,
-            minutes=30
-        ),
-        difficulty="Intermediate",
-        tags=["Python", "Programming", "Web Development"]
-    )
-    user_progress = dict(
-        completed=True,
-    )
+    lesson = example_lesson
     other_lessons = []
     notes = convert_to_simple_markdown(data)
     audio_notes = 'presentation'
     return render_template(
         'lessons/view.html',
         lesson=lesson,
-        user_progress=user_progress,
+        user_progress=lesson['user_progress'],
         other_lessons=other_lessons,
         user_notes=notes,
         audio_notes=audio_notes
@@ -255,15 +220,7 @@ def preview_lesson(lesson_id):
     # TODO...
     from models.lessons import Lesson
     #lesson = Lesson.query.get(lesson_id)
-    lesson = {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."}
-    lesson.update(
-        estimated_time=dict(
-            hours=1,
-            minutes=30
-        ),
-        difficulty="Intermediate",
-        tags=["Python", "Programming", "Web Development"]
-    )
+    lesson = example_lesson
     return render_template('lessons/preview.html', lesson=lesson)
 
 @app.route('/list_modules')

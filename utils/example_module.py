@@ -80,3 +80,17 @@ example_module_resources = [
         "action": "Visit"
     }
 ]
+
+example_module = dict(
+    title="Module 1: Introduction to Lorem Ipsum",
+    page_title="Module 1: Introduction to Lorem Ipsum",
+    module_progress=example_module_progress,
+    module_download_materials_link="#",
+    module_take_quiz_link="#",
+    module_description="""
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius massa vitae semper consectetur. Proin lobortis, nunc nec vehicula posuere, turpis velit scelerisque nisi, et convallis lectus massa eget eros.</p>
+    <p>This module will cover fundamental concepts of Lorem Ipsum and provide practical exercises to reinforce your understanding.</p>
+    """,
+    lesson_cards=example_module_lesson_cards,
+    resources=example_module_resources
+)
