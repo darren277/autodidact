@@ -537,6 +537,11 @@ def api_lessons():
             return jsonify({"error": "Module not found."}), 400
 
         lesson = Lesson(title=title, content=content, module_id=module_id)
+
+        # Optional fields: start_date, end_date...
+        if data.get('start_date', None): lesson.start_date = data['start_date']
+        if data.get('end_date', None): lesson.end_date = data['end_date']
+
         db.session.add(lesson)
         db.session.commit()
         return jsonify({"message": "Lesson added successfully."})
@@ -590,10 +595,27 @@ def api_modules():
     elif request.method == 'POST':
         data = request.json
         title = data.get('title', None)
-        if not title:
+        course_id = data.get('course_id', None)
+        if not title or not course_id:
             return jsonify({"error": "Missing required fields."}), 400
 
-        module = Module(title=title)
+        # Optional fields: start_date, end_date...
+        start_date = data.get('start_date', None)
+        end_date = data.get('end_date', None)
+        description = data.get('description', None)
+
+        # check if course exists...
+        from models.lessons import Course
+        course = Course.query.get(course_id)
+        if not course:
+            return jsonify({"error": "Course not found."}), 400
+
+        module = Module(title=title, course_id=course_id)
+
+        if start_date: module.start_date = start_date
+        if end_date: module.end_date = end_date
+        if description: module.description = description
+
         db.session.add(module)
         db.session.commit()
         return jsonify({"message": "Module added successfully."})
