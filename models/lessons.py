@@ -1,5 +1,6 @@
 """"""
-# SQL-Alchemy models for Lessons and Modules
+# SQL-Alchemy models for Lessons and Modules and Courses.
+# One Course consists of Many Modules.
 # One Module consists of Many Lessons.
 
 from main import db
@@ -35,6 +36,22 @@ class Module(db.Model):
             'id': self.id,
             'title': self.title,
             'lessons': [lesson.json() for lesson in self.lessons]
+        }
+
+
+class Course(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    modules = db.relationship('Module', backref='course', lazy=True)
+
+    def __repr__(self):
+        return f"Course('{self.title}')"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'modules': [module.json() for module in self.modules]
         }
 
 
