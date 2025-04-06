@@ -21,6 +21,7 @@ from routes.api.courses import courses_route, course_route
 from routes.api.lessons import lessons_route, lesson_route
 from routes.api.modules import modules_route, module_route
 from routes.assistant import ask_route, stream_route
+from routes.auth import auth_callback_route, auth_logout_route
 from utils.example_media_annotation import example_media_annotation
 from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
 
@@ -575,56 +576,12 @@ def login():
 
 @app.route('/callback')
 def callback():
-    code = request.args.get('code')
-
-    token_url = f'https://{COGNITO_DOMAIN}/oauth2/token'
-
-    auth_string = f'{CLIENT_ID}:{CLIENT_SECRET}'
-    auth_header = base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Basic {auth_header}'
-    }
-
-    body = {
-        'grant_type': 'authorization_code',
-        'client_id': CLIENT_ID,
-        'code': code,
-        'redirect_uri': REDIRECT_URI
-    }
-
-    response = requests.post(token_url, headers=headers, data=body)
-
-    if response.status_code == 200:
-        tokens = response.json()
-
-        user_info_url = f'https://{COGNITO_DOMAIN}/oauth2/userInfo'
-        headers = {
-            'Authorization': f'Bearer {tokens["access_token"]}'
-        }
-
-        user_response = requests.get(user_info_url, headers=headers)
-
-        if user_response.status_code == 200:
-            user_info = user_response.json()
-            session['user'] = user_info
-            return redirect(url_for('index'))
-
-    return 'Authentication Error', 400
+    return auth_callback_route()
 
 
 @app.route('/logout')
 def logout():
-    session.clear()
-
-    logout_url = (
-        f'https://{COGNITO_DOMAIN}/logout?'
-        f'client_id={CLIENT_ID}&'
-        f'logout_uri={parse.quote(LOGOUT_URI)}'
-    )
-
-    return redirect(logout_url)
+    return auth_logout_route()
 
 
 
