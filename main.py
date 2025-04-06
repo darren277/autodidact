@@ -18,7 +18,7 @@ from lib.edu.blooms import lo_chat
 from lib.tts.main import TTS
 from lib.tts.personalities import descriptors
 
-from tests.example_structured_notes import data
+from utils.example_structured_notes import data
 
 from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, LOGOUT_URI, COGNITO_LOGIN_URL
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
