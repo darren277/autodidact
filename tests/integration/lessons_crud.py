@@ -2,6 +2,74 @@
 import requests
 from settings import PORT
 
+
+def get_csrf_token(s):
+    secret_key = 'some super secret key that is changed before deployment'
+    from urllib.parse import quote
+    response = s.get(f'http://localhost:{PORT}/csrf_token?key={quote(secret_key)}')
+    if response.status_code == 200:
+        return response.json().get('csrf_token')
+    return None
+
+
+def headers(s):
+    csrf_token = get_csrf_token(s)
+
+    headers = {
+        'X-CSRFToken': csrf_token,
+        'Content-Type': 'application/json'
+    }
+
+    return headers
+
+
+def test_create_course():
+    data = {
+        "title": "Test Course",
+    }
+
+    with requests.Session() as s:
+        response = s.post(f'http://localhost:{PORT}/api/courses', json=data, headers=headers(s))
+
+        print(response.status_code)
+        print(response.json())
+
+
+def test_get_courses():
+    response = requests.get(f'http://localhost:{PORT}/api/courses')
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_get_specific_course():
+    response = requests.get(f'http://localhost:{PORT}/api/courses/1')
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_update_course():
+    data = {
+        "title": "Updated Test Course"
+    }
+
+    with requests.Session() as s:
+        response = s.put(f'http://localhost:{PORT}/api/courses/1', json=data, headers=headers(s))
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_delete_course():
+    with requests.Session() as s:
+        response = s.delete(f'http://localhost:{PORT}/api/course/1', headers=headers(s))
+
+    print(response.status_code)
+    print(response.json())
+
+
+
 def test_create_module():
     data = {
         "title": "Test Module"
@@ -94,6 +162,12 @@ def test_delete_lesson():
 
 
 if __name__ == '__main__':
+    test_create_course()
+    test_get_courses()
+    test_get_specific_course()
+    test_update_course()
+    test_delete_course()
+
     test_create_module()
     test_get_modules()
     test_get_specific_module()
