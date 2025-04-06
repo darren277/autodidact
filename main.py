@@ -618,7 +618,7 @@ def api_modules():
 
         db.session.add(module)
         db.session.commit()
-        return jsonify({"message": "Module added successfully."})
+        return jsonify({"message": "Module added successfully.", "module_id": module.id})
     else:
         return jsonify({"error": "Invalid request method."}), 400
 
@@ -660,7 +660,7 @@ def api_courses():
         course = Course(title=title)
         db.session.add(course)
         db.session.commit()
-        return jsonify({"message": "Course added successfully."})
+        return jsonify({"message": "Course added successfully.", "course_id": course.id})
     else:
         return jsonify({"error": "Invalid request method."}), 400
 
