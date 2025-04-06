@@ -1,5 +1,7 @@
 """"""
-from settings import OPENPROJECT_URL, OPENPROJECT_API_KEY
+import requests
+
+from settings import OPENPROJECT_URL, OPENPROJECT_API_KEY, PORT
 from pyopenproject.openproject import OpenProject
 import pyopenproject
 
@@ -105,7 +107,9 @@ def serialize_project(project: pyopenproject.model.project.Project):
                 title=wp['subject'],
                 description=wp['description'],
                 createdAt=wp['createdAt'],
-                updatedAt=wp['updatedAt']
+                updatedAt=wp['updatedAt'],
+                startDate=wp['startDate'],
+                dueDate=wp['dueDate'],
             )
             modules.append(module)
 
@@ -121,6 +125,8 @@ def serialize_project(project: pyopenproject.model.project.Project):
 
 
 def export_project(course_name: str = None):
+    from utils.get_headers import headers
+
     try:
         project = [p for p in op.get_project_service().find_all() if p.identifier == course_name][0]
     except Exception as e:
@@ -132,7 +138,64 @@ def export_project(course_name: str = None):
     print(f'Course name: {data["name"]}')
     print(f'Course ID: {data["id"]}')
     print(f'Course description: {data["description"]}')
-    print(f'Course modules: {data["modules"]}')
     print(f'Course modules count: {len(data["modules"])}')
+
+    course_data = {
+        "title": data["name"],
+        "description": data["description"]
+    }
+
+    with requests.Session() as s:
+        header_data = headers(s)
+
+        response = s.post(f'http://localhost:{PORT}/api/courses', json=course_data, headers=header_data)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to create course. {response.status_code} - {response.text}")
+
+        course_id = response.json().get('course_id')
+
+        if course_id is None:
+            raise Exception(f"Failed to create course (`id` is null). {response.status_code} - {response.text}")
+
+        for module in data['modules']:
+            # `description` format: {'format': 'markdown', 'raw': '', 'html': ''}
+            description = module['description']['html']
+            if not description: description = "TBD"
+
+            module_data = {
+                "title": module['title'],
+                "description": description,
+                "course_id": course_id,
+                "start_date": module['startDate'],
+                "end_date": module['dueDate']
+            }
+
+            response = s.post(f'http://localhost:{PORT}/api/modules', json=module_data, headers=header_data)
+
+            module_id = response.json().get('module_id')
+
+            if response.status_code != 200:
+                raise Exception(f"Failed to create module. {response.status_code} - {response.text}")
+
+            print(f"Lessons count: {len(module['lessons'])}")
+            for lesson in module['lessons']:
+                # `description` format: {'format': 'markdown', 'raw': '', 'html': ''}
+                content = lesson['description'].get('html')
+                if not content: content = "TBD"
+
+                lesson_data = {
+                    "title": lesson['subject'],
+                    "content": content,
+                    "module_id": module_id,
+                    "start_date": lesson['startDate'],
+                    "end_date": lesson['dueDate'],
+                    # TODO: "attachments": lesson['attachments'],
+                }
+
+                response = s.post(f'http://localhost:{PORT}/api/lessons', json=lesson_data, headers=header_data)
+
+                if response.status_code != 200:
+                    raise Exception(f"Failed to create lesson. {response.status_code} - {response.text}")
 
     return data
