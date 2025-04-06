@@ -17,6 +17,7 @@ from routes.api.modules import modules_route, module_route
 from routes.assistant import ask_route, stream_route
 from routes.auth import auth_callback_route, auth_logout_route
 from routes.convert_notes import convert_notes_route
+from routes.lo import lo_route
 from utils.convert_to_markdown import convert_to_simple_markdown
 from utils.example_media_annotation import example_media_annotation
 from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
@@ -44,20 +45,16 @@ csrf = CSRFProtect(app)
 
 app.secret_key = APP_SECRET_KEY
 
-
 if ENABLE_CORS:
     #CORS(app, supports_credentials=True)
     #CORS(app, resources={r"/*": {"origins": "*", "allow_headers": ["*"]}})
     CORS(app)
-
-
 
 app.config["REDIS_URL"] = REDIS_URL
 
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 #app.register_blueprint(sse, url_prefix='/stream')
-
 
 
 @app.route('/csrf_token')
@@ -78,22 +75,17 @@ def csrf_token():
     token = app.jinja_env.globals["csrf_token"]()
     return jsonify({"csrf_token": token})
 
-
 @app.route('/chat')
 def chat():
     return render_template('chat-interface.html')
-
 
 @app.route('/ask', methods=['POST'])
 def ask():
     return ask_route(r)
 
-
 @app.route('/stream')
 def stream():
     return stream_route(r)
-
-
 
 @app.route('/notes/cornell_notes/<notes_id>')
 def cornell_notes(notes_id):
@@ -119,7 +111,6 @@ def vintage_cards(notes_id):
 def augmented(notes_id):
     return render_template('notes/augmented.html', **data)
 
-
 @app.route('/summarize', methods=['POST'])
 def summarize():
     data = request.json
@@ -137,11 +128,9 @@ def summarize():
 
     return jsonify(dict(summary=result))
 
-
 @app.route('/convert', methods=['GET', 'POST'])
 def convert():
     return convert_notes_route()
-
 
 @app.route('/tts', methods=['GET', 'POST'])
 def tts():
@@ -155,7 +144,6 @@ def tts():
         response = Response(audio_bytes, mimetype="audio/wav")
         response.headers["Content-Disposition"] = "attachment; filename=speech.wav"
         return response
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -183,7 +171,6 @@ def module(module_id):
 def practice():
     return render_template('practice.html', active_page='practice')
 
-
 @app.route('/api/lessons', methods=['GET', 'POST'])
 def api_lessons():
     return lessons_route(db)
@@ -191,7 +178,6 @@ def api_lessons():
 @app.route('/api/lessons/<lesson_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_lesson(lesson_id):
     return lesson_route(db, lesson_id)
-
 
 @app.route('/api/modules', methods=['GET', 'POST'])
 def api_modules():
@@ -201,7 +187,6 @@ def api_modules():
 def api_module(module_id):
     return module_route(db, module_id)
 
-
 @app.route('/api/courses', methods=['GET', 'POST'])
 def api_courses():
     return courses_route(db)
@@ -210,18 +195,11 @@ def api_courses():
 def api_course(course_id):
     return course_route(db, course_id)
 
-
 @app.route('/list_lessons')
 def list_lessons():
     from models.lessons import Lesson
     #lessons = Lesson.query.all()
-    demo_lessons = [
-        {"id": 1, "title": "Lesson 1", "content": "This is the content for Lesson 1."},
-        {"id": 2, "title": "Lesson 2", "content": "This is the content for Lesson 2."},
-        {"id": 3, "title": "Lesson 3", "content": "This is the content for Lesson 3."},
-        {"id": 4, "title": "Lesson 4", "content": "This is the content for Lesson 4."},
-        {"id": 5, "title": "Lesson 5", "content": "This is the content for Lesson 5."}
-    ]
+    demo_lessons = [{"id": i, "title": f"Lesson {i}", "content": f"This is the content for Lesson {i}."} for i in range(1, 6)]
     lessons = demo_lessons
     return render_template('lessons/list.html', lessons=lessons, total_pages=1)
 
@@ -274,7 +252,6 @@ def view_lesson(lesson_id):
         audio_notes=audio_notes
     )
 
-
 @app.route('/audio_notes/<file_name>')
 def audio_notes(file_name):
     audio_base_path = 'tests/'
@@ -291,7 +268,6 @@ def generate_audio(lesson_id):
     # fetch notes from database...
     # TODO: construct_presentation_from_structured_notes(structured_notes: StructuredNotes or dict)
     return Response(open(audio_file, 'rb').read(), mimetype="audio/wav")
-
 
 @app.route('/preview_lesson/<lesson_id>')
 def preview_lesson(lesson_id):
@@ -343,43 +319,13 @@ def module_complete(module_id):
     module = {"id": 1, "title": "Module 1"}
     return render_template('modules/complete.html', module=module)
 
-fmt1 = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation']
-fmt2 = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create']
-
-mapping_fmt2_to_fmt1 = {
-    'Remember': 'Knowledge',
-    'Understand': 'Comprehension',
-    'Apply': 'Application',
-    'Analyze': 'Analysis',
-    'Evaluate': 'Evaluation',
-    'Create': 'Synthesis'
-}
-
 @app.route('/lo_chat')
 def lo_chat_endpoint():
-    stage = request.args.get('stage', None)
-    topic = request.args.get('topic', None)
-
-    if not stage or not topic:
-        return jsonify({"error": "Invalid request."}), 400
-
-    if stage.lower() not in [stg.lower() for stg in fmt1+fmt2]:
-        return jsonify({"error": "Invalid stage."}), 400
-
-    if stage in fmt2:
-        stage = mapping_fmt2_to_fmt1[stage]
-
-    response = lo_chat(stage, topic)
-
-    return jsonify(dict(objective=response))
-
-
-
+    return lo_route()
 
 @app.route('/annotated_media/<media_id>')
 def annotated_media(media_id):
     return render_template('media/annotated.html', media=example_media_annotation)
-
 
 @app.route('/')
 def index():
@@ -387,16 +333,13 @@ def index():
         return render_template('profile.html', user=session['user'])
     return render_template('login.html')
 
-
 @app.route('/login')
 def login():
     return redirect(COGNITO_LOGIN_URL)
 
-
 @app.route('/callback')
 def callback():
     return auth_callback_route()
-
 
 @app.route('/logout')
 def logout():
