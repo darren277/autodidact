@@ -27,6 +27,7 @@ class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
     lessons = db.relationship('Lesson', backref='module', lazy=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
 
     def __repr__(self):
         return f"Module('{self.title}')"
@@ -35,7 +36,8 @@ class Module(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'lessons': [lesson.json() for lesson in self.lessons]
+            'lessons': [lesson.json() for lesson in self.lessons],
+            'course_id': self.course_id
         }
 
 
