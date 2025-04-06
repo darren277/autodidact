@@ -18,7 +18,7 @@ from lib.edu.blooms import lo_chat
 from lib.tts.main import TTS
 from lib.tts.personalities import descriptors
 
-from tests.example_structured_notes import data
+from utils.example_structured_notes import data
 
 from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, LOGOUT_URI, COGNITO_LOGIN_URL
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
@@ -60,6 +60,25 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 #app.register_blueprint(sse, url_prefix='/stream')
 
+
+
+@app.route('/csrf_token')
+def csrf_token():
+    '''
+    A bit of a hacky way to get the CSRF token for our direct API calls in testing.
+    Likely disable for production builds.
+    :return:
+    '''
+    secret_key = app.config['SECRET_KEY']
+
+    request_key = request.args.get('key')
+
+    # app.jinja_env.globals["csrf_token"] = generate_csrf
+    if request_key != secret_key:
+        return jsonify({"error": "Invalid key"}), 403
+
+    token = app.jinja_env.globals["csrf_token"]()
+    return jsonify({"csrf_token": token})
 
 
 @app.route('/chat')
@@ -518,6 +537,11 @@ def api_lessons():
             return jsonify({"error": "Module not found."}), 400
 
         lesson = Lesson(title=title, content=content, module_id=module_id)
+
+        # Optional fields: start_date, end_date...
+        if data.get('start_date', None): lesson.start_date = data['start_date']
+        if data.get('end_date', None): lesson.end_date = data['end_date']
+
         db.session.add(lesson)
         db.session.commit()
         return jsonify({"message": "Lesson added successfully."})
@@ -571,13 +595,30 @@ def api_modules():
     elif request.method == 'POST':
         data = request.json
         title = data.get('title', None)
-        if not title:
+        course_id = data.get('course_id', None)
+        if not title or not course_id:
             return jsonify({"error": "Missing required fields."}), 400
 
-        module = Module(title=title)
+        # Optional fields: start_date, end_date...
+        start_date = data.get('start_date', None)
+        end_date = data.get('end_date', None)
+        description = data.get('description', None)
+
+        # check if course exists...
+        from models.lessons import Course
+        course = Course.query.get(course_id)
+        if not course:
+            return jsonify({"error": "Course not found."}), 400
+
+        module = Module(title=title, course_id=course_id)
+
+        if start_date: module.start_date = start_date
+        if end_date: module.end_date = end_date
+        if description: module.description = description
+
         db.session.add(module)
         db.session.commit()
-        return jsonify({"message": "Module added successfully."})
+        return jsonify({"message": "Module added successfully.", "module_id": module.id})
     else:
         return jsonify({"error": "Invalid request method."}), 400
 
@@ -600,6 +641,48 @@ def api_module(module_id):
         db.session.delete(module)
         db.session.commit()
         return jsonify({"message": "Module deleted successfully."})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+
+@app.route('/api/courses', methods=['GET', 'POST'])
+def api_courses():
+    from models.lessons import Course
+    if request.method == 'GET':
+        courses = Course.query.all()
+        return jsonify([course.json() for course in courses])
+    elif request.method == 'POST':
+        data = request.json
+        title = data.get('title', None)
+        if not title:
+            return jsonify({"error": "Missing required fields."}), 400
+
+        course = Course(title=title)
+        db.session.add(course)
+        db.session.commit()
+        return jsonify({"message": "Course added successfully.", "course_id": course.id})
+    else:
+        return jsonify({"error": "Invalid request method."}), 400
+
+@app.route('/api/courses/<course_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_course(course_id):
+    from models.lessons import Course
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({"error": "Course not found."}), 404
+    if request.method == 'GET':
+        return jsonify(course.json())
+    elif request.method == 'PUT':
+        data = request.json
+        title = data.get('title', None)
+        if title:
+            course.title = title
+        db.session.commit()
+        return jsonify({"message": "Course updated successfully."})
+    elif request.method == 'DELETE':
+        db.session.delete(course)
+        db.session.commit()
+        return jsonify({"message": "Course deleted successfully."})
     else:
         return jsonify({"error": "Invalid request method."}), 400
 

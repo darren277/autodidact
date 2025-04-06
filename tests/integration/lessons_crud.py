@@ -1,6 +1,55 @@
 """"""
 import requests
 from settings import PORT
+from utils.get_headers import headers
+
+
+def test_create_course():
+    data = {
+        "title": "Test Course",
+    }
+
+    with requests.Session() as s:
+        response = s.post(f'http://localhost:{PORT}/api/courses', json=data, headers=headers(s))
+
+        print(response.status_code)
+        print(response.json())
+
+
+def test_get_courses():
+    response = requests.get(f'http://localhost:{PORT}/api/courses')
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_get_specific_course():
+    response = requests.get(f'http://localhost:{PORT}/api/courses/1')
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_update_course():
+    data = {
+        "title": "Updated Test Course"
+    }
+
+    with requests.Session() as s:
+        response = s.put(f'http://localhost:{PORT}/api/courses/1', json=data, headers=headers(s))
+
+    print(response.status_code)
+    print(response.json())
+
+
+def test_delete_course():
+    with requests.Session() as s:
+        response = s.delete(f'http://localhost:{PORT}/api/course/1', headers=headers(s))
+
+    print(response.status_code)
+    print(response.json())
+
+
 
 def test_create_module():
     data = {
@@ -94,6 +143,12 @@ def test_delete_lesson():
 
 
 if __name__ == '__main__':
+    test_create_course()
+    test_get_courses()
+    test_get_specific_course()
+    test_update_course()
+    test_delete_course()
+
     test_create_module()
     test_get_modules()
     test_get_specific_module()
