@@ -15,9 +15,9 @@ def drop():
 
 
 def migrate(course_name: str):
-    from utils.op2auto import export_projects
+    from utils.op2auto import export_project
 
-    project = export_projects(course_name)
+    project = export_project(course_name)
 
     if project is None:
         print(f"Project not found: {course_name}")

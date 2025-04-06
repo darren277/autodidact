@@ -120,11 +120,11 @@ def serialize_project(project: pyopenproject.model.project.Project):
     return course
 
 
-def export_projects(course_name: str = None):
+def export_project(course_name: str = None):
     try:
         project = [p for p in op.get_project_service().find_all() if p.identifier == course_name][0]
     except Exception as e:
-        print(f"Failed to export projects. {e}")
+        print(f"Failed to export project. {e}")
         return
 
     data = serialize_project(project)
