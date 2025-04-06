@@ -16,6 +16,7 @@ from routes.api.lessons import lessons_route, lesson_route
 from routes.api.modules import modules_route, module_route
 from routes.assistant import ask_route, stream_route
 from routes.auth import auth_callback_route, auth_logout_route
+from routes.convert_notes import convert_notes_route
 from utils.convert_to_markdown import convert_to_simple_markdown
 from utils.example_media_annotation import example_media_annotation
 from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
@@ -139,39 +140,7 @@ def summarize():
 
 @app.route('/convert', methods=['GET', 'POST'])
 def convert():
-    from utils.convert_obsidian import convert_to_obsidian, merge_adjacent_cells, parse_cornell_markdown
-    if request.method == 'POST':
-        data = request.json
-        if data:
-            direction = data.get('direction', None)
-
-            if direction != 'json2obsidian' and direction != 'obsidian2json':
-                return jsonify({"error": "Invalid conversion direction."})
-
-            content_string = data.get('content', None)
-
-            if direction == 'obsidian2json':
-                try:
-                    result = merge_adjacent_cells(parse_cornell_markdown(content_string))
-                    return jsonify(result)
-                except Exception as e:
-                    return jsonify({"error": str(e)})
-            elif direction == 'json2obsidian':
-                try:
-                    content = json.loads(content_string)
-                except Exception as e:
-                    return jsonify({"error": f"Error parsing JSON: {str(e)}"})
-                try:
-                    result = convert_to_obsidian(content)
-                    return jsonify(result)
-                except Exception as e:
-                    return jsonify({"error": str(e)})
-            else:
-                return jsonify({"error": "Invalid conversion direction."})
-        else:
-            return jsonify({"error": "No data provided."})
-    else:
-        return render_template('convert-notes.html')
+    return convert_notes_route()
 
 
 @app.route('/tts', methods=['GET', 'POST'])
