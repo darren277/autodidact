@@ -18,6 +18,8 @@ from routes.assistant import ask_route, stream_route
 from routes.auth import auth_callback_route, auth_logout_route
 from routes.convert_notes import convert_notes_route
 from routes.lo import lo_route
+from routes.summarize import summarize_route
+from routes.tts import tts_route
 from utils.convert_to_markdown import convert_to_simple_markdown
 from utils.example_media_annotation import example_media_annotation
 from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
@@ -113,20 +115,7 @@ def augmented(notes_id):
 
 @app.route('/summarize', methods=['POST'])
 def summarize():
-    data = request.json
-
-    system_prompt = data.get('systemPrompt', None)
-    if not system_prompt:
-        return jsonify({"error": "No system prompt provided."})
-    completions = Completions('gpt-4o', system_prompt)
-
-    user_notes = data.get('userNotes', None)
-    if not user_notes:
-        return jsonify({"error": "No user notes provided."})
-    user_notes_string = json.dumps(user_notes)
-    result = completions.complete(user_notes_string)
-
-    return jsonify(dict(summary=result))
+    return summarize_route()
 
 @app.route('/convert', methods=['GET', 'POST'])
 def convert():
@@ -134,16 +123,7 @@ def convert():
 
 @app.route('/tts', methods=['GET', 'POST'])
 def tts():
-    if request.method == 'GET':
-        return render_template('tts.html')
-    else:
-        message = request.form.get('message', 'Hello, world!')
-        _tts = TTS("gpt-4o-mini-tts", "alloy", descriptors['pirate'])
-        audio = asyncio.run(_tts.speak(message))
-        audio_bytes = audio
-        response = Response(audio_bytes, mimetype="audio/wav")
-        response.headers["Content-Disposition"] = "attachment; filename=speech.wav"
-        return response
+    return tts_route()
 
 @app.route('/dashboard')
 def dashboard():
