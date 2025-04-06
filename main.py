@@ -207,121 +207,13 @@ def convert():
         else:
             return jsonify({"error": "No data provided."})
     else:
-        return render_template_string("""
-<html>
-<head>
-    <title>Convert</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        textarea {
-            width: 100%;
-            height: 300px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Convert</h1>
-    <form method="POST">
-        <label for="direction">Direction:</label>
-        <select name="direction">
-            <option value="none">Select...</option>
-            <option value="json2obsidian">JSON to Obsidian</option>
-            <option value="obsidian2json">Obsidian to JSON</option>
-        </select>
-        <br>
-        <label for="content">Content:</label>
-        <textarea name="content"></textarea>
-        <br>
-        <button type="submit">Convert</button>
-    </form>
-    
-    <h2>Output</h2>
-    <pre id="output"></pre>
-    
-    <script>
-        const form = document.querySelector('form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const response = await fetch('/convert', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(Object.fromEntries(formData))
-            });
-            const data = await response.json();
-            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
-        });
-    </script>
-    
-    <h2>Example JSON</h2>
-    <pre>
-    {{ example_json }}
-    </pre>
-    
-    <h2>Example Obsidian</h2>
-    <pre>
-    {{ example_obsidian }}
-    </pre>
-</body>
-</html>
-""")
+        return render_template('convert-notes.html')
 
 
 @app.route('/tts', methods=['GET', 'POST'])
 def tts():
     if request.method == 'GET':
-        return render_template_string("""
-<html>
-<head>
-    <title>TTS</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-    </style>
-</head>
-<body>
-    <h1>TTS</h1>
-    <form method="POST">
-        <label for="personality">Personality:</label>
-        <select name="personality">
-            <option value="default">Default</option>
-            <option value="pirate">Pirate</option>
-        </select>
-        <label for="message">Message:</label>
-        <textarea name="message"></textarea>
-        <br>
-        <button type="submit">Speak</button>
-    </form>
-    
-    <h2>Output</h2>
-    <audio controls>
-        <source src="" type="audio/wav">
-        Your browser does not support the audio element.
-    </audio>
-    
-    <script>
-        const form = document.querySelector('form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const response = await fetch('/tts', {
-                method: 'POST',
-                body: formData
-            });
-            const audio = await response.blob();
-            const audioElement = document.querySelector('audio');
-            audioElement.src = URL.createObjectURL(audio);
-            audioElement.play();
-        });
-    </script>
-</body>
-</html>
-""")
+        return render_template('tts.html')
     else:
         message = request.form.get('message', 'Hello, world!')
         _tts = TTS("gpt-4o-mini-tts", "alloy", descriptors['pirate'])
