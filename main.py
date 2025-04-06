@@ -20,6 +20,8 @@ from lib.tts.personalities import descriptors
 from routes.api.courses import courses_route, course_route
 from routes.api.lessons import lessons_route, lesson_route
 from routes.api.modules import modules_route, module_route
+from utils.example_media_annotation import example_media_annotation
+from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
 
 from utils.example_structured_notes import data
 
@@ -417,101 +419,20 @@ def dashboard():
 
 @app.route('/module/<module_id>')
 def module(module_id):
-    module_progress = {
-        "completed": 2,
-        "total": 5,
-        "percentage": 40
-    }
-
-    module_1_lesson_cards = [
-        {
-            "status": "completed",
-            "icon": "✓",
-            "title": "1. Introduction to Lorem Ipsum",
-            "description": "Learn the basic principles and history of Lorem Ipsum.",
-            "duration": "15 min",
-            "action": "Review"
-        },
-        {
-            "status": "completed",
-            "icon": "✓",
-            "title": "2. Dolor Sit Amet Techniques",
-            "description": "Explore various techniques used in Dolor Sit Amet methodology.",
-            "duration": "20 min",
-            "action": "Review"
-        },
-        {
-            "status": "current",
-            "icon": "•",
-            "title": "3. Practical Applications",
-            "description": "Apply your knowledge to real-world scenarios and case studies.",
-            "duration": "25 min",
-            "action": "Continue"
-        },
-        {
-            "status": "",
-            "icon": "",
-            "title": "4. Advanced Concepts",
-            "description": "Dive deeper into complex aspects of Lorem Ipsum Dolor.",
-            "duration": "30 min",
-            "action": "Start"
-        },
-        {
-            "status": "",
-            "icon": "",
-            "title": "5. Review & Assessment",
-            "description": "Consolidate your learning and test your knowledge.",
-            "duration": "20 min",
-            "action": "Start"
-        },
-        {
-            "status": "completed",
-            "icon": "✓",
-            "title": "6. Final Exam",
-            "description": "Test your knowledge with a comprehensive exam.",
-            "duration": "1 hour",
-            "action": "Review"
-        }
-    ]
-
-    module_1_resources = [
-        {
-            "icon": "📄",
-            "title": "Lorem Ipsum: A Comprehensive Guide",
-            "description": "A detailed reference document covering all aspects of Lorem Ipsum",
-            "link": "#",
-            "action": "View"
-        },
-        {
-            "icon": "🎥",
-            "title": "Video Tutorial: Dolor Sit Amet in Practice",
-            "description": "Watch an expert demonstrate key techniques",
-            "link": "/annotated_media/1",
-            "action": "Watch"
-        },
-        {
-            "icon": "🔗",
-            "title": "External Reading: History of Lorem Ipsum",
-            "description": "An in-depth article on the origins and evolution of Lorem Ipsum",
-            "link": "#",
-            "action": "Visit"
-        }
-    ]
-
     return render_template(
         f'module.html',
         active_page=f'module_{module_id}',
         title="Module 1: Introduction to Lorem Ipsum",
         page_title="Module 1: Introduction to Lorem Ipsum",
-        module_progress=module_progress,
+        module_progress=example_module_progress,
         module_download_materials_link="#",
         module_take_quiz_link="#",
         module_description="""
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam varius massa vitae semper consectetur. Proin lobortis, nunc nec vehicula posuere, turpis velit scelerisque nisi, et convallis lectus massa eget eros.</p>
         <p>This module will cover fundamental concepts of Lorem Ipsum and provide practical exercises to reinforce your understanding.</p>
         """,
-        lesson_cards=module_1_lesson_cards,
-        resources=module_1_resources
+        lesson_cards=example_module_lesson_cards,
+        resources=example_module_resources
     )
 
 @app.route('/practice')
@@ -719,60 +640,7 @@ def lo_chat_endpoint():
 
 @app.route('/annotated_media/<media_id>')
 def annotated_media(media_id):
-    media = {
-        "title": "Video Tutorial: Dolor Sit Amet in Practice",
-        "description": "Watch an expert demonstrate key techniques",
-        "media_url": "/static/media/KurzgesagtVideoIn1200Hours.mp4",
-        "annotations": [
-            {
-                "time_human_readable": "0:00",
-                "time_seconds": 0,
-                "content": "Introduction to Dolor Sit Amet"
-            },
-            {
-                "time_human_readable": "1:30",
-                "time_seconds": 90,
-                "content": "Demonstration of Technique 1"
-            },
-            {
-                "time_human_readable": "3:15",
-                "time_seconds": 195,
-                "content": "Discussion of Technique 2"
-            },
-            {
-                "time_human_readable": "5:00",
-                "time_seconds": 300,
-                "content": "Q&A Session"
-            }
-        ],
-        "segments": [
-            {
-                "title": "Introduction",
-                "notes": "This segment introduces the topic of Dolor Sit Amet and provides an overview of the key concepts and techniques that will be covered in the video.",
-                "start": 0,
-                "end": 90
-            },
-            {
-                "title": "Technique 1",
-                "notes": "In this segment, the instructor demonstrates Technique 1 and explains the key steps and considerations involved in its application.",
-                "start": 90,
-                "end": 195
-            },
-            {
-                "title": "Technique 2",
-                "notes": "This segment focuses on Technique 2, providing a detailed breakdown of the process and highlighting common pitfalls and best practices.",
-                "start": 195,
-                "end": 300
-            },
-            {
-                "title": "Q&A",
-                "notes": "The final segment features a Q&A session, where the instructor answers questions from the audience and provides additional insights and tips.",
-                "start": 300,
-                "end": 420
-            }
-        ]
-    }
-    return render_template('media/annotated.html', media=media)
+    return render_template('media/annotated.html', media=example_media_annotation)
 
 
 @app.route('/')
