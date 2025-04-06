@@ -62,6 +62,25 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
 
+@app.route('/csrf_token')
+def csrf_token():
+    '''
+    A bit of a hacky way to get the CSRF token for our direct API calls in testing.
+    Likely disable for production builds.
+    :return:
+    '''
+    secret_key = app.config['SECRET_KEY']
+
+    request_key = request.args.get('key')
+
+    # app.jinja_env.globals["csrf_token"] = generate_csrf
+    if request_key != secret_key:
+        return jsonify({"error": "Invalid key"}), 403
+
+    token = app.jinja_env.globals["csrf_token"]()
+    return jsonify({"csrf_token": token})
+
+
 @app.route('/chat')
 def chat():
     return render_template('chat-interface.html')
