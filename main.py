@@ -1,17 +1,11 @@
 """"""
-import base64
 import json
-import threading
 import asyncio
-from urllib import parse
-
-import requests
-from flask import Flask, request, Response, render_template, jsonify, render_template_string, session, redirect, url_for
+from flask import Flask, request, Response, render_template, jsonify, session, redirect
 from flask_sse import sse
 
 import redis
 
-from lib.assistant.main import AssistantHandler
 from lib.completions.main import Completions
 from lib.edu.blooms import lo_chat
 
@@ -22,14 +16,14 @@ from routes.api.lessons import lessons_route, lesson_route
 from routes.api.modules import modules_route, module_route
 from routes.assistant import ask_route, stream_route
 from routes.auth import auth_callback_route, auth_logout_route
+from utils.convert_to_markdown import convert_to_simple_markdown
 from utils.example_media_annotation import example_media_annotation
 from utils.example_module import example_module_progress, example_module_lesson_cards, example_module_resources
 
 from utils.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, LOGOUT_URI, COGNITO_LOGIN_URL
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL
 from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
-from settings import COGNITO_DOMAIN, CLIENT_ID, REDIRECT_URI, CLIENT_SECRET
 
 from flask_cors import CORS
 
@@ -48,8 +42,6 @@ db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 
 app.secret_key = APP_SECRET_KEY
-
-
 
 
 if ENABLE_CORS:
@@ -100,34 +92,6 @@ def ask():
 def stream():
     return stream_route(r)
 
-
-'''
-<article>
-    <header>
-        <div class="leftheader">Cues</div>
-        <div class="rightheader">Date: {{ date }}. Topic: {{ topic }}.</div>
-    </header>
-    {% for s, section in enumerate(sections) %}
-    <section>
-        {% for i, part in enumerate(section.parts) %}
-        <div class="leftmargin" id="leftmargin{{i}}">{{part.lm}}</div><div class="main" id="main{{i}}">{{part.main}}</div>
-        {% endfor %}
-        <footer>Summary: {{section.summary}}</footer>
-    </section>
-    {% endfor %}
-</article>
-'''
-
-
-def convert_to_simple_markdown(data):
-    markdown = f"# {data['topic']}\n\n"
-    for section in data['sections']:
-        for part in section['parts']:
-            if 'title' in part:
-                markdown += f"## {part['title']}\n\n"
-            markdown += f"### {part['lm']}\n\n"
-            markdown += f"{part['main']}\n\n"
-    return markdown
 
 
 @app.route('/notes/cornell_notes/<notes_id>')
@@ -381,13 +345,7 @@ def preview_lesson(lesson_id):
 def list_modules():
     from models.lessons import Module
     #modules = Module.query.all()
-    demo_modules = [
-        {"id": 1, "title": "Module 1"},
-        {"id": 2, "title": "Module 2"},
-        {"id": 3, "title": "Module 3"},
-        {"id": 4, "title": "Module 4"},
-        {"id": 5, "title": "Module 5"}
-    ]
+    demo_modules = [{"id": 1, "title": f"Module {i}"} for i in range(1, 6)]
     modules = demo_modules
     return render_template('modules/list.html', modules=modules, total_pages=1)
 
@@ -476,10 +434,7 @@ def logout():
     return auth_logout_route()
 
 
-
-# add enumerate() to Jinja...
 app.jinja_env.globals.update(enumerate=enumerate)
-# add len() to Jinja...
 app.jinja_env.globals.update(len=len)
 
 
