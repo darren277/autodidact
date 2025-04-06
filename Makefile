@@ -15,6 +15,10 @@ create:
 drop:
 	python manage.py drop
 
+# Usage: make migrate COURSE_ID=anthropology
+migrate:
+	python manage.py migrate $(COURSE_ID)
+
 
 # Makefile for AWS Cognito deployment on Windows
 # Requires: AWS CLI, Make for Windows (GnuWin32, or via Git Bash, or WSL)
