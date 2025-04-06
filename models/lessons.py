@@ -11,6 +11,10 @@ class Lesson(db.Model):
     content = db.Column(db.Text)
     module_id = db.Column(db.Integer, db.ForeignKey('module.id'))
 
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    # TODO: attachments = db.Column(db.Text)
+
     def __repr__(self):
         return f"Lesson('{self.title}')"
 
@@ -19,7 +23,10 @@ class Lesson(db.Model):
             'id': self.id,
             'title': self.title,
             'content': self.content,
-            'module_id': self.module_id
+            'module_id': self.module_id,
+            'start_date': self.start_date,
+            'end_date': self.end_date
+            # TODO: 'attachments': self.attachments
         }
 
 
