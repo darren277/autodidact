@@ -13,6 +13,12 @@
     <header>
         <div class="logo">autodidact</div>
         <div class="top-nav">
+            {% if user %}
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login or Signup</a>
+            {% endif %}
             <a href="{{ url_for('dashboard') }}">Home</a>
             <a href="{{ url_for('dashboard') }}">About</a>
 <!--            <a href="{{ url_for('dashboard') }}">Courses</a>-->

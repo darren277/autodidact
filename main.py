@@ -121,7 +121,8 @@ def tts():
 
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html', active_page='dashboard')
+    user = session['user'] if session else None
+    return render_template('dashboard.html', active_page='dashboard', user=user)
 
 @app.route('/module/<module_id>')
 def module(module_id):
@@ -267,7 +268,7 @@ def annotated_media(media_id):
 @app.route('/')
 def index():
     if 'user' in session:
-        return render_template('profile.html', user=session['user'])
+        return render_template('dashboard.html', user=session['user'])
     return render_template('login.html')
 
 @app.route('/login')
@@ -281,6 +282,24 @@ def callback():
 @app.route('/logout')
 def logout():
     return auth_logout_route()
+
+@app.route('/profile')
+def profile():
+    if 'user' not in session:
+        return redirect('/')
+    user = session['user']
+    return render_template('profile.html', user=user)
+
+@app.route('/update_bio', methods=['POST'])
+def update_bio():
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    user = session['user']
+    bio = request.json.get('bio', '')
+    # Update the user's bio in the database
+    user['bio'] = bio
+    session['user'] = user
+    return jsonify({"message": "Bio updated successfully"})
 
 
 app.jinja_env.globals.update(enumerate=enumerate)
