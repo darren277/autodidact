@@ -576,10 +576,20 @@ def view_lesson(lesson_id):
         'title': lesson.title,
         'content': lesson.content,
         'content_html': lesson.content,  # TODO: Convert to HTML if needed
-        'examples_html': '',  # TODO: Add examples field to model
-        'exercises_html': '',  # TODO: Add exercises field to model
-        'learning_objectives': [],  # TODO: Add learning objectives field to model
-        'user_progress': {'completed': False}  # TODO: Implement progress tracking
+        'examples_html': lesson.examples or '',  # Use examples field from model
+        'exercises_html': lesson.exercises or '',  # Use exercises field from model
+        'learning_objectives': lesson.get_learning_objectives(),
+        'estimated_time': {
+            'hours': lesson.estimated_time_hours,
+            'minutes': lesson.estimated_time_minutes
+        },
+        'difficulty': lesson.difficulty,
+        'tags': lesson.get_tags(),
+        'attachments': lesson.get_attachments(),
+        'overview': lesson.overview,
+        'module_id': lesson.module_id,
+        'module_title': lesson.module.title if lesson.module else 'Unknown Module',
+        'user_progress': {'completed': False, 'percentage': 0}  # TODO: Implement progress tracking
     }
     
     return render_template(
@@ -704,10 +714,20 @@ def preview_lesson(lesson_id):
         'title': lesson.title,
         'content': lesson.content,
         'content_html': lesson.content,  # TODO: Convert to HTML if needed
-        'examples_html': '',  # TODO: Add examples field to model
-        'exercises_html': '',  # TODO: Add exercises field to model
-        'learning_objectives': [],  # TODO: Add learning objectives field to model
-        'user_progress': {'completed': False}  # TODO: Implement progress tracking
+        'examples_html': lesson.examples or '',  # Use examples field from model
+        'exercises_html': lesson.exercises or '',  # Use exercises field from model
+        'learning_objectives': lesson.get_learning_objectives(),
+        'estimated_time': {
+            'hours': lesson.estimated_time_hours,
+            'minutes': lesson.estimated_time_minutes
+        },
+        'difficulty': lesson.difficulty,
+        'tags': lesson.get_tags(),
+        'attachments': lesson.get_attachments(),
+        'overview': lesson.overview,
+        'module_id': lesson.module_id,
+        'module_title': lesson.module.title if lesson.module else 'Unknown Module',
+        'user_progress': {'completed': False, 'percentage': 0}  # TODO: Implement progress tracking
     }
     
     return render_template('lessons/preview.html', lesson=lesson_data)

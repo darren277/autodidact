@@ -76,18 +76,42 @@ def seed_example_data():
         lessons = [
             Lesson(
                 title="Variables and Data Types",
-                content="Learn about variables, strings, integers, and other data types in Python.",
-                module_id=module.id
+                content="Learn about variables, strings, integers, and other data types in Python. Variables are containers for storing data values. In Python, you don't need to declare the type of a variable - Python automatically determines the type based on the value you assign.",
+                module_id=module.id,
+                estimated_time_hours=0,
+                estimated_time_minutes=30,
+                difficulty="beginner",
+                tags='["Python", "Variables", "Data Types"]',
+                learning_objectives='["Understand what variables are", "Learn about different data types", "Practice creating and using variables"]',
+                examples="```python\n# String variable\nname = 'John'\n\n# Integer variable\nage = 25\n\n# Float variable\nheight = 5.9\n\n# Boolean variable\nis_student = True\n```",
+                exercises="1. Create a variable called 'city' and assign it the value 'New York'\n2. Create a variable called 'population' and assign it the value 8336817\n3. Print both variables using the print() function",
+                overview="This lesson introduces the fundamental concept of variables and the basic data types in Python."
             ),
             Lesson(
                 title="Control Flow",
-                content="Understand if statements, loops, and control structures.",
-                module_id=module.id
+                content="Understand if statements, loops, and control structures. Control flow determines the order in which your program's code executes. Python provides several control flow statements including if/elif/else, for loops, and while loops.",
+                module_id=module.id,
+                estimated_time_hours=0,
+                estimated_time_minutes=45,
+                difficulty="beginner",
+                tags='["Python", "Control Flow", "Loops", "Conditionals"]',
+                learning_objectives='["Understand if/elif/else statements", "Learn about for and while loops", "Practice writing conditional logic"]',
+                examples="```python\n# If statement\nif age >= 18:\n    print('Adult')\nelif age >= 13:\n    print('Teenager')\nelse:\n    print('Child')\n\n# For loop\nfor i in range(5):\n    print(i)\n```",
+                exercises="1. Write a program that checks if a number is positive, negative, or zero\n2. Create a loop that prints the first 10 even numbers\n3. Write a program that finds the largest number in a list",
+                overview="This lesson covers the essential control flow structures that allow you to make decisions and repeat code in Python."
             ),
             Lesson(
                 title="Functions",
-                content="Learn how to define and use functions in Python.",
-                module_id=module.id
+                content="Learn how to define and use functions in Python. Functions are reusable blocks of code that perform a specific task. They help organize code, make it more readable, and avoid repetition.",
+                module_id=module.id,
+                estimated_time_hours=1,
+                estimated_time_minutes=0,
+                difficulty="intermediate",
+                tags='["Python", "Functions", "Code Organization"]',
+                learning_objectives='["Define and call functions", "Understand parameters and return values", "Learn about scope and local variables"]',
+                examples="```python\n# Simple function\ndef greet(name):\n    return f'Hello, {name}!'\n\n# Function with multiple parameters\ndef add_numbers(a, b):\n    return a + b\n\n# Function with default parameters\ndef greet_with_title(name, title='Mr.'):\n    return f'Hello, {title} {name}!'\n```",
+                exercises="1. Create a function that calculates the area of a circle\n2. Write a function that checks if a number is prime\n3. Create a function that reverses a string",
+                overview="This lesson teaches you how to create and use functions to organize and reuse your code effectively."
             )
         ]
         

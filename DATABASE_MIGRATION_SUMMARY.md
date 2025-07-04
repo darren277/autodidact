@@ -96,16 +96,16 @@ python manage.py show_tables
 
 ### High Priority
 1. **Progress Tracking**: Implement actual user progress tracking in database
-2. **Lesson Duration**: Add duration field to Lesson model
-3. **Learning Objectives**: Add learning objectives field to Lesson model
-4. **Examples/Exercises**: Add separate fields for examples and exercises in Lesson model
+2. **Lesson Duration**: ✅ Added duration fields to Lesson model
+3. **Learning Objectives**: ✅ Added learning objectives field to Lesson model
+4. **Examples/Exercises**: ✅ Added separate fields for examples and exercises in Lesson model
 5. **Resources**: Add resources field to Module model
+6. **Content Conversion**: Implement HTML conversion for lesson content
 
 ### Medium Priority
-1. **Content Conversion**: Implement HTML conversion for lesson content
-2. **Download Materials**: Implement actual download functionality
-3. **Quiz System**: Implement quiz functionality
-4. **Media Upload**: Add media upload and management functionality
+1. **Download Materials**: Implement actual download functionality
+2. **Quiz System**: Implement quiz functionality
+3. **Media Upload**: Add media upload and management functionality
 
 ### Low Priority
 1. **Note Templates**: Create more note template types

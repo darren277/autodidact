@@ -14,7 +14,17 @@ class Lesson(db.Model):
 
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
-    # TODO: attachments = db.Column(db.Text)
+    
+    # Additional fields for enhanced lesson display
+    estimated_time_hours = db.Column(db.Integer, default=0)
+    estimated_time_minutes = db.Column(db.Integer, default=30)
+    difficulty = db.Column(db.String(20), default='beginner')  # beginner, intermediate, advanced
+    tags = db.Column(db.Text)  # JSON string for tags
+    learning_objectives = db.Column(db.Text)  # JSON string for learning objectives
+    examples = db.Column(db.Text)  # Examples content
+    exercises = db.Column(db.Text)  # Exercises content
+    attachments = db.Column(db.Text)  # JSON string for attachments
+    overview = db.Column(db.Text)  # Lesson overview/summary
 
     def __repr__(self):
         return f"Lesson('{self.title}')"
@@ -26,9 +36,47 @@ class Lesson(db.Model):
             'content': self.content,
             'module_id': self.module_id,
             'start_date': self.start_date,
-            'end_date': self.end_date
-            # TODO: 'attachments': self.attachments
+            'end_date': self.end_date,
+            'estimated_time_hours': self.estimated_time_hours,
+            'estimated_time_minutes': self.estimated_time_minutes,
+            'difficulty': self.difficulty,
+            'tags': self.get_tags(),
+            'learning_objectives': self.get_learning_objectives(),
+            'examples': self.examples,
+            'exercises': self.exercises,
+            'attachments': self.get_attachments(),
+            'overview': self.overview
         }
+    
+    def get_tags(self):
+        """Parse and return tags as list"""
+        if not self.tags:
+            return []
+        try:
+            import json
+            return json.loads(self.tags)
+        except:
+            return []
+    
+    def get_learning_objectives(self):
+        """Parse and return learning objectives as list"""
+        if not self.learning_objectives:
+            return []
+        try:
+            import json
+            return json.loads(self.learning_objectives)
+        except:
+            return []
+    
+    def get_attachments(self):
+        """Parse and return attachments as list"""
+        if not self.attachments:
+            return []
+        try:
+            import json
+            return json.loads(self.attachments)
+        except:
+            return []
 
 
 class Module(db.Model):
