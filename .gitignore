@@ -3,3 +3,5 @@
 .env
 
 PERSONAL_NOTES.md
+
+k8s/values.yaml
