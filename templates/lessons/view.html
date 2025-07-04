@@ -280,11 +280,19 @@
                     <button type="button" id="clear-chat" class="btn-small btn-outline" title="Clear chat history">Clear</button>
                 </div>
                 
+                {% if not user.has_api_key %}
+                <div class="chat-warning">
+                    <i class="icon-warning"></i>
+                    <p>You need to configure your OpenAI API key to use the chat assistant.</p>
+                    <a href="{{ url_for('settings') }}" class="btn btn-primary btn-small">Configure API Key</a>
+                </div>
+                {% endif %}
+                
                 <div id="chat-messages" class="chat-messages">
                     <!-- Chat messages will appear here -->
                 </div>
                 
-                <form id="question-form" class="question-form">
+                <form id="question-form" class="question-form" {% if not user.has_api_key %}style="display: none;"{% endif %}>
                     <div class="input-group">
                         <textarea id="question-text" class="question-textarea"
                                   placeholder="Ask a question about this lesson..." rows="3"></textarea>

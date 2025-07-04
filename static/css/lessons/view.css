@@ -1185,3 +1185,39 @@
     color: #666;
     font-style: italic;
 }
+
+/* Settings button in chat */
+.chat-message .btn-small {
+    font-size: 12px;
+    padding: 4px 8px;
+    margin-top: 8px;
+}
+
+/* Chat warning */
+.chat-warning {
+    background: linear-gradient(90deg, #fff3cd 60%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.chat-warning i {
+    color: #856404;
+    font-size: 18px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.chat-warning p {
+    color: #856404;
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.chat-warning .btn {
+    margin-top: 8px;
+}
+
+.icon-warning::before { content: "\26A0"; margin-right: 4px; }

@@ -254,7 +254,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     question: questionText
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to submit question');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.thread_id) {
                     // Start listening for SSE events
@@ -272,8 +279,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
                 
-                // Show error message
-                addChatMessage('assistant', 'Sorry, there was an error processing your question. Please try again.');
+                // Check if it's an API key error
+                if (error.message && error.message.includes('API key')) {
+                    addChatMessage('assistant', `Error: ${error.message}. Please configure your OpenAI API key in Settings.`);
+                    
+                    // Add a button to go to settings
+                    const settingsBtn = document.createElement('button');
+                    settingsBtn.className = 'btn btn-primary btn-small';
+                    settingsBtn.textContent = 'Go to Settings';
+                    settingsBtn.style.marginTop = '10px';
+                    settingsBtn.onclick = () => window.location.href = '/settings';
+                    
+                    const lastMessage = chatMessages.lastElementChild;
+                    if (lastMessage) {
+                        lastMessage.appendChild(settingsBtn);
+                    }
+                } else {
+                    // Show generic error message
+                    addChatMessage('assistant', 'Sorry, there was an error processing your question. Please try again.');
+                }
             });
         });
     }

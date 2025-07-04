@@ -1,7 +1,7 @@
 """"""
 import threading
 
-from flask import request, jsonify, Response
+from flask import request, jsonify, Response, session
 
 from lib.assistant.main import AssistantHandler
 from settings import DEFAULT_ASSISTANT_ID
@@ -20,6 +20,17 @@ def ask_route(r):
 
     assistant_id = request.form.get('assistant_id', DEFAULT_ASSISTANT_ID)
 
+    # Get user's API key if authenticated
+    api_key = None
+    if 'user' in session:
+        from utils.api_key_manager import get_user_api_key
+        user_sub = session['user']['sub']
+        api_key = get_user_api_key(user_sub)
+        
+        # If no API key found, return error
+        if not api_key:
+            return jsonify({"error": "No OpenAI API key configured. Please set your API key in Settings."}), 400
+
     # Generate a unique thread ID based on client IP and timestamp
     from datetime import datetime
     import hashlib
@@ -27,8 +38,8 @@ def ask_route(r):
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
     thread_id = hashlib.md5(f"{request.remote_addr}_{timestamp}".encode()).hexdigest()
 
-    # Initialize the assistant handler
-    assistant_handler = AssistantHandler(question, assistant_id)
+    # Initialize the assistant handler with user's API key
+    assistant_handler = AssistantHandler(question, assistant_id, api_key=api_key)
 
     # TODO: Are we still using this? `assistant_handler._r = r`
     assistant_handler._r = r
