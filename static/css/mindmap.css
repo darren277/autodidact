@@ -1,4 +1,4 @@
-body {
+.mindmap-view {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f7f9fc;
     margin: 0;
@@ -8,13 +8,13 @@ body {
     background-size: 40px 40px;
 }
 
-.container {
+.mindmap-view .container {
     max-width: 1000px;
     margin: 0 auto;
     position: relative;
 }
 
-.header {
+.mindmap-view .header {
     text-align: center;
     margin-bottom: 30px;
     background-color: white;
@@ -23,23 +23,23 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.title {
+.mindmap-view .title {
     margin: 0;
     color: #333;
     font-size: 28px;
 }
 
-.meta {
+.mindmap-view .meta {
     color: #666;
     margin-top: 10px;
     font-size: 14px;
 }
 
-.meta span {
+.mindmap-view .meta span {
     margin: 0 10px;
 }
 
-.meta span input {
+.mindmap-view .meta span input {
     border: none;
     border-bottom: 1px dashed #999;
     background: transparent;
@@ -51,7 +51,7 @@ body {
     font-size: inherit;
 }
 
-.mind-map {
+.mindmap-view .mind-map {
     position: relative;
     background-color: white;
     padding: 30px;
@@ -62,7 +62,7 @@ body {
 }
 
 /* Center node */
-.node-center {
+.mindmap-view .node-center {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -83,19 +83,19 @@ body {
     transition: all 0.3s ease;
 }
 
-.node-center:hover {
+.mindmap-view .node-center:hover {
     box-shadow: 0 0 0 8px rgba(52, 152, 219, 0.3);
     transform: translate(-50%, -50%) scale(1.05);
 }
 
 /* Branches */
-.branch {
+.mindmap-view .branch {
     position: absolute;
     z-index: 5;
 }
 
 /* Node boxes */
-.node {
+.mindmap-view .node {
     position: absolute;
     background-color: white;
     border-radius: 7px;
@@ -107,43 +107,43 @@ body {
     border-left: 5px solid;
 }
 
-.node:hover {
+.mindmap-view .node:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.node h3 {
+.mindmap-view .node h3 {
     margin-top: 0;
     margin-bottom: 8px;
     font-size: 16px;
     color: #333;
 }
 
-.node p {
+.mindmap-view .node p {
     margin: 0;
     font-size: 14px;
     color: #666;
     line-height: 1.4;
 }
 
-.node-date {
+.mindmap-view .node-date {
     border-color: #e74c3c;
 }
 
-.node-idea {
+.mindmap-view .node-idea {
     border-color: #9b59b6;
 }
 
-.node-event {
+.mindmap-view .node-event {
     border-color: #2ecc71;
 }
 
-.node-summary {
+.mindmap-view .node-summary {
     border-color: #f39c12;
 }
 
 /* Connector lines */
-.connector {
+.mindmap-view .connector {
     position: absolute;
     background-color: #ddd;
     height: 2px;
@@ -151,19 +151,19 @@ body {
     z-index: 1;
 }
 
-.connector-date {
+.mindmap-view .connector-date {
     background-color: rgba(231, 76, 60, 0.3);
 }
 
-.connector-idea {
+.mindmap-view .connector-idea {
     background-color: rgba(155, 89, 182, 0.3);
 }
 
-.connector-event {
+.mindmap-view .connector-event {
     background-color: rgba(46, 204, 113, 0.3);
 }
 
-.connector-summary {
+.mindmap-view .connector-summary {
     background-color: rgba(243, 156, 18, 0.3);
 }
 
@@ -180,19 +180,19 @@ body {
     }
 }
 
-.node-center {
+.mindmap-view .node-center {
     animation: pulse 2s infinite;
 }
 
 /* Extra design elements */
-.background-shape {
+.mindmap-view .background-shape {
     position: absolute;
     border-radius: 50%;
     opacity: 0.05;
     z-index: 0;
 }
 
-.shape1 {
+.mindmap-view .shape1 {
     width: 300px;
     height: 300px;
     background-color: #3498db;
@@ -200,7 +200,7 @@ body {
     right: -100px;
 }
 
-.shape2 {
+.mindmap-view .shape2 {
     width: 200px;
     height: 200px;
     background-color: #e74c3c;
@@ -209,7 +209,7 @@ body {
 }
 
 /* Tooltip */
-.tooltip {
+.mindmap-view .tooltip {
     position: absolute;
     background-color: #333;
     color: white;
@@ -224,12 +224,12 @@ body {
     right: 10px;
 }
 
-.mind-map:hover .tooltip {
+.mindmap-view .mind-map:hover .tooltip {
     opacity: 1;
 }
 
 /* Footer */
-.footer {
+.mindmap-view .footer {
     margin-top: 20px;
     background-color: white;
     padding: 15px;
@@ -237,7 +237,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.footer h2 {
+.mindmap-view .footer h2 {
     margin-top: 0;
     border-bottom: 2px solid #f2f2f2;
     padding-bottom: 10px;
@@ -245,7 +245,7 @@ body {
     color: #333;
 }
 
-.footer p {
+.mindmap-view .footer p {
     margin: 0;
     color: #666;
     line-height: 1.6;
@@ -253,21 +253,21 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .mind-map {
+    .mindmap-view .mind-map {
         min-height: 500px;
         padding: 20px;
     }
 
-    .node {
+    .mindmap-view .node {
         padding: 10px;
         max-width: 150px;
     }
 
-    .node h3 {
+    .mindmap-view .node h3 {
         font-size: 14px;
     }
 
-    .node p {
+    .mindmap-view .node p {
         font-size: 12px;
     }
 }

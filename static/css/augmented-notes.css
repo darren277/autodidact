@@ -1,10 +1,10 @@
-body {
+.augmented-notes-view {
     margin: 0;
     font-family: Arial, sans-serif;
     line-height: 1.5;
 }
 
-article {
+.augmented-notes-view article {
     width: 90%;
     margin: 2rem auto;
     padding: 1rem;
@@ -12,7 +12,7 @@ article {
     background-color: #fafafa;
 }
 
-header {
+.augmented-notes-view header {
     display: flex;
     justify-content: space-between;
     background-color: #ddd;
@@ -20,18 +20,18 @@ header {
     margin-bottom: 1rem;
 }
 
-.leftheader, .rightheader {
+.augmented-notes-view .leftheader, .augmented-notes-view .rightheader {
     font-weight: bold;
 }
 
-section {
+.augmented-notes-view section {
     display: grid;
     grid-template-columns: 1fr 3fr; /* left margin (cues) + main text */
     gap: 1rem;
 }
 
 /* Left column for cues or quick notes */
-.leftmargin {
+.augmented-notes-view .leftmargin {
     background-color: #f0f0f0;
     padding: 0.5rem;
     border-left: 3px solid #666;
@@ -40,7 +40,7 @@ section {
 }
 
 /* Main column for content */
-.main {
+.augmented-notes-view .main {
     background-color: #fff;
     padding: 0.5rem;
     border-left: 3px solid #007acc; /* A different color to show distinction */
@@ -48,19 +48,19 @@ section {
 }
 
 /* Optional highlight for important keywords or definitions */
-.highlight {
+.augmented-notes-view .highlight {
     background-color: yellow;
     font-weight: bold;
 }
 
-footer {
+.augmented-notes-view footer {
     margin-top: 1rem;
     padding: 1rem;
     background-color: #eee;
     border-top: 2px dashed #999;
 }
 
-footer .summary-box {
+.augmented-notes-view footer .summary-box {
     padding: 1rem;
     background-color: #fef3bd;
     border: 1px solid #ccc;
@@ -68,14 +68,14 @@ footer .summary-box {
 }
 
 /* A small utility class for spacing or emphasis if needed */
-.spaced {
+.augmented-notes-view .spaced {
     margin: 1rem 0;
 }
 
 
 /* Collapsible content */
 
-.collapsible {
+.augmented-notes-view .collapsible {
     cursor: pointer;
     padding: 0.5rem;
     border: none;
@@ -87,7 +87,7 @@ footer .summary-box {
     margin-top: 1rem;
 }
 
-.content {
+.augmented-notes-view .content {
     display: none; /* Hidden by default */
     background-color: #fefefe;
     padding: 0.5rem;
@@ -98,34 +98,34 @@ footer .summary-box {
 
 /* Color themes for different types of notes */
 
-.color-theme-event {
+.augmented-notes-view .color-theme-event {
     border-left: 6px solid #007acc;
 }
 
-.color-theme-idea {
+.augmented-notes-view .color-theme-idea {
     border-left: 6px solid #009688;
 }
 
-.color-theme-question {
+.augmented-notes-view .color-theme-question {
     border-left: 6px solid #ff5722;
 }
 
 
 /* AI Summary */
 
-.summary-box {
+.augmented-notes-view .summary-box {
     background-color: #fef3bd;
     padding: 1rem;
     margin-top: 1rem;
 }
 
-    button {
+.augmented-notes-view button {
     margin: 1rem 0;
     padding: 0.5rem 1rem;
     cursor: pointer;
 }
 
-#aiSummary {
+.augmented-notes-view #aiSummary {
     margin: 2rem 0;
     padding: 1rem;
     border: 2px dashed #007acc;

@@ -799,6 +799,19 @@
     box-shadow: none !important;
 }
 
+/* Override scoped note view styles for embedded view */
+.embedded-note-content .digital-notebook-view,
+.embedded-note-content .cornell-notes-view,
+.embedded-note-content .mindmap-view,
+.embedded-note-content .sticky-notes-view,
+.embedded-note-content .vintage-cards-view,
+.embedded-note-content .augmented-notes-view {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    background: transparent !important;
+}
+
 /* Overlay background */
 .embedded-note-view::before {
     content: '';

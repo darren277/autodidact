@@ -1,4 +1,4 @@
-:root {
+.digital-notebook-view {
     --primary: #4a6fa5;
     --secondary: #6b8cae;
     --background: #1e1e2e;
@@ -8,7 +8,7 @@
     --accent: #ff7edb;
 }
 
-body {
+.digital-notebook-view {
     margin: 0;
     padding: 0;
     background-color: var(--background);
@@ -21,7 +21,7 @@ body {
     overflow-x: hidden;
 }
 
-.notebook {
+.digital-notebook-view .notebook {
     width: 90%;
     max-width: 1000px;
     background-color: var(--grid);
@@ -34,7 +34,7 @@ body {
 }
 
 /* Grid lines */
-.notebook::before {
+.digital-notebook-view .notebook::before {
     content: "";
     position: absolute;
     top: 0;
@@ -48,7 +48,7 @@ body {
     z-index: 0;
 }
 
-.glow {
+.digital-notebook-view .glow {
     position: absolute;
     top: -50%;
     left: -50%;
@@ -64,7 +64,7 @@ body {
     pointer-events: none;
 }
 
-.header {
+.digital-notebook-view .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -75,24 +75,24 @@ body {
     z-index: 1;
 }
 
-.title {
+.digital-notebook-view .title {
     font-size: 1.8em;
     color: var(--highlight);
     text-shadow: 0 0 10px rgba(240, 168, 72, 0.5);
     margin: 0;
 }
 
-.meta {
+.digital-notebook-view .meta {
     font-size: 0.9em;
     color: var(--secondary);
 }
 
-.meta span {
+.digital-notebook-view .meta span {
     margin-left: 15px;
     position: relative;
 }
 
-.meta span::after {
+.digital-notebook-view .meta span::after {
     content: "";
     position: absolute;
     bottom: -3px;
@@ -104,11 +104,11 @@ body {
     transition: transform 0.3s ease;
 }
 
-.meta span:hover::after {
+.digital-notebook-view .meta span:hover::after {
     transform: scaleX(1);
 }
 
-.content {
+.digital-notebook-view .content {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
@@ -116,7 +116,7 @@ body {
     z-index: 1;
 }
 
-.note-card {
+.digital-notebook-view .note-card {
     background-color: rgba(30, 30, 46, 0.8);
     border-left: 4px solid var(--primary);
     padding: 15px;
@@ -127,12 +127,12 @@ body {
     overflow: hidden;
 }
 
-.note-card:hover {
+.digital-notebook-view .note-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
-.note-card::before {
+.digital-notebook-view .note-card::before {
     content: "";
     position: absolute;
     top: 0;
@@ -143,7 +143,7 @@ body {
     z-index: 0;
 }
 
-.note-title {
+.digital-notebook-view .note-title {
     font-size: 1.2em;
     color: var(--highlight);
     margin-top: 0;
@@ -152,32 +152,32 @@ body {
     align-items: center;
 }
 
-.note-title::before {
+.digital-notebook-view .note-title::before {
     content: "●";
     margin-right: 10px;
     color: var(--accent);
     font-size: 0.8em;
 }
 
-.note-content {
+.digital-notebook-view .note-content {
     color: var(--text);
     margin: 0;
     position: relative;
     z-index: 1;
 }
 
-.twin-note {
+.digital-notebook-view .twin-note {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-.sidebar-note {
+.digital-notebook-view .sidebar-note {
     background-color: rgba(240, 168, 72, 0.1);
     border-left: 4px solid var(--highlight);
 }
 
-.summary {
+.digital-notebook-view .summary {
     margin-top: 30px;
     padding-top: 20px;
     border-top: 2px solid var(--primary);
@@ -185,7 +185,7 @@ body {
     z-index: 1;
 }
 
-.summary-title {
+.digital-notebook-view .summary-title {
     color: var(--accent);
     margin-top: 0;
     font-size: 1.4em;
@@ -193,7 +193,7 @@ body {
 }
 
 /* Neon cursor effect */
-.cursor {
+.digital-notebook-view .cursor {
     position: absolute;
     width: 20px;
     height: 20px;
@@ -213,7 +213,7 @@ body {
     50% { opacity: 1; }
 }
 
-.blinking-cursor {
+.digital-notebook-view .blinking-cursor {
     display: inline-block;
     width: 10px;
     height: 20px;
@@ -224,20 +224,20 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .twin-note {
+    .digital-notebook-view .twin-note {
         grid-template-columns: 1fr;
     }
 
-    .header {
+    .digital-notebook-view .header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .meta {
+    .digital-notebook-view .meta {
         margin-top: 10px;
     }
 
-    .meta span {
+    .digital-notebook-view .meta span {
         display: block;
         margin-left: 0;
         margin-top: 5px;
