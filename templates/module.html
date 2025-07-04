@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="lesson-actions">
-                    <a href="#" class="btn">{{ lesson_card.action }}</a>
+                    <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn">{{ lesson_card.action }}</a>
                 </div>
             </div>
         {% endfor %}
