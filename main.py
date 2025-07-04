@@ -313,3 +313,9 @@ def publish_hello():
     sse.publish(msg, type='greeting')
     return "Message sent!"
 
+
+@app.errorhandler(400)
+def handle_400(e):
+    print("400 Error:", e)
+    print("Request data:", request.data)
+    return jsonify({"error": "Bad request"}), 400
