@@ -23,7 +23,20 @@
     <div class="lesson-container">
         <div class="lesson-main">
             <div class="lesson-header">
-                <h1 class="lesson-title">{{ lesson.title }}</h1>
+                <div class="lesson-title-section">
+                    <h1 class="lesson-title">{{ lesson.title }}</h1>
+                    
+                    {% if user and user.mode == 'teacher' %}
+                        <div class="teacher-actions">
+                            <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="btn btn-outline">
+                                <i class="icon-edit"></i> Edit Lesson
+                            </a>
+                            <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}" class="btn btn-outline">
+                                <i class="icon-eye"></i> Preview
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
 
                 <div class="lesson-meta-card">
                     <div class="meta-grid">
@@ -44,11 +57,11 @@
                             <span class="meta-label"><i class="icon-difficulty"></i> Difficulty</span>
                             <span class="meta-value difficulty-{{ lesson.difficulty }}">{{ lesson.difficulty|title }}</span>
                         </div>
-                        {% if lesson.tags %}
+                        {% if lesson.get_tags() %}
                         <div class="meta-cell meta-tags">
                             <span class="meta-label"><i class="icon-tags"></i> Tags</span>
                             <span class="meta-value tags">
-                                {% for tag in lesson.tags %}
+                                {% for tag in lesson.get_tags() %}
                                     <span class="tag-badge">{{ tag }}</span>
                                 {% endfor %}
                             </span>
@@ -58,6 +71,7 @@
                 </div>
             </div>
 
+            {% if not user or user.mode != 'teacher' %}
             <div class="lesson-progress-wrapper">
                 <div class="lesson-progress">
                     <div class="progress-bar">
@@ -76,6 +90,7 @@
                     </button>
                 </div>
             </div>
+            {% endif %}
 
             <div class="lesson-tabs">
                 <button type="button" class="tab-button active" data-tab="content">Lesson Content</button>
@@ -86,11 +101,11 @@
 
             <div class="lesson-content-wrapper">
                 <div class="tab-content active" id="tab-content">
-                    {% if lesson.learning_objectives %}
+                    {% if lesson.get_learning_objectives() %}
                         <div class="learning-objectives">
                             <h2>Learning Objectives</h2>
                             <ul>
-                                {% for objective in lesson.learning_objectives %}
+                                {% for objective in lesson.get_learning_objectives() %}
                                     <li>{{ objective }}</li>
                                 {% endfor %}
                             </ul>
@@ -213,6 +228,40 @@
         </div>
 
         <div class="lesson-sidebar">
+            {% if user and user.mode == 'teacher' %}
+                <div class="sidebar-card teacher-info-card">
+                    <h3 class="sidebar-title">Lesson Details</h3>
+                    <div class="teacher-info">
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value {% if lesson.published %}published{% else %}draft{% endif %}">
+                                {{ 'Published' if lesson.published else 'Draft' }}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Module:</span>
+                            <span class="info-value">{{ lesson.module.title if lesson.module else 'No module' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Order:</span>
+                            <span class="info-value">{{ lesson.order|default(1) }}</span>
+                        </div>
+                        {% if lesson.created_at %}
+                        <div class="info-item">
+                            <span class="info-label">Created:</span>
+                            <span class="info-value">{{ lesson.created_at.strftime('%Y-%m-%d') if lesson.created_at else 'N/A' }}</span>
+                        </div>
+                        {% endif %}
+                        {% if lesson.updated_at %}
+                        <div class="info-item">
+                            <span class="info-label">Updated:</span>
+                            <span class="info-value">{{ lesson.updated_at.strftime('%Y-%m-%d') if lesson.updated_at else 'N/A' }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
             <div class="sidebar-card toc-card">
                 <h3 class="sidebar-title">Table of Contents</h3>
                 <div class="toc-content" id="toc-content">
@@ -221,6 +270,7 @@
                 </div>
             </div>
 
+            {% if not user or user.mode != 'teacher' %}
             <div class="sidebar-card notes-card">
                 <div class="card-header">
                     <h3 class="sidebar-title">Your Notes</h3>
@@ -273,6 +323,7 @@
                     </audio>
                 {% endif %}
             </div>
+            {% endif %}
 
             <div class="sidebar-card chat-card">
                 <div class="card-header">

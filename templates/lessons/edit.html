@@ -46,8 +46,8 @@
                         <label for="learning_objectives" class="required">Learning Objectives</label>
                         <div class="learning-objectives-container">
                             <div id="learning-objectives-list">
-                                {% if lesson.learning_objectives %}
-                                    {% for objective in lesson.learning_objectives %}
+                                {% if lesson.get_learning_objectives() %}
+                                {% for objective in lesson.get_learning_objectives() %}
                                         <div class="objective-item">
                                             <input type="text" name="learning_objectives[]" value="{{ objective }}"
                                                    class="form-control" placeholder="Learning objective">
@@ -330,7 +330,7 @@
 
                     <div class="form-group">
                         <label for="tags">Tags</label>
-                        <input type="text" id="tags" name="tags" value="{{ lesson.tags|join(', ') }}"
+                        <input type="text" id="tags" name="tags" value="{{ lesson.get_tags()|join(', ') }}"
                                class="form-control" placeholder="Enter tags separated by commas">
                     </div>
                 </div>

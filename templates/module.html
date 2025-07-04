@@ -121,60 +121,69 @@
 
             <!-- Module Lessons -->
             <div class="content-card">
-                <h2>Module Lessons</h2>
+                <div class="section-header">
+                    <h2>Module Lessons</h2>
+                    {% if not user or user.mode != 'teacher' %}
+                        <a href="{{ url_for('list_lessons') }}" class="btn btn-outline">
+                            <i class="icon-list"></i> View All Lessons
+                        </a>
+                    {% endif %}
+                </div>
                 {% if user and user.mode == 'teacher' %}
-                    <!-- Teacher View: Admin Lesson List -->
-                    {% if module.lessons %}
-                        <div class="lessons-list">
-                            {% for lesson in module.lessons %}
-                                <div class="lesson-item">
-                                    <div class="lesson-info">
-                                        <h4 class="lesson-title">{{ lesson.title }}</h4>
+                    <!-- Teacher View: Simple Lesson List -->
+                    <div class="lesson-list">
+                        {% if lesson_cards %}
+                            {% for lesson_card in lesson_cards %}
+                                <div class="lesson-card">
+                                    <div class="lesson-content">
+                                        <h3>{{ lesson_card.title }}</h3>
+                                        <p>{{ lesson_card.description }}</p>
                                         <div class="lesson-meta">
-                                            <span class="lesson-order">Order: {{ lesson.order }}</span>
-                                            <span class="lesson-status {% if lesson.published %}published{% else %}draft{% endif %}">
-                                                {{ 'Published' if lesson.published else 'Draft' }}
-                                            </span>
+                                            <span>Duration: {{ lesson_card.duration }}</span>
+                                            <span>Order: {{ lesson_card.order|default(loop.index) }}</span>
                                         </div>
-                                        {% if lesson.description %}
-                                            <p class="lesson-description">{{ lesson.description }}</p>
-                                        {% endif %}
                                     </div>
                                     <div class="lesson-actions">
-                                        <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="btn-outline-small">
-                                            <i class="icon-view"></i> View
-                                        </a>
-                                        <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="btn-outline-small">
-                                            <i class="icon-edit"></i> Edit
-                                        </a>
+                                        <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn btn-outline">View</a>
+                                        <a href="{{ url_for('edit_lesson', lesson_id=lesson_card.id) }}" class="btn btn-outline">Edit</a>
+                                        <a href="{{ url_for('preview_lesson', lesson_id=lesson_card.id) }}" class="btn btn-outline">Preview</a>
                                     </div>
                                 </div>
                             {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-lessons">
-                            <p>No lessons added to this module yet.</p>
-                        </div>
-                    {% endif %}
+                        {% else %}
+                            <div class="empty-lessons">
+                                <p>No lessons added to this module yet.</p>
+                                <a href="{{ url_for('create_lesson') }}?module_id={{ module.id }}" class="btn btn-primary">
+                                    <i class="icon-plus"></i> Add First Lesson
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
                 {% else %}
                     <!-- Student View: Progress-based Lesson List -->
                     <div class="lesson-list">
-                        {% for lesson_card in lesson_cards %}
-                            <div class="lesson-card {{ lesson_card.status }}">
-                                <div class="lesson-status">{{ lesson_card.icon }}</div>
-                                <div class="lesson-content">
-                                    <h3>{{ lesson_card.title }}</h3>
-                                    <p>{{ lesson_card.description }}</p>
-                                    <div class="lesson-meta">
-                                        <span>Duration: {{ lesson_card.duration }}</span>
-                                        <span>{{ lesson_card.status }}</span>
+                        {% if lesson_cards %}
+                            {% for lesson_card in lesson_cards %}
+                                <div class="lesson-card {{ lesson_card.status }}">
+                                    <div class="lesson-status">{{ lesson_card.icon }}</div>
+                                    <div class="lesson-content">
+                                        <h3>{{ lesson_card.title }}</h3>
+                                        <p>{{ lesson_card.description }}</p>
+                                        <div class="lesson-meta">
+                                            <span>Duration: {{ lesson_card.duration }}</span>
+                                            <span>{{ lesson_card.status }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="lesson-actions">
+                                        <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn">{{ lesson_card.action }}</a>
                                     </div>
                                 </div>
-                                <div class="lesson-actions">
-                                    <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn">{{ lesson_card.action }}</a>
-                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-lessons">
+                                <p>No lessons available in this module yet.</p>
                             </div>
-                        {% endfor %}
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>

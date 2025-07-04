@@ -919,32 +919,10 @@ def view_lesson(lesson_id):
         user_data = user_data.copy()
         user_data['has_api_key'] = user_has_api_key
     
-    # Create lesson data structure for template
-    lesson_data = {
-        'id': lesson.id,
-        'title': lesson.title,
-        'content': lesson.content,
-        'content_html': lesson.content,  # TODO: Convert to HTML if needed
-        'examples_html': lesson.examples or '',  # Use examples field from model
-        'exercises_html': lesson.exercises or '',  # Use exercises field from model
-        'learning_objectives': lesson.get_learning_objectives(),
-        'estimated_time': {
-            'hours': lesson.estimated_time_hours,
-            'minutes': lesson.estimated_time_minutes
-        },
-        'difficulty': lesson.difficulty,
-        'tags': lesson.get_tags(),
-        'attachments': lesson.get_attachments(),
-        'overview': lesson.overview,
-        'module_id': lesson.module_id,
-        'module_title': lesson.module.title if lesson.module else 'Unknown Module',
-        'user_progress': user_progress
-    }
-    
     return render_template(
         'lessons/view.html',
-        lesson=lesson_data,
-        user_progress=lesson_data['user_progress'],
+        lesson=lesson,  # Pass the actual lesson object
+        user_progress=user_progress,
         other_lessons=other_lessons,
         user_notes=user_notes,
         audio_notes=audio_notes,
