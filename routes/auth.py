@@ -82,8 +82,9 @@ def auth_callback_route():
                     sub=user_info.get('sub', '')
                 )
                 
-                # Add mode to session user info
-                user_info['mode'] = 'student'  # Default mode
+                # Preserve existing mode if it exists, otherwise default to student
+                existing_mode = session.get('user', {}).get('mode', 'student')
+                user_info['mode'] = existing_mode
                 user_info['has_api_key'] = bool(user.encrypted_api_key)
                 
                 session['user'] = user_info
@@ -92,7 +93,8 @@ def auth_callback_route():
             except Exception as e:
                 logger.error("Failed to create/update user in database: %s", e)
                 # Still allow login even if database operation fails
-                user_info['mode'] = 'student'
+                existing_mode = session.get('user', {}).get('mode', 'student')
+                user_info['mode'] = existing_mode
                 user_info['has_api_key'] = False
                 session['user'] = user_info
                 return redirect(url_for('index'))

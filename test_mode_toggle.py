@@ -27,6 +27,10 @@ def test_mode_toggle():
             headers={"Content-Type": "application/json"}
         )
         
+        print(f"Response status: {response.status_code}")
+        print(f"Response headers: {dict(response.headers)}")
+        print(f"Response text: {response.text}")
+        
         if response.status_code == 200:
             result = response.json()
             print(f"✅ Mode toggle successful: {result}")

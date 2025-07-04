@@ -81,26 +81,46 @@ def stream():
 
 @app.route('/toggle_mode', methods=['POST'])
 def toggle_mode():
+    print(f"DEBUG: toggle_mode called")
+    print(f"DEBUG: Session: {session}")
+    print(f"DEBUG: Request headers: {dict(request.headers)}")
+    print(f"DEBUG: Request data: {request.get_data()}")
+    
     if 'user' not in session:
+        print("DEBUG: No user in session")
         return jsonify({"error": "User not authenticated"}), 401
     
     try:
         data = request.get_json()
+        print(f"DEBUG: Parsed JSON data: {data}")
+        
         if data and 'mode' in data:
             new_mode = data['mode']
+            print(f"DEBUG: Switching to mode: {new_mode}")
+            print(f"DEBUG: Session before change: {session}")
             if new_mode in ['student', 'teacher']:
                 session['user']['mode'] = new_mode
+                session.modified = True  # Mark session as modified
+                print(f"DEBUG: Session after change: {session}")
+                print(f"DEBUG: Session modified flag: {session.modified}")
+                print(f"DEBUG: Mode updated in session: {session['user']['mode']}")
                 return jsonify({"message": "Mode toggled successfully", "mode": new_mode})
             else:
+                print(f"DEBUG: Invalid mode: {new_mode}")
                 return jsonify({"error": "Invalid mode"}), 400
         else:
             # Fallback to toggle behavior if no mode specified
-            if session['user']['mode'] == 'student':
+            current_mode = session['user']['mode']
+            print(f"DEBUG: No mode specified, toggling from: {current_mode}")
+            if current_mode == 'student':
                 session['user']['mode'] = 'teacher'
             else:
                 session['user']['mode'] = 'student'
+            session.modified = True  # Mark session as modified
+            print(f"DEBUG: Mode toggled to: {session['user']['mode']}")
             return jsonify({"message": "Mode toggled successfully", "mode": session['user']['mode']})
     except Exception as e:
+        print(f"DEBUG: Exception in toggle_mode: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/notes/cornell_notes/<notes_id>')
@@ -301,6 +321,8 @@ def dashboard():
     print("=== SESSION DEBUG ===")
     print(f"Session keys: {list(session.keys())}")
     print(f"Session user: {session.get('user', 'NOT FOUND')}")
+    print(f"Session modified flag: {session.modified}")
+    print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
     print("====================")
     
     # Check if user is logged in
@@ -1126,11 +1148,13 @@ def login():
     print("DEBUG: auth_callback_route called", DEBUG)
     if DEBUG:
         # Simulate a user session in development mode
+        # Preserve existing mode if it exists
+        current_mode = session.get('user', {}).get('mode', 'student')
         session['user'] = {
             "email": "devuser@example.com",
             "name": "Dev User",
             "sub": "local-dev-user-id",
-            "mode": "student"
+            "mode": current_mode
         }
         return redirect(url_for('index'))
     return redirect(COGNITO_LOGIN_URL)

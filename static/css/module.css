@@ -643,8 +643,8 @@
     color: #2c4a68;
 }
 
-/* Buttons */
-.btn {
+/* Module-specific Buttons - Scoped to module content */
+.module-layout .btn {
     display: inline-block;
     background-color: var(--primary-color, #3b82f6);
     color: white;
@@ -655,11 +655,11 @@
     transition: background-color 0.2s;
 }
 
-.btn:hover {
+.module-layout .btn:hover {
     background-color: #2c4a68;
 }
 
-.btn-outline {
+.module-layout .btn-outline {
     display: inline-block;
     background-color: transparent;
     color: var(--primary-color, #3b82f6);
@@ -671,11 +671,11 @@
     transition: all 0.2s;
 }
 
-.btn-outline:hover {
+.module-layout .btn-outline:hover {
     background-color: rgba(58, 90, 120, 0.1);
 }
 
-.btn-outline-small {
+.module-layout .btn-outline-small {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -690,19 +690,19 @@
     transition: all 0.2s ease;
 }
 
-.btn-outline-small:hover {
+.module-layout .btn-outline-small:hover {
     background-color: #f9fafb;
     border-color: #9ca3af;
     color: #374151;
 }
 
-.btn-primary {
+.module-layout .btn-primary {
     background-color: #3b82f6;
     color: white;
     border: 1px solid #3b82f6;
 }
 
-.btn-primary:hover {
+.module-layout .btn-primary:hover {
     background-color: #2563eb;
     border-color: #2563eb;
 }
