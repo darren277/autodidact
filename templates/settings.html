@@ -100,16 +100,16 @@
                            id="openai_api_key" 
                            name="openai_api_key" 
                            placeholder="sk-..." 
-                           value="{{ user.openai_api_key if user.openai_api_key else '' }}"
+                           value=""
                            autocomplete="off">
                     <div class="form-help">
-                        Your OpenAI API key is stored securely in your session and will be cleared when you log out.
+                        Your OpenAI API key is encrypted and stored securely in the database. It will persist between sessions.
                     </div>
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">
                         Show/Hide API Key
                     </button>
-                    <div id="apiKeyStatus" class="api-key-status {% if user.openai_api_key %}set{% else %}not-set{% endif %}">
-                        {% if user.openai_api_key %}
+                    <div id="apiKeyStatus" class="api-key-status {% if user.has_api_key %}set{% else %}not-set{% endif %}">
+                        {% if user.has_api_key %}
                             ✓ API Key is set
                         {% else %}
                             ⚠ No API Key configured
