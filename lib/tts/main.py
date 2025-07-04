@@ -11,11 +11,10 @@ from lib.tts.personalities import voices, assign_voice
 from settings import *
 from utils.typedefs import StructuredNotes
 
-openai = AsyncOpenAI()
 
 
 class TTS:
-    def __init__(self, model: str, voice: str, instructions: str):
+    def __init__(self, model: str, voice: str, instructions: str, api_key: str = None):
         if model not in ["gpt-4o-mini-tts"]:
             raise ValueError(f"Model '{model}' is not available for TTS.")
         self.model = model
@@ -25,8 +24,15 @@ class TTS:
         self.voice = voice
 
         self.instructions = instructions
+        self.api_key = api_key
 
     async def speak(self, message: str) -> bytes:
+        # Use provided API key or fall back to environment variable
+        if self.api_key:
+            openai = AsyncOpenAI(api_key=self.api_key)
+        else:
+            openai = AsyncOpenAI()
+            
         async with openai.audio.speech.with_streaming_response.create(
             model=self.model,
             voice=self.voice,
@@ -72,8 +78,8 @@ example_conversation = Conversation(
         ("Alice", "Hello, how are you today?"),
         ("Bob", "I'm doing well, thank you. How about you?")
     ),
-    alice=TTS("gpt-4o-mini-tts", "alloy", "Speak in a friendly tone."),
-    bob=TTS("gpt-4o-mini-tts", "ballad", "Speak in a calm tone.")
+    alice=TTS("gpt-4o-mini-tts", "alloy", "Speak in a friendly tone.", api_key="your-api-key"),
+    bob=TTS("gpt-4o-mini-tts", "ballad", "Speak in a calm tone.", api_key="your-api-key")
 )
 
 audio = asyncio.run(example_conversation.construct_audio())
@@ -107,11 +113,12 @@ def split_lines(text):
 
 TEST_INPUT_TEXT = "The lorems discovered the ipsum in 1967. They began cultivating ipsum in large quantities, which led to it becoming their primary source of sustenance, and a major export leveraged in trade with surrounding societies."
 
-def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
+def construct_conversation(input_text: str = TEST_INPUT_TEXT, api_key: str = None) -> None:
     '''
     Construct a dramatic narrative conversation based on the input text.
     Writes the prompt, dialogue, and audio to files.
     :param input_text:
+    :param api_key: OpenAI API key to use for TTS
     :return:
     '''
     char1 = random.choice(CHARACTERS_ARRAY)
@@ -132,8 +139,8 @@ def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
 
     with open("dialogue.txt", "w", encoding='utf-8') as f: f.write(str(dialogue))
 
-    persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'])
-    persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'])
+    persona1 = TTS("gpt-4o-mini-tts", assign_voice(char1), char1['descriptors'], api_key=api_key)
+    persona2 = TTS("gpt-4o-mini-tts", assign_voice(char2), char2['descriptors'], api_key=api_key)
 
     dramatic_narrative = Conversation(
         dialogue,
@@ -144,12 +151,12 @@ def construct_conversation(input_text: str = TEST_INPUT_TEXT) -> None:
     with open("dramatic_narrative.wav", "wb") as f: f.write(audio)
 
 
-def construct_presentation_from_structured_notes(structured_notes: StructuredNotes or dict):
+def construct_presentation_from_structured_notes(structured_notes: StructuredNotes or dict, api_key: str = None):
     from lib.tts.personalities import MAIN_NARRATOR, MAIN_NARRATOR_VOICE, INNOVATOR, INNOVATOR_VOICE, HISTORIAN, HISTORIAN_VOICE
 
-    main_narrator_persona = TTS("gpt-4o-mini-tts", MAIN_NARRATOR_VOICE, MAIN_NARRATOR["descriptors"])
-    innovator_persona = TTS("gpt-4o-mini-tts", INNOVATOR_VOICE, INNOVATOR["descriptors"])
-    historian_persona = TTS("gpt-4o-mini-tts", HISTORIAN_VOICE, HISTORIAN["descriptors"])
+    main_narrator_persona = TTS("gpt-4o-mini-tts", MAIN_NARRATOR_VOICE, MAIN_NARRATOR["descriptors"], api_key=api_key)
+    innovator_persona = TTS("gpt-4o-mini-tts", INNOVATOR_VOICE, INNOVATOR["descriptors"], api_key=api_key)
+    historian_persona = TTS("gpt-4o-mini-tts", HISTORIAN_VOICE, HISTORIAN["descriptors"], api_key=api_key)
 
     SYSTEM_PROMPT = """
     You are an expert writer with a passion for education. You take in a structured set of notes and turn it into a compelling presentation.
