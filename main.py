@@ -298,7 +298,99 @@ def tts():
 @app.route('/dashboard')
 def dashboard():
     user = session['user'] if session else None
-    return render_template('dashboard.html', active_page='dashboard', user=user)
+    
+    # Initialize dashboard data with defaults
+    dashboard_data = {
+        'progress_summary': {
+            'completed_lessons': 0,
+            'total_lessons': 0,
+            'completion_percentage': 0
+        },
+        'next_session': None,
+        'achievements': {
+            'modules_completed': 0,
+            'quizzes_passed': 0
+        },
+        'recent_activity': []
+    }
+    
+    if user:
+        try:
+            from models.user import User
+            from models.lessons import Lesson, Module, UserProgress
+            from datetime import datetime, timedelta
+            
+            # Get user from database
+            user_obj = User.find_by_sub(user['sub'])
+            if user_obj:
+                # Get completion statistics
+                stats = user_obj.get_completion_stats()
+                dashboard_data['progress_summary'] = {
+                    'completed_lessons': stats['completed_lessons'],
+                    'total_lessons': stats['total_lessons'],
+                    'completion_percentage': stats['completion_percentage']
+                }
+                
+                # Find next session (most recently accessed incomplete lesson)
+                recent_progress = UserProgress.query.filter_by(
+                    user_id=user_obj.id
+                ).filter(
+                    UserProgress.is_completed == False,
+                    UserProgress.percentage_completed > 0
+                ).order_by(UserProgress.last_accessed.desc()).first()
+                
+                if recent_progress:
+                    lesson = recent_progress.lesson
+                    module = lesson.module if lesson.module else None
+                    dashboard_data['next_session'] = {
+                        'lesson_title': lesson.title,
+                        'module_title': module.title if module else 'Unknown Module',
+                        'last_accessed': recent_progress.last_accessed,
+                        'lesson_id': lesson.id,
+                        'module_id': module.id if module else None
+                    }
+                
+                # Count completed modules
+                completed_modules = set()
+                for progress in user_obj.progress_records:
+                    if progress.is_completed and progress.lesson.module:
+                        completed_modules.add(progress.lesson.module.id)
+                
+                dashboard_data['achievements']['modules_completed'] = len(completed_modules)
+                
+                # Get recent activity (last 10 progress updates)
+                recent_activity = UserProgress.query.filter_by(
+                    user_id=user_obj.id
+                ).order_by(UserProgress.updated_at.desc()).limit(10).all()
+                
+                for progress in recent_activity:
+                    lesson = progress.lesson
+                    activity_type = "Lesson Completed" if progress.is_completed else "Progress Updated"
+                    activity_time = progress.updated_at
+                    
+                    # Format time ago
+                    time_diff = datetime.utcnow() - activity_time
+                    if time_diff.days > 0:
+                        time_ago = f"{time_diff.days} day{'s' if time_diff.days != 1 else ''} ago"
+                    elif time_diff.seconds > 3600:
+                        hours = time_diff.seconds // 3600
+                        time_ago = f"{hours} hour{'s' if hours != 1 else ''} ago"
+                    else:
+                        minutes = time_diff.seconds // 60
+                        time_ago = f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+                    
+                    dashboard_data['recent_activity'].append({
+                        'type': activity_type,
+                        'lesson_title': lesson.title,
+                        'time_ago': time_ago,
+                        'percentage': progress.percentage_completed,
+                        'is_completed': progress.is_completed
+                    })
+                
+        except Exception as e:
+            print(f"Error loading dashboard data: {e}")
+    
+    return render_template('dashboard.html', active_page='dashboard', user=user, **dashboard_data)
 
 @app.route('/module/<module_id>')
 def module(module_id):
@@ -1032,6 +1124,22 @@ def update_bio():
 
 app.jinja_env.globals.update(enumerate=enumerate)
 app.jinja_env.globals.update(len=len)
+
+@app.context_processor
+def inject_modules():
+    """Inject modules into all template contexts"""
+    from models.lessons import Module
+    try:
+        # Only fetch modules if we have a database connection
+        if db.engine:
+            modules = Module.query.all()
+        else:
+            modules = []
+    except Exception as e:
+        print(f"Error fetching modules: {e}")
+        modules = []
+    
+    return {'modules': modules}
 
 
 @app.route('/hello')

@@ -44,8 +44,14 @@
 <!--                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'progress' %}active{% endif %}">My Progress</a></li>-->
 
                 <div class="side-menu-section">
+                    <div class="side-menu-section-title">Modules</div>
+                    {% for module in modules %}
+                        <li><a href="{{ url_for('module', module_id=module.id) }}" class="{% if active_page == 'module_' + module.id|string %}active{% endif %}">{{ module.title }}</a></li>
+                    {% endfor %}
+                </div>
+
+                <div class="side-menu-section">
                     <div class="side-menu-section-title">Learning Tools</div>
-                    <li><a href="{{ url_for('module', module_id=1) }}" class="{% if active_page == 'module_1' %}active{% endif %}">Lorem Ipsum Dolor</a></li>
                 </div>
 
                 <div class="side-menu-section">
