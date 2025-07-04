@@ -511,6 +511,35 @@ def submit_question():
         if not lesson_id or not question:
             return jsonify({"error": "Lesson ID and question are required"}), 400
         
+        # Get lesson context
+        from models.lessons import Lesson
+        lesson = Lesson.query.get(lesson_id)
+        if not lesson:
+            return jsonify({"error": "Lesson not found"}), 404
+        
+        # Check if user has API key configured
+        from utils.api_key_manager import get_user_api_key
+        user_sub = session['user']['sub']
+        api_key = get_user_api_key(user_sub)
+        
+        if not api_key:
+            return jsonify({"error": "No OpenAI API key configured. Please set your API key in Settings."}), 400
+        
+        # Create context-aware question
+        lesson_context = f"""
+Lesson Context:
+Title: {lesson.title}
+Content: {lesson.content}
+Module: {lesson.module.title if lesson.module else 'Unknown Module'}
+
+User Question: {question}
+
+Please answer the user's question based on the lesson content above. If the question is not related to this lesson, please redirect them to ask about the current lesson material.
+"""
+        
+        # Update the request data with the context-aware question
+        data['question'] = lesson_context
+        
         # Use the existing assistant system
         return ask_route(r)
         
@@ -554,6 +583,7 @@ def view_lesson(lesson_id):
     
     # Get user's notes for this lesson if authenticated
     user_notes = ""
+    user_has_api_key = False
     if 'user' in session:
         try:
             from models.user import User
@@ -561,14 +591,24 @@ def view_lesson(lesson_id):
             user_sub = session['user']['sub']
             user = User.find_by_sub(user_sub)
             if user:
+                # Check for user notes
                 notes_obj = Notes.query.filter_by(
                     lesson_id=lesson_id, 
                     user_id=user.id
                 ).first()
                 if notes_obj:
                     user_notes = notes_obj.content
+                
+                # Check for API key status
+                user_has_api_key = bool(user.encrypted_api_key)
         except Exception as e:
-            print(f"Error loading user notes: {e}")
+            print(f"Error loading user data: {e}")
+    
+    # Create user object with API key status
+    user_data = session.get('user', {})
+    if user_data:
+        user_data = user_data.copy()
+        user_data['has_api_key'] = user_has_api_key
     
     # Create lesson data structure for template
     lesson_data = {
@@ -598,7 +638,8 @@ def view_lesson(lesson_id):
         user_progress=lesson_data['user_progress'],
         other_lessons=other_lessons,
         user_notes=user_notes,
-        audio_notes=audio_notes
+        audio_notes=audio_notes,
+        user=user_data  # Add user to template context
     )
 
 @app.route('/settings', methods=['GET', 'POST'])
@@ -708,6 +749,24 @@ def preview_lesson(lesson_id):
     if not lesson:
         return jsonify({"error": "Lesson not found"}), 404
     
+    # Check for API key status
+    user_has_api_key = False
+    if 'user' in session:
+        try:
+            from models.user import User
+            user_sub = session['user']['sub']
+            user = User.find_by_sub(user_sub)
+            if user:
+                user_has_api_key = bool(user.encrypted_api_key)
+        except Exception as e:
+            print(f"Error loading user data: {e}")
+    
+    # Create user object with API key status
+    user_data = session.get('user', {})
+    if user_data:
+        user_data = user_data.copy()
+        user_data['has_api_key'] = user_has_api_key
+    
     # Create lesson data structure for template (same as view_lesson)
     lesson_data = {
         'id': lesson.id,
@@ -730,7 +789,7 @@ def preview_lesson(lesson_id):
         'user_progress': {'completed': False, 'percentage': 0}  # TODO: Implement progress tracking
     }
     
-    return render_template('lessons/preview.html', lesson=lesson_data)
+    return render_template('lessons/preview.html', lesson=lesson_data, user=user_data)
 
 @app.route('/list_modules')
 def list_modules():

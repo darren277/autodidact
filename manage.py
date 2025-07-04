@@ -7,7 +7,7 @@ from flask import Flask
 from database import db
 from models.lessons import Lesson, Module, Course, Notes, Quiz, Media
 from models.user import User
-from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB
+from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB, MASTER_ENCRYPTION_KEY
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
@@ -62,6 +62,20 @@ def drop_tables():
 def seed_example_data():
     """Seed the database with example data."""
     with app.app_context():
+        # Create test user
+        test_user = User.create_or_update(
+            email="test@example.com",
+            name="Test User",
+            sub="test-user-123"
+        )
+        
+        # Add a test API key (you should replace this with a real one for testing)
+        test_api_key = "sk-test-key-for-development-only"
+        test_user.set_api_key(test_api_key, MASTER_ENCRYPTION_KEY)
+        
+        print(f"Created test user: {test_user.email}")
+        print("Note: Test user has a placeholder API key. Replace with a real key for actual testing.")
+        
         # Create a sample course
         course = Course(title="Introduction to Programming")
         db.session.add(course)

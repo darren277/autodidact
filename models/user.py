@@ -15,7 +15,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     sub = db.Column(db.String(100), unique=True, nullable=False)  # Cognito sub
     encrypted_api_key = db.Column(db.Text, nullable=True)
-    salt = db.Column(db.LargeBinary, nullable=True)
+    salt = db.Column(db.Text, nullable=True)  # Store as base64 string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -56,9 +56,9 @@ class User(db.Model):
         cipher = Fernet(key)
         encrypted_data = cipher.encrypt(api_key.encode())
         
-        # Store the encrypted data and salt
-        self.encrypted_api_key = encrypted_data
-        self.salt = salt
+        # Store the encrypted data as base64 string and salt as base64 string
+        self.encrypted_api_key = base64.b64encode(encrypted_data).decode('utf-8')
+        self.salt = base64.b64encode(salt).decode('utf-8')
 
     def get_api_key(self, master_key):
         """Decrypt and return the API key"""
@@ -66,18 +66,22 @@ class User(db.Model):
             return None
         
         try:
+            # Decode the stored base64 strings back to bytes
+            encrypted_data = base64.b64decode(self.encrypted_api_key.encode('utf-8'))
+            salt = base64.b64decode(self.salt.encode('utf-8'))
+            
             # Derive the key from the master key and salt
             kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=32,
-                salt=self.salt,
+                salt=salt,
                 iterations=100000,
             )
             key = base64.urlsafe_b64encode(kdf.derive(master_key.encode()))
             
             # Create Fernet cipher and decrypt the API key
             cipher = Fernet(key)
-            decrypted_data = cipher.decrypt(self.encrypted_api_key)
+            decrypted_data = cipher.decrypt(encrypted_data)
             
             return decrypted_data.decode()
         except Exception as e:

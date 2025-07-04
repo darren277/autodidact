@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                lesson_id: '{{ lesson.id }}',
+                lesson_id: lessonData.id,
                 content: noteContent
             })
         })
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    lesson_id: '{{ lesson.id }}'
+                    lesson_id: lessonData.id
                 })
             })
             .then(response => {
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    lesson_id: '{{ lesson.id }}',
+                    lesson_id: lessonData.id,
                     question: questionText
                 })
             })
