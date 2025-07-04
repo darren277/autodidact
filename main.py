@@ -154,7 +154,8 @@ def module(module_id):
     return render_template(
         f'module.html',
         active_page=f'module_{module_id}',
-        **module_data
+        **module_data,
+        user=session['user']
     )
 
 @app.route('/practice')
