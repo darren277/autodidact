@@ -8,6 +8,7 @@ example_module_progress = {
 
 example_module_lesson_cards = [
     {
+        "id": "1",
         "status": "completed",
         "icon": "✓",
         "title": "1. Introduction to Lorem Ipsum",
@@ -16,6 +17,7 @@ example_module_lesson_cards = [
         "action": "Review"
     },
     {
+        "id": "2",
         "status": "completed",
         "icon": "✓",
         "title": "2. Dolor Sit Amet Techniques",
@@ -24,6 +26,7 @@ example_module_lesson_cards = [
         "action": "Review"
     },
     {
+        "id": "3",
         "status": "current",
         "icon": "•",
         "title": "3. Practical Applications",
@@ -32,6 +35,7 @@ example_module_lesson_cards = [
         "action": "Continue"
     },
     {
+        "id": "4",
         "status": "",
         "icon": "",
         "title": "4. Advanced Concepts",
@@ -40,6 +44,7 @@ example_module_lesson_cards = [
         "action": "Start"
     },
     {
+        "id": "5",
         "status": "",
         "icon": "",
         "title": "5. Review & Assessment",
@@ -48,6 +53,7 @@ example_module_lesson_cards = [
         "action": "Start"
     },
     {
+        "id": "6",
         "status": "completed",
         "icon": "✓",
         "title": "6. Final Exam",
