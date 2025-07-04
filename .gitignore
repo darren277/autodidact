@@ -5,3 +5,12 @@
 PERSONAL_NOTES.md
 
 k8s/values.yaml
+
+tests/*.wav
+tests/*.txt
+
+lib/tts/conversation.wav
+lib/tts/dramatic_narrative.wav
+
+lib/apis/token.json
+lib/apis/google-credentials.json
