@@ -1,5 +1,12 @@
 # autodidact
 
+## TODO:
+
+Make this into something the user adds from a dashboard UI of some kind:
+
+OPENPROJECT_API_KEY=<YOUR_OPENPROJECT_API_KEY>
+OPENPROJECT_URL=https://op.apphosting.services
+
 ## Description
 
 You are the teacher and the student. An LLM enriched learning platform for designing lesson plans for others or for yourself.
