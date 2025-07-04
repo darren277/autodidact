@@ -166,4 +166,30 @@ class User(db.Model):
             'completed_lessons': completed_lessons,
             'completion_percentage': int((completed_lessons / total_lessons) * 100),
             'total_time_spent': total_time_spent
-        } 
+        }
+    
+    def get_next_recommended_lesson(self):
+        """Get the next recommended lesson for the user"""
+        from models.lessons import UserProgress, Lesson
+        
+        # First, try to find an incomplete lesson that the user has started
+        in_progress = UserProgress.query.filter_by(
+            user_id=self.id
+        ).filter(
+            UserProgress.is_completed == False,
+            UserProgress.percentage_completed > 0
+        ).order_by(UserProgress.last_accessed.desc()).first()
+        
+        if in_progress:
+            return in_progress.lesson
+        
+        # If no in-progress lessons, find the next unstarted lesson
+        # Get all lesson IDs that the user has progress for
+        user_lesson_ids = [p.lesson_id for p in self.progress_records]
+        
+        # Find the first lesson that the user hasn't started
+        next_lesson = Lesson.query.filter(
+            ~Lesson.id.in_(user_lesson_ids) if user_lesson_ids else True
+        ).order_by(Lesson.id).first()
+        
+        return next_lesson 

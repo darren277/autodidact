@@ -331,22 +331,19 @@ def dashboard():
                     'completion_percentage': stats['completion_percentage']
                 }
                 
-                # Find next session (most recently accessed incomplete lesson)
-                recent_progress = UserProgress.query.filter_by(
-                    user_id=user_obj.id
-                ).filter(
-                    UserProgress.is_completed == False,
-                    UserProgress.percentage_completed > 0
-                ).order_by(UserProgress.last_accessed.desc()).first()
-                
-                if recent_progress:
-                    lesson = recent_progress.lesson
-                    module = lesson.module if lesson.module else None
+                # Find next session (recommended lesson)
+                next_lesson = user_obj.get_next_recommended_lesson()
+                if next_lesson:
+                    module = next_lesson.module if next_lesson.module else None
+                    
+                    # Get progress for this lesson if it exists
+                    progress = user_obj.get_lesson_progress(next_lesson.id)
+                    
                     dashboard_data['next_session'] = {
-                        'lesson_title': lesson.title,
+                        'lesson_title': next_lesson.title,
                         'module_title': module.title if module else 'Unknown Module',
-                        'last_accessed': recent_progress.last_accessed,
-                        'lesson_id': lesson.id,
+                        'last_accessed': progress.last_accessed if progress else None,
+                        'lesson_id': next_lesson.id,
                         'module_id': module.id if module else None
                     }
                 
