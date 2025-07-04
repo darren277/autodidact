@@ -118,6 +118,20 @@ class Lesson(db.Model):
 class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    overview = db.Column(db.Text)
+    resources = db.Column(db.Text)
+    assessment = db.Column(db.Text)
+    learning_outcomes = db.Column(db.Text)  # JSON string for learning outcomes
+    featured_image = db.Column(db.String(500))  # URL to featured image
+    attachments = db.Column(db.Text)  # JSON string for attachments
+    prerequisites = db.Column(db.Text)  # JSON string for prerequisite module IDs
+    related_modules = db.Column(db.Text)  # JSON string for related module IDs
+    published = db.Column(db.Boolean, default=False)  # Publication status
+    order = db.Column(db.Integer, default=1)  # Order within course
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
     lessons = db.relationship('Lesson', backref='module', lazy=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
 
@@ -128,14 +142,77 @@ class Module(db.Model):
         return {
             'id': self.id,
             'title': self.title,
+            'description': self.description,
+            'overview': self.overview,
+            'resources': self.resources,
+            'assessment': self.assessment,
+            'learning_outcomes': self.get_learning_outcomes(),
+            'featured_image': self.featured_image,
+            'attachments': self.get_attachments(),
+            'prerequisites': self.get_prerequisites(),
+            'related_modules': self.get_related_modules(),
+            'published': self.published,
+            'order': self.order,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'lessons': [lesson.json() for lesson in self.lessons],
             'course_id': self.course_id
         }
+    
+    def get_learning_outcomes(self):
+        """Parse and return learning outcomes as list"""
+        if not self.learning_outcomes:
+            return []
+        try:
+            import json
+            return json.loads(self.learning_outcomes)
+        except:
+            return []
+    
+    def get_attachments(self):
+        """Parse and return attachments as list"""
+        if not self.attachments:
+            return []
+        try:
+            import json
+            return json.loads(self.attachments)
+        except:
+            return []
+    
+    def get_prerequisites(self):
+        """Parse and return prerequisites as list of module IDs"""
+        if not self.prerequisites:
+            return []
+        try:
+            import json
+            return json.loads(self.prerequisites)
+        except:
+            return []
+    
+    def get_related_modules(self):
+        """Parse and return related modules as list of module IDs"""
+        if not self.related_modules:
+            return []
+        try:
+            import json
+            return json.loads(self.related_modules)
+        except:
+            return []
 
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    overview = db.Column(db.Text)
+    objectives = db.Column(db.Text)  # JSON string for course objectives
+    prerequisites = db.Column(db.Text)  # JSON string for course prerequisites
+    featured_image = db.Column(db.String(500))  # URL to featured image
+    attachments = db.Column(db.Text)  # JSON string for attachments
+    published = db.Column(db.Boolean, default=False)  # Publication status
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
     modules = db.relationship('Module', backref='course', lazy=True)
 
     def __repr__(self):
@@ -145,8 +222,47 @@ class Course(db.Model):
         return {
             'id': self.id,
             'title': self.title,
+            'description': self.description,
+            'overview': self.overview,
+            'objectives': self.get_objectives(),
+            'prerequisites': self.get_prerequisites(),
+            'featured_image': self.featured_image,
+            'attachments': self.get_attachments(),
+            'published': self.published,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'modules': [module.json() for module in self.modules]
         }
+    
+    def get_objectives(self):
+        """Parse and return objectives as list"""
+        if not self.objectives:
+            return []
+        try:
+            import json
+            return json.loads(self.objectives)
+        except:
+            return []
+    
+    def get_prerequisites(self):
+        """Parse and return prerequisites as list"""
+        if not self.prerequisites:
+            return []
+        try:
+            import json
+            return json.loads(self.prerequisites)
+        except:
+            return []
+    
+    def get_attachments(self):
+        """Parse and return attachments as list"""
+        if not self.attachments:
+            return []
+        try:
+            import json
+            return json.loads(self.attachments)
+        except:
+            return []
 
 
 class Notes(db.Model):

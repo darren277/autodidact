@@ -88,6 +88,18 @@
     <h2>Recommended Next Steps</h2>
     <div class="recommendations">
         <div class="recommendation-card">
+            <h3>Create New Course</h3>
+            <p>Start building a complete educational course with multiple modules</p>
+            <a href="{{ url_for('create_course') }}" class="btn">Create Course</a>
+        </div>
+
+        <div class="recommendation-card">
+            <h3>Create New Module</h3>
+            <p>Start building new educational content for your students</p>
+            <a href="{{ url_for('create_module') }}" class="btn">Create Module</a>
+        </div>
+
+        <div class="recommendation-card">
             <h3>Continue Your Journey</h3>
             <p>Pick up where you left off in the Adipiscing Elit module</p>
             <a href="{{ url_for('module', module_id=3) }}" class="btn">Go to Module</a>

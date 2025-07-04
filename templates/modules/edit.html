@@ -250,14 +250,11 @@
                     <div class="form-divider"></div>
 
                     <div class="form-group">
-                        <label for="course_id" class="required">Course</label>
-                        <select id="course_id" name="course_id" class="form-control select" required>
-                            <option value="">Select a course</option>
+                        <label for="course_id" class="required">Select a Course</label>
+                        <select id="course_id" name="course_id" class="form-control" required>
+                            <option value="">-- Select a course --</option>
                             {% for course in courses %}
-                                <option value="{{ course.id }}"
-                                        {% if module.course_id == course.id %}selected{% endif %}>
-                                    {{ course.title }}
-                                </option>
+                                <option value="{{ course.id }}" {% if module.course_id == course.id %}selected{% endif %}>{{ course.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -379,6 +376,19 @@
                         <div class="form-help">Recommended additional modules for this topic</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    {% if module.id %}Update Module{% else %}Create Module{% endif %}
+                </button>
+                <a href="{{ url_for('list_modules') }}" class="btn btn-secondary">Cancel</a>
+                {% if module.id %}
+                    <button type="button" class="btn btn-danger" id="delete-module">Delete Module</button>
+                {% endif %}
             </div>
         </div>
     </form>

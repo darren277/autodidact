@@ -1090,16 +1090,82 @@ def list_modules():
     modules = Module.query.all()
     return render_template('modules/list.html', modules=modules, total_pages=1)
 
-@app.route('/create_module')
+@app.route('/create_module', methods=['GET', 'POST'])
 def create_module():
-    raise NotImplementedError
-    return render_template('modules/add.html')
+    from models.lessons import Module, Course
+    from flask import request, flash, redirect, url_for
+    
+    courses = Course.query.all()
+    if request.method == 'GET':
+        # Create an empty module object for the form
+        empty_module = Module()
+        return render_template('modules/edit.html', module=empty_module, courses=courses)
+    
+    elif request.method == 'POST':
+        # Create new module with form data
+        module = Module()
+        module.title = request.form.get('title', '')
+        module.description = request.form.get('description', '')
+        module.overview = request.form.get('overview', '')
+        module.resources = request.form.get('resources', '')
+        module.assessment = request.form.get('assessment', '')
+        module.course_id = request.form.get('course_id')
+        import json
+        learning_outcomes = request.form.getlist('learning_outcomes[]')
+        module.learning_outcomes = json.dumps([outcome.strip() for outcome in learning_outcomes if outcome.strip()])
+        prerequisites = request.form.getlist('prerequisites[]')
+        related_modules = request.form.getlist('related_modules[]')
+        module.prerequisites = json.dumps([int(p) for p in prerequisites if p.isdigit()])
+        module.related_modules = json.dumps([int(r) for r in related_modules if r.isdigit()])
+        try:
+            db.session.add(module)
+            db.session.commit()
+            flash('Module created successfully!', 'success')
+            return redirect(url_for('list_modules'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating module: {str(e)}', 'error')
+            return render_template('modules/edit.html', module=module, courses=courses)
 
-@app.route('/edit_module/<module_id>')
+@app.route('/edit_module/<module_id>', methods=['GET', 'POST'])
 def edit_module(module_id):
-    from models.lessons import Module
-    module = Module.query.get(module_id)
-    return render_template('modules/edit.html', module=module)
+    from models.lessons import Module, Course
+    from flask import request, flash, redirect, url_for
+    
+    courses = Course.query.all()
+    if request.method == 'GET':
+        module = Module.query.get(module_id)
+        if not module:
+            flash('Module not found', 'error')
+            return redirect(url_for('list_modules'))
+        return render_template('modules/edit.html', module=module, courses=courses)
+    
+    elif request.method == 'POST':
+        module = Module.query.get(module_id)
+        if not module:
+            flash('Module not found', 'error')
+            return redirect(url_for('list_modules'))
+        module.title = request.form.get('title', '')
+        module.description = request.form.get('description', '')
+        module.overview = request.form.get('overview', '')
+        module.resources = request.form.get('resources', '')
+        module.assessment = request.form.get('assessment', '')
+        module.course_id = request.form.get('course_id')
+        import json
+        learning_outcomes = request.form.getlist('learning_outcomes[]')
+        module.learning_outcomes = json.dumps([outcome.strip() for outcome in learning_outcomes if outcome.strip()])
+        prerequisites = request.form.getlist('prerequisites[]')
+        related_modules = request.form.getlist('related_modules[]')
+        module.prerequisites = json.dumps([int(p) for p in prerequisites if p.isdigit()])
+        module.related_modules = json.dumps([int(r) for r in related_modules if r.isdigit()])
+        try:
+            db.session.commit()
+            flash('Module updated successfully!', 'success')
+            return redirect(url_for('list_modules'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating module: {str(e)}', 'error')
+            return render_template('modules/edit.html', module=module, courses=courses)
 
 @app.route('/view_module/<module_id>')
 def view_module(module_id):
@@ -1311,3 +1377,115 @@ def handle_400(e):
     print("400 Error:", e)
     print("Request data:", request.data)
     return jsonify({"error": "Bad request"}), 400
+
+@app.route('/list_courses')
+def list_courses():
+    from models.lessons import Course
+    courses = Course.query.all()
+    return render_template('courses/list.html', courses=courses, total_pages=1)
+
+@app.route('/create_course', methods=['GET', 'POST'])
+def create_course():
+    from models.lessons import Course
+    from flask import request, flash, redirect, url_for
+    
+    if request.method == 'GET':
+        # Create an empty course object for the form
+        empty_course = Course()
+        return render_template('courses/edit.html', course=empty_course)
+    
+    elif request.method == 'POST':
+        # Create new course with form data
+        course = Course()
+        course.title = request.form.get('title', '')
+        course.description = request.form.get('description', '')
+        course.overview = request.form.get('overview', '')
+        
+        # Handle objectives
+        import json
+        objectives = request.form.getlist('objectives[]')
+        course.objectives = json.dumps([obj.strip() for obj in objectives if obj.strip()])
+        
+        # Handle prerequisites
+        prerequisites = request.form.getlist('prerequisites[]')
+        course.prerequisites = json.dumps([prereq.strip() for prereq in prerequisites if prereq.strip()])
+        
+        try:
+            db.session.add(course)
+            db.session.commit()
+            flash('Course created successfully!', 'success')
+            return redirect(url_for('list_courses'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error creating course: {str(e)}', 'error')
+            return render_template('courses/edit.html', course=course)
+
+@app.route('/edit_course/<course_id>', methods=['GET', 'POST'])
+def edit_course(course_id):
+    from models.lessons import Course
+    from flask import request, flash, redirect, url_for
+    
+    if request.method == 'GET':
+        course = Course.query.get(course_id)
+        if not course:
+            flash('Course not found', 'error')
+            return redirect(url_for('list_courses'))
+        return render_template('courses/edit.html', course=course)
+    
+    elif request.method == 'POST':
+        course = Course.query.get(course_id)
+        if not course:
+            flash('Course not found', 'error')
+            return redirect(url_for('list_courses'))
+        
+        # Update course with form data
+        course.title = request.form.get('title', '')
+        course.description = request.form.get('description', '')
+        course.overview = request.form.get('overview', '')
+        
+        # Handle objectives
+        import json
+        objectives = request.form.getlist('objectives[]')
+        course.objectives = json.dumps([obj.strip() for obj in objectives if obj.strip()])
+        
+        # Handle prerequisites
+        prerequisites = request.form.getlist('prerequisites[]')
+        course.prerequisites = json.dumps([prereq.strip() for prereq in prerequisites if prereq.strip()])
+        
+        try:
+            db.session.commit()
+            flash('Course updated successfully!', 'success')
+            return redirect(url_for('list_courses'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating course: {str(e)}', 'error')
+            return render_template('courses/edit.html', course=course)
+
+@app.route('/view_course/<course_id>')
+def view_course(course_id):
+    from models.lessons import Course
+    course = Course.query.get(course_id)
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('list_courses'))
+    return render_template('courses/view.html', course=course)
+
+@app.route('/delete_course/<course_id>', methods=['POST'])
+def delete_course(course_id):
+    from models.lessons import Course
+    from flask import request, flash, redirect, url_for
+    
+    course = Course.query.get(course_id)
+    if not course:
+        flash('Course not found', 'error')
+        return redirect(url_for('list_courses'))
+    
+    try:
+        db.session.delete(course)
+        db.session.commit()
+        flash('Course deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting course: {str(e)}', 'error')
+    
+    return redirect(url_for('list_courses'))
