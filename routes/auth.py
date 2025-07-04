@@ -70,8 +70,32 @@ def auth_callback_route():
 
         if user_response.status_code == 200:
             user_info = user_response.json()
-            session['user'] = user_info
-            return redirect(url_for('index'))
+            
+            # Create or update user in database
+            from models.user import User
+            from main import db
+            
+            try:
+                user = User.create_or_update(
+                    email=user_info.get('email', ''),
+                    name=user_info.get('name', ''),
+                    sub=user_info.get('sub', '')
+                )
+                
+                # Add mode to session user info
+                user_info['mode'] = 'student'  # Default mode
+                user_info['has_api_key'] = bool(user.encrypted_api_key)
+                
+                session['user'] = user_info
+                return redirect(url_for('index'))
+                
+            except Exception as e:
+                logger.error("Failed to create/update user in database: %s", e)
+                # Still allow login even if database operation fails
+                user_info['mode'] = 'student'
+                user_info['has_api_key'] = False
+                session['user'] = user_info
+                return redirect(url_for('index'))
 
     return 'Authentication Error', 400
 
