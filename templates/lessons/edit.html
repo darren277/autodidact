@@ -73,6 +73,72 @@
                     </div>
                 </div>
 
+                <!-- Bloom's Taxonomy Modal -->
+                <div id="bloom-modal" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Select Bloom's Taxonomy Level</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                                Choose the cognitive level for your learning objective:
+                            </p>
+                            <div class="bloom-levels">
+                                <div class="bloom-level knowledge" data-level="Knowledge">
+                                    <div class="bloom-level-icon">K</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Knowledge</div>
+                                        <div class="bloom-level-description">Remember, recall, recognize facts and basic concepts</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level comprehension" data-level="Comprehension">
+                                    <div class="bloom-level-icon">C</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Comprehension</div>
+                                        <div class="bloom-level-description">Understand, explain, interpret, and summarize information</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level application" data-level="Application">
+                                    <div class="bloom-level-icon">A</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Application</div>
+                                        <div class="bloom-level-description">Apply, use, implement, and solve problems</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level analysis" data-level="Analysis">
+                                    <div class="bloom-level-icon">A</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Analysis</div>
+                                        <div class="bloom-level-description">Analyze, compare, contrast, and examine relationships</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level synthesis" data-level="Synthesis">
+                                    <div class="bloom-level-icon">S</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Synthesis</div>
+                                        <div class="bloom-level-description">Create, design, develop, and construct new ideas</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level evaluation" data-level="Evaluation">
+                                    <div class="bloom-level-icon">E</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Evaluation</div>
+                                        <div class="bloom-level-description">Evaluate, judge, assess, and critique</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="loading-indicator">
+                                <div class="spinner"></div>
+                                <span>Generating learning objective...</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-outline" id="cancel-bloom-modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="generate-objective" disabled>Generate Objective</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="content-card">
                     <div class="form-section-header">
                         <h2>Lesson Content</h2>
@@ -373,13 +439,63 @@
 <script src="{{ url_for('static', filename='js/edit-lessons.js') }}"></script>
 
 <script>
-    function autoGenerateObjective() {
-        const levels = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
-        const level = prompt('Select a Bloom\'s taxonomy level:', levels.join(', '));
-        if (!level) return;
+    // Bloom's Taxonomy Modal functionality
+    const bloomModal = document.getElementById('bloom-modal');
+    const autoGenerateBtn = document.getElementById('auto-generate-objective');
+    const cancelBtn = document.getElementById('cancel-bloom-modal');
+    const generateBtn = document.getElementById('generate-objective');
+    const bloomLevels = document.querySelectorAll('.bloom-level');
+    const loadingIndicator = document.querySelector('.loading-indicator');
+    let selectedLevel = null;
+
+    // Open modal
+    autoGenerateBtn.addEventListener('click', () => {
+        bloomModal.classList.add('active');
+        selectedLevel = null;
+        generateBtn.disabled = true;
+        // Reset selection
+        bloomLevels.forEach(level => level.classList.remove('selected'));
+    });
+
+    // Close modal
+    function closeModal() {
+        bloomModal.classList.remove('active');
+        selectedLevel = null;
+        generateBtn.disabled = true;
+        loadingIndicator.classList.remove('active');
+    }
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    bloomModal.addEventListener('click', (e) => {
+        if (e.target === bloomModal) {
+            closeModal();
+        }
+    });
+
+    // Handle level selection
+    bloomLevels.forEach(level => {
+        level.addEventListener('click', () => {
+            // Remove previous selection
+            bloomLevels.forEach(l => l.classList.remove('selected'));
+            // Add selection to clicked level
+            level.classList.add('selected');
+            selectedLevel = level.dataset.level;
+            generateBtn.disabled = false;
+        });
+    });
+
+    // Generate objective
+    generateBtn.addEventListener('click', () => {
+        if (!selectedLevel) return;
+
+        // Show loading state
+        loadingIndicator.classList.add('active');
+        generateBtn.disabled = true;
 
         const topic = document.querySelector('meta[name="topic"]').content;
-        const url = `/lo_chat?stage=${level}&topic=${encodeURIComponent(topic)}`;
+        const url = `/lo_chat?stage=${selectedLevel}&topic=${encodeURIComponent(topic)}`;
 
         fetch(url)
             .then(response => response.json())
@@ -394,12 +510,22 @@
                     <button type="button" class="remove-objective" title="Remove objective">✕</button>
                 `;
                 learningObjectivesList.appendChild(objectiveItem);
+                
+                // Close modal and reset
+                closeModal();
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Failed to generate learning objective. Please try again.');
+                closeModal();
             });
-    }
+    });
 
-    document.getElementById('auto-generate-objective').addEventListener('click', autoGenerateObjective);
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && bloomModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
 </script>
 {% endblock %}
