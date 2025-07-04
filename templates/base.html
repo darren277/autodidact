@@ -12,7 +12,7 @@
 
     {% block styles %}{% endblock %}
 </head>
-<body class="{% if user %}signed-in{% else %}signed-out{% endif %}">
+<body class="{% if user %}signed-in mode-{{ user.mode }}{% else %}signed-out{% endif %}">
     <header>
         <div class="logo">autodidact</div>
         <div class="top-nav">
@@ -40,11 +40,15 @@
     <aside class="sidebar">
         <nav>
             <ul class="side-menu">
-                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">
+                    {% if user.mode == 'teacher' %}Admin Dashboard{% else %}Dashboard{% endif %}
+                </a></li>
 <!--                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'progress' %}active{% endif %}">My Progress</a></li>-->
 
                 <div class="side-menu-section">
-                    <div class="side-menu-section-title">Modules</div>
+                    <div class="side-menu-section-title">
+                        {% if user.mode == 'teacher' %}Manage Modules{% else %}My Modules{% endif %}
+                    </div>
                     {% for module in modules %}
                         <li><a href="{{ url_for('module', module_id=module.id) }}" class="{% if active_page == 'module_' + module.id|string %}active{% endif %}">{{ module.title }}</a></li>
                     {% endfor %}
@@ -63,7 +67,9 @@
 
                 <div class="side-menu-section">
                     <div class="side-menu-section-title">Account</div>
-                    <li><a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">Settings</a></li>
+                    <li><a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">
+                        {% if user.mode == 'teacher' %}Admin Settings{% else %}Settings{% endif %}
+                    </a></li>
                 </div>
             </ul>
         </nav>

@@ -239,17 +239,23 @@
             <div class="sidebar-column">
                 <div class="content-card">
                     <div class="form-actions">
-                        <button type="submit" name="action" value="save" class="btn btn-primary save-btn">
-                            <i class="icon-save"></i> Save
-                        </button>
-                        <button type="submit" name="action" value="publish" class="btn publish-btn">
-                            <i class="icon-publish"></i> {% if lesson.published %}Update{% else %}Publish{% endif %}
-                        </button>
-                        {% if lesson.id %}
-                            <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}"
-                               class="btn-outline preview-btn" target="_blank">
-                                <i class="icon-preview"></i> Preview
-                            </a>
+                        {% if user and user.mode == 'teacher' %}
+                            <button type="submit" name="action" value="save" class="btn btn-primary save-btn">
+                                <i class="icon-save"></i> Save
+                            </button>
+                            <button type="submit" name="action" value="publish" class="btn publish-btn">
+                                <i class="icon-publish"></i> {% if lesson.published %}Update{% else %}Publish{% endif %}
+                            </button>
+                            {% if lesson.id %}
+                                <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}"
+                                   class="btn-outline preview-btn" target="_blank">
+                                    <i class="icon-preview"></i> Preview
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <div class="student-notice">
+                                <p><i class="icon-info"></i> You are in student mode. Switch to teacher mode to edit lessons.</p>
+                            </div>
                         {% endif %}
                     </div>
 

@@ -1,58 +1,192 @@
+/* Mode Toggle Styles */
 .mode-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    position: relative;
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.mode-toggle-input {
+    display: none;
 }
 
 .mode-toggle-label {
     display: flex;
     align-items: center;
-    gap: 10px;
     cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
-.mode-toggle-input {
-    appearance: none;
-    width: 50px;
-    height: 24px;
-    background-color: #ccc;
-    border-radius: 12px;
-    position: relative;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.mode-toggle-input:checked {
-    background-color: #28a745;
-}
-
-.mode-toggle-input::before {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: white;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-}
-
-.mode-toggle-input:checked::before {
-    transform: translateX(26px);
+.mode-toggle-label:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .mode-toggle-label-text {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    transition: color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .mode-toggle-label-text.student {
-    color: #007bff;
+    color: var(--success-color);
 }
 
 .mode-toggle-label-text.teacher {
-    color: #28a745;
+    color: var(--warning-color);
+}
+
+/* Mode-specific body classes */
+body.mode-student {
+    --mode-accent-color: var(--success-color);
+    --mode-surface-color: rgba(34, 197, 94, 0.1);
+}
+
+body.mode-teacher {
+    --mode-accent-color: var(--warning-color);
+    --mode-surface-color: rgba(251, 191, 36, 0.1);
+}
+
+/* Mode-specific navigation styling */
+body.mode-student .side-menu a[href*="dashboard"]::before {
+    content: "📚 ";
+}
+
+body.mode-teacher .side-menu a[href*="dashboard"]::before {
+    content: "⚙️ ";
+}
+
+/* Mode-specific button styling */
+body.mode-student .btn[href*="lesson"],
+body.mode-student .btn[href*="module"] {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+body.mode-teacher .btn[href*="lesson"],
+body.mode-teacher .btn[href*="module"] {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+}
+
+/* Hide/show elements based on mode */
+body.mode-student .teacher-only {
+    display: none !important;
+}
+
+body.mode-teacher .student-only {
+    display: none !important;
+}
+
+/* Form field styling for different modes */
+body.mode-student input[readonly],
+body.mode-student textarea[readonly],
+body.mode-student select[disabled] {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+body.mode-teacher input,
+body.mode-teacher textarea,
+body.mode-teacher select {
+    background-color: var(--background-color);
+    border-color: var(--border-color);
+}
+
+/* Mode-specific page titles */
+body.mode-student .page-title::before {
+    content: "📖 ";
+}
+
+body.mode-teacher .page-title::before {
+    content: "✏️ ";
+}
+
+/* Mode indicator in header */
+.mode-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+body.mode-student .mode-indicator {
+    background-color: var(--success-color);
+    color: white;
+}
+
+body.mode-teacher .mode-indicator {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+/* Student notice styling */
+.student-notice {
+    background-color: var(--mode-surface-color);
+    border: 1px solid var(--mode-accent-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.student-notice p {
+    margin: 0;
+    color: var(--mode-accent-color);
+    font-weight: 500;
+}
+
+.student-notice i {
+    margin-right: 0.5rem;
+}
+
+/* Mode-specific form styling */
+body.mode-student .form-control:not([type="hidden"]):not([type="submit"]):not([type="button"]) {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+body.mode-student .form-control:not([type="hidden"]):not([type="submit"]):not([type="button"]):focus {
+    border-color: var(--mode-accent-color);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+body.mode-teacher .form-control:focus {
+    border-color: var(--mode-accent-color);
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+}
+
+/* Mode-specific action button styling */
+body.mode-student .action-btn.view {
+    background-color: var(--success-color);
+    color: white;
+}
+
+body.mode-teacher .action-btn.edit {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mode-toggle {
+        margin-left: 0.5rem;
+    }
+    
+    .mode-toggle-label {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8rem;
+    }
 }
