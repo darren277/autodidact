@@ -548,7 +548,8 @@ def view_lesson(lesson_id):
     
     # Convert lesson content to markdown for display
     from utils.convert_to_markdown import convert_to_simple_markdown
-    notes = convert_to_simple_markdown(data)
+    # TODO: Get structured notes from database for this lesson
+    notes = convert_to_simple_markdown({"content": lesson.content})
     audio_notes = 'presentation'
     
     # Get user's notes for this lesson if authenticated
