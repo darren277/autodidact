@@ -218,3 +218,78 @@ class Quiz(db.Model):
             'lesson_id': self.lesson_id
         }
 
+
+class UserProgress(db.Model):
+    # Tracks user progress on individual lessons
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    
+    # Progress tracking fields
+    is_completed = db.Column(db.Boolean, default=False)
+    completion_date = db.Column(db.DateTime, nullable=True)
+    percentage_completed = db.Column(db.Integer, default=0)  # 0-100
+    time_spent_minutes = db.Column(db.Integer, default=0)
+    last_accessed = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='progress_records')
+    lesson = db.relationship('Lesson', backref='user_progress')
+    
+    # Unique constraint to ensure one progress record per user per lesson
+    __table_args__ = (db.UniqueConstraint('user_id', 'lesson_id', name='_user_lesson_progress_uc'),)
+
+    def __repr__(self):
+        return f"UserProgress(user_id={self.user_id}, lesson_id={self.lesson_id}, completed={self.is_completed})"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'lesson_id': self.lesson_id,
+            'is_completed': self.is_completed,
+            'completion_date': self.completion_date.isoformat() if self.completion_date else None,
+            'percentage_completed': self.percentage_completed,
+            'time_spent_minutes': self.time_spent_minutes,
+            'last_accessed': self.last_accessed.isoformat() if self.last_accessed else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    @classmethod
+    def get_or_create(cls, user_id, lesson_id):
+        """Get existing progress record or create a new one"""
+        progress = cls.query.filter_by(user_id=user_id, lesson_id=lesson_id).first()
+        if not progress:
+            progress = cls(user_id=user_id, lesson_id=lesson_id)
+            db.session.add(progress)
+            db.session.commit()
+        return progress
+    
+    def mark_completed(self, percentage=100):
+        """Mark the lesson as completed"""
+        self.is_completed = True
+        self.percentage_completed = percentage
+        self.completion_date = datetime.utcnow()
+        self.last_accessed = datetime.utcnow()
+        db.session.commit()
+    
+    def update_progress(self, percentage, time_spent_minutes=None):
+        """Update progress percentage and optionally time spent"""
+        self.percentage_completed = max(0, min(100, percentage))  # Ensure 0-100 range
+        self.last_accessed = datetime.utcnow()
+        
+        if time_spent_minutes is not None:
+            self.time_spent_minutes = time_spent_minutes
+        
+        # Auto-mark as completed if percentage reaches 100
+        if self.percentage_completed >= 100:
+            self.is_completed = True
+            self.completion_date = datetime.utcnow()
+        
+        db.session.commit()
+

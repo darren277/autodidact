@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
             completeBtn.disabled = true;
             completeBtn.innerHTML = '<i class="icon-spinner"></i> Updating...';
 
-            fetch('/api/mark-lesson-complete', {
+            fetch('/api/mark_lesson_complete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

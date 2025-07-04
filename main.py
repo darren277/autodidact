@@ -310,17 +310,48 @@ def module(module_id):
     # Get lessons for this module
     lessons = Lesson.query.filter_by(module_id=module_id).all()
     
-    # Build lesson cards
+    # Get user progress if authenticated
+    user = None
+    if 'user' in session:
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+    
+    # Build lesson cards with actual progress
     lesson_cards = []
     completed_count = 0
     for i, lesson in enumerate(lessons, 1):
-        # TODO: Implement actual progress tracking
-        status = "completed" if i <= 2 else "current" if i == 3 else ""
-        icon = "✓" if status == "completed" else "•" if status == "current" else ""
-        action = "Review" if status == "completed" else "Continue" if status == "current" else "Start"
+        status = ""
+        icon = ""
+        action = "Start"
         
-        if status == "completed":
-            completed_count += 1
+        if user:
+            # Get actual progress for this lesson
+            progress = user.get_lesson_progress(lesson.id)
+            if progress:
+                if progress.is_completed:
+                    status = "completed"
+                    icon = "✓"
+                    action = "Review"
+                    completed_count += 1
+                elif progress.percentage_completed > 0:
+                    status = "current"
+                    icon = "•"
+                    action = "Continue"
+                else:
+                    status = ""
+                    icon = ""
+                    action = "Start"
+            else:
+                # No progress record exists
+                status = ""
+                icon = ""
+                action = "Start"
+        else:
+            # No user logged in, show default state
+            status = ""
+            icon = ""
+            action = "Start"
         
         lesson_cards.append({
             "id": lesson.id,
@@ -328,8 +359,9 @@ def module(module_id):
             "icon": icon,
             "title": f"{i}. {lesson.title}",
             "description": lesson.content[:100] + "..." if len(lesson.content) > 100 else lesson.content,
-            "duration": "15 min",  # TODO: Add duration field to model
-            "action": action
+            "duration": f"{lesson.estimated_time_hours}h {lesson.estimated_time_minutes}m" if lesson.estimated_time_hours > 0 else f"{lesson.estimated_time_minutes}m",
+            "action": action,
+            "progress_percentage": progress.percentage_completed if user and progress else 0
         })
     
     # Build module data structure
@@ -480,20 +512,114 @@ def mark_lesson_complete():
             return jsonify({"error": "No data provided"}), 400
         
         lesson_id = data.get('lesson_id')
+        percentage = data.get('percentage', 100)  # Default to 100% if not specified
         
         if not lesson_id:
             return jsonify({"error": "Lesson ID is required"}), 400
         
-        # For now, just return a success response with updated progress
-        # TODO: Implement actual progress tracking in database
+        # Get user from database
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Mark lesson as complete
+        progress = user.mark_lesson_complete(lesson_id, percentage)
+        
+        # Get updated completion stats
+        stats = user.get_completion_stats()
+        
         return jsonify({
             "success": True, 
             "message": "Lesson marked as complete",
-            "new_percentage": 100
+            "new_percentage": progress.percentage_completed,
+            "is_completed": progress.is_completed,
+            "completion_date": progress.completion_date.isoformat() if progress.completion_date else None,
+            "overall_stats": stats
         })
         
     except Exception as e:
         return jsonify({"error": f"Failed to mark lesson complete: {str(e)}"}), 500
+
+@app.route('/api/update_lesson_progress', methods=['POST'])
+def update_lesson_progress():
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        lesson_id = data.get('lesson_id')
+        percentage = data.get('percentage', 0)
+        time_spent_minutes = data.get('time_spent_minutes')
+        
+        if not lesson_id:
+            return jsonify({"error": "Lesson ID is required"}), 400
+        
+        if not isinstance(percentage, (int, float)) or percentage < 0 or percentage > 100:
+            return jsonify({"error": "Percentage must be a number between 0 and 100"}), 400
+        
+        # Get user from database
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Update lesson progress
+        progress = user.update_lesson_progress(lesson_id, percentage, time_spent_minutes)
+        
+        return jsonify({
+            "success": True, 
+            "message": "Progress updated successfully",
+            "percentage_completed": progress.percentage_completed,
+            "is_completed": progress.is_completed,
+            "time_spent_minutes": progress.time_spent_minutes,
+            "last_accessed": progress.last_accessed.isoformat() if progress.last_accessed else None
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to update progress: {str(e)}"}), 500
+
+@app.route('/api/get_lesson_progress/<lesson_id>', methods=['GET'])
+def get_lesson_progress(lesson_id):
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        # Get user from database
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get progress for this lesson
+        progress = user.get_lesson_progress(lesson_id)
+        
+        if progress:
+            return jsonify({
+                "success": True,
+                "progress": progress.json()
+            })
+        else:
+            return jsonify({
+                "success": True,
+                "progress": {
+                    "percentage_completed": 0,
+                    "is_completed": False,
+                    "time_spent_minutes": 0
+                }
+            })
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to get progress: {str(e)}"}), 500
 
 @app.route('/api/submit_question', methods=['POST'])
 def submit_question():
@@ -581,9 +707,10 @@ def view_lesson(lesson_id):
     notes = convert_to_simple_markdown({"content": lesson.content})
     audio_notes = 'presentation'
     
-    # Get user's notes for this lesson if authenticated
+    # Get user's notes and progress for this lesson if authenticated
     user_notes = ""
     user_has_api_key = False
+    user_progress = {'completed': False, 'percentage': 0}
     if 'user' in session:
         try:
             from models.user import User
@@ -601,6 +728,16 @@ def view_lesson(lesson_id):
                 
                 # Check for API key status
                 user_has_api_key = bool(user.encrypted_api_key)
+                
+                # Get user progress for this lesson
+                progress = user.get_lesson_progress(lesson_id)
+                if progress:
+                    user_progress = {
+                        'completed': progress.is_completed,
+                        'percentage': progress.percentage_completed,
+                        'time_spent_minutes': progress.time_spent_minutes,
+                        'last_accessed': progress.last_accessed.isoformat() if progress.last_accessed else None
+                    }
         except Exception as e:
             print(f"Error loading user data: {e}")
     
@@ -629,7 +766,7 @@ def view_lesson(lesson_id):
         'overview': lesson.overview,
         'module_id': lesson.module_id,
         'module_title': lesson.module.title if lesson.module else 'Unknown Module',
-        'user_progress': {'completed': False, 'percentage': 0}  # TODO: Implement progress tracking
+        'user_progress': user_progress
     }
     
     return render_template(

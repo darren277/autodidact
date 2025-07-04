@@ -114,4 +114,56 @@ class User(db.Model):
             db.session.add(user)
         
         db.session.commit()
-        return user 
+        return user
+    
+    def get_lesson_progress(self, lesson_id):
+        """Get progress for a specific lesson"""
+        from models.lessons import UserProgress
+        return UserProgress.query.filter_by(user_id=self.id, lesson_id=lesson_id).first()
+    
+    def get_or_create_lesson_progress(self, lesson_id):
+        """Get existing progress for a lesson or create a new progress record"""
+        from models.lessons import UserProgress
+        return UserProgress.get_or_create(self.id, lesson_id)
+    
+    def mark_lesson_complete(self, lesson_id, percentage=100):
+        """Mark a lesson as completed"""
+        progress = self.get_or_create_lesson_progress(lesson_id)
+        progress.mark_completed(percentage)
+        return progress
+    
+    def update_lesson_progress(self, lesson_id, percentage, time_spent_minutes=None):
+        """Update progress for a lesson"""
+        progress = self.get_or_create_lesson_progress(lesson_id)
+        progress.update_progress(percentage, time_spent_minutes)
+        return progress
+    
+    def get_all_progress(self):
+        """Get all progress records for this user"""
+        return self.progress_records
+    
+    def get_completed_lessons(self):
+        """Get all completed lessons"""
+        return [p for p in self.progress_records if p.is_completed]
+    
+    def get_completion_stats(self):
+        """Get overall completion statistics"""
+        total_lessons = len(self.progress_records)
+        completed_lessons = len(self.get_completed_lessons())
+        
+        if total_lessons == 0:
+            return {
+                'total_lessons': 0,
+                'completed_lessons': 0,
+                'completion_percentage': 0,
+                'total_time_spent': 0
+            }
+        
+        total_time_spent = sum(p.time_spent_minutes for p in self.progress_records)
+        
+        return {
+            'total_lessons': total_lessons,
+            'completed_lessons': completed_lessons,
+            'completion_percentage': int((completed_lessons / total_lessons) * 100),
+            'total_time_spent': total_time_spent
+        } 

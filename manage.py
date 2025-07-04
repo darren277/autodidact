@@ -47,17 +47,24 @@ def create_database():
         print(f"Error creating database: {e}")
         sys.exit(1)
 
+@app.cli.command()
 def create_tables():
     """Create all database tables."""
-    with app.app_context():
-        db.create_all()
-        print("Database tables created successfully!")
+    db.create_all()
+    print("All tables created successfully!")
 
+@app.cli.command()
+def create_user_progress_table():
+    """Create the UserProgress table specifically."""
+    from models.lessons import UserProgress
+    UserProgress.__table__.create(db.engine, checkfirst=True)
+    print("UserProgress table created successfully!")
+
+@app.cli.command()
 def drop_tables():
     """Drop all database tables."""
-    with app.app_context():
-        db.drop_all()
-        print("Database tables dropped successfully!")
+    db.drop_all()
+    print("All tables dropped successfully!")
 
 def seed_example_data():
     """Seed the database with example data."""
