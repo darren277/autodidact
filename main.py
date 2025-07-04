@@ -223,6 +223,36 @@ def view_lesson(lesson_id):
         audio_notes=audio_notes
     )
 
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if 'user' not in session:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"success": False, "error": "No data provided"}), 400
+            
+            openai_api_key = data.get('openai_api_key', '').strip()
+            
+            # Validate API key format (basic validation)
+            if openai_api_key and not openai_api_key.startswith('sk-'):
+                return jsonify({"success": False, "error": "Invalid OpenAI API key format"}), 400
+            
+            # Store the API key in the user session
+            if 'user' not in session:
+                session['user'] = {}
+            
+            session['user']['openai_api_key'] = openai_api_key
+            
+            return jsonify({"success": True, "message": "Settings updated successfully"})
+            
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    
+    return render_template('settings.html', user=session['user'], active_page='settings')
+
 @app.route('/audio_notes/<file_name>')
 def audio_notes(file_name):
     audio_base_path = 'tests/'

@@ -18,6 +18,7 @@
         <div class="top-nav">
             {% if user %}
                 <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('settings') }}">Settings</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
                 <div class="mode-toggle">
                     <input type="checkbox" id="mode-toggle" class="mode-toggle-input">
@@ -52,6 +53,11 @@
 <!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'library' %}active{% endif %}">Resource Library</a></li>-->
 <!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'glossary' %}active{% endif %}">Glossary</a></li>-->
 <!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'faq' %}active{% endif %}">FAQ</a></li>-->
+                </div>
+
+                <div class="side-menu-section">
+                    <div class="side-menu-section-title">Account</div>
+                    <li><a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">Settings</a></li>
                 </div>
             </ul>
         </nav>
