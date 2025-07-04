@@ -111,24 +111,54 @@ def toggle_mode():
 def cornell_notes(notes_id):
     return render_template('notes/cornell.html', **data)
 
+@app.route('/api/notes/cornell_notes/<notes_id>')
+def api_cornell_notes(notes_id):
+    from utils.example_structured_notes import data
+    return render_template('notes/cornell.html', **data)
+
 @app.route('/notes/digital_notebook/<notes_id>')
 def digital_notebook(notes_id):
+    return render_template('notes/digital-notebook.html', **data)
+
+@app.route('/api/notes/digital_notebook/<notes_id>')
+def api_digital_notebook(notes_id):
+    from utils.example_structured_notes import data
     return render_template('notes/digital-notebook.html', **data)
 
 @app.route('/notes/mindmap/<notes_id>')
 def mindmap(notes_id):
     return render_template('notes/mindmap.html', **data)
 
+@app.route('/api/notes/mindmap/<notes_id>')
+def api_mindmap(notes_id):
+    from utils.example_structured_notes import data
+    return render_template('notes/mindmap.html', **data)
+
 @app.route('/notes/stickynotes/<notes_id>')
 def stickynotes(notes_id):
+    return render_template('notes/stickynotes.html', **data)
+
+@app.route('/api/notes/stickynotes/<notes_id>')
+def api_stickynotes(notes_id):
+    from utils.example_structured_notes import data
     return render_template('notes/stickynotes.html', **data)
 
 @app.route('/notes/vintage_cards/<notes_id>')
 def vintage_cards(notes_id):
     return render_template('notes/vintage-cards.html', **data)
 
+@app.route('/api/notes/vintage_cards/<notes_id>')
+def api_vintage_cards(notes_id):
+    from utils.example_structured_notes import data
+    return render_template('notes/vintage-cards.html', **data)
+
 @app.route('/notes/augmented/<notes_id>')
 def augmented(notes_id):
+    return render_template('notes/augmented.html', **data)
+
+@app.route('/api/notes/augmented/<notes_id>')
+def api_augmented(notes_id):
+    from utils.example_structured_notes import data
     return render_template('notes/augmented.html', **data)
 
 @app.route('/summarize', methods=['POST'])

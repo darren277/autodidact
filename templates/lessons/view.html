@@ -224,14 +224,25 @@
                 <div class="notes-status" id="notes-status"></div>
 
                 <h3>Alternative Views</h3>
-                <ul>
-                    <li><a href="{{ url_for('cornell_notes', notes_id=lesson.id) }}">View as Cornell (Paper) Notes</a></li>
-                    <li><a href="{{ url_for('digital_notebook', notes_id=lesson.id) }}">View Digital Notebook</a></li>
-                    <li><a href="{{ url_for('augmented', notes_id=lesson.id) }}">View Augmented Notes</a></li>
-                    <li><a href="{{ url_for('mindmap', notes_id=lesson.id) }}">View MindMap</a></li>
-                    <li><a href="{{ url_for('stickynotes', notes_id=lesson.id) }}">View Sticky Notes</a></li>
-                    <li><a href="{{ url_for('vintage_cards', notes_id=lesson.id) }}">View Vintage Cards</a></li>
+                <ul class="alternative-views-list">
+                    <li><a href="#" class="view-link" data-view="cornell_notes" data-notes-id="{{ lesson.id }}">View as Cornell (Paper) Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="digital_notebook" data-notes-id="{{ lesson.id }}">View Digital Notebook</a></li>
+                    <li><a href="#" class="view-link" data-view="augmented" data-notes-id="{{ lesson.id }}">View Augmented Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="mindmap" data-notes-id="{{ lesson.id }}">View MindMap</a></li>
+                    <li><a href="#" class="view-link" data-view="stickynotes" data-notes-id="{{ lesson.id }}">View Sticky Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="vintage_cards" data-notes-id="{{ lesson.id }}">View Vintage Cards</a></li>
                 </ul>
+
+                <!-- Embedded note view container -->
+                <div id="embedded-note-view" class="embedded-note-view">
+                    <div class="embedded-note-header">
+                        <h4 id="embedded-note-title">Alternative Note View</h4>
+                        <button type="button" id="close-embedded-view" class="btn-small btn-outline">×</button>
+                    </div>
+                    <div id="embedded-note-content" class="embedded-note-content">
+                        <!-- Note view content will be loaded here -->
+                    </div>
+                </div>
 
                 {% if audio_notes %}
                     <button type="button" id="generate-audio-presentation-disabled" class="btn-small btn-outline" disabled>Generate Audio Presentation (Already Generated - See Below)</button>
@@ -292,5 +303,53 @@
                 });
         });
     }
+
+    // Embedded note view functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewLinks = document.querySelectorAll('.view-link');
+        const embeddedView = document.getElementById('embedded-note-view');
+        const embeddedContent = document.getElementById('embedded-note-content');
+        const embeddedTitle = document.getElementById('embedded-note-title');
+        const closeBtn = document.getElementById('close-embedded-view');
+
+        // Handle view link clicks
+        viewLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const viewType = this.getAttribute('data-view');
+                const notesId = this.getAttribute('data-notes-id');
+                const viewTitle = this.textContent;
+
+                // Update title
+                embeddedTitle.textContent = viewTitle;
+
+                // Show loading state
+                embeddedContent.innerHTML = '<div class="loading">Loading...</div>';
+                embeddedView.style.display = 'block';
+
+                // Load the note view content
+                fetch(`/api/notes/${viewType}/${notesId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        embeddedContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        embeddedContent.innerHTML = '<div class="error">Error loading view: ' + error.message + '</div>';
+                    });
+            });
+        });
+
+        // Handle close button
+        closeBtn.addEventListener('click', function() {
+            embeddedView.style.display = 'none';
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && embeddedView.style.display === 'block') {
+                embeddedView.style.display = 'none';
+            }
+        });
+    });
 </script>
 {% endblock %}

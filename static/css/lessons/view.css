@@ -662,7 +662,151 @@
     }
 
     .lesson-sidebar {
-        position: static;
-        margin-top: 30px;
+        order: -1;
     }
+}
+
+/* Embedded Note View Styles */
+.alternative-views-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.alternative-views-list li {
+    margin-bottom: 8px;
+}
+
+.view-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.view-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.embedded-note-view {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1000px;
+    max-height: 80vh;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    overflow: hidden;
+    display: none;
+}
+
+.embedded-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.embedded-note-header h4 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+#close-embedded-view {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+#close-embedded-view:hover {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+.embedded-note-content {
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
+    padding: 0;
+}
+
+.embedded-note-content .loading {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.embedded-note-content .error {
+    padding: 40px;
+    text-align: center;
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin: 20px;
+}
+
+/* Override note template styles for embedded view */
+.embedded-note-content body {
+    background: white !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+}
+
+.embedded-note-content article {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    transform: none !important;
+}
+
+.embedded-note-content .container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.embedded-note-content .cork-board {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.embedded-note-content .notebook {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Overlay background */
+.embedded-note-view::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
 }
