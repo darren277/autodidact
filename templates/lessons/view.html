@@ -2,6 +2,10 @@
 
 {% block title %}{{ lesson.title }} | {{ lesson.module_title }} | Educational Platform{% endblock %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/view.css') }}">
+{% endblock %}
+
 {% block breadcrumb %}
     <span><a href="{{ url_for('list_modules') }}">Modules</a></span>
     <span><a href="{{ url_for('view_module', module_id=lesson.module_id) }}">{{ lesson.module_title }}</a></span>
@@ -14,38 +18,36 @@
             <div class="lesson-header">
                 <h1 class="lesson-title">{{ lesson.title }}</h1>
 
-                <div class="lesson-meta">
-                    <div class="meta-item">
-                        <div class="meta-icon">⏱️</div>
-                        <div class="meta-text">
-                            {% if lesson.estimated_time.hours > 0 %}
-                                {{ lesson.estimated_time.hours }} hr
-                                {% if lesson.estimated_time.minutes > 0 %}
+                <div class="lesson-meta-card">
+                    <div class="meta-grid">
+                        <div class="meta-cell">
+                            <span class="meta-label"><i class="icon-clock"></i> Time</span>
+                            <span class="meta-value">
+                                {% if lesson.estimated_time.hours > 0 %}
+                                    {{ lesson.estimated_time.hours }} hr
+                                    {% if lesson.estimated_time.minutes > 0 %}
+                                        {{ lesson.estimated_time.minutes }} min
+                                    {% endif %}
+                                {% else %}
                                     {{ lesson.estimated_time.minutes }} min
                                 {% endif %}
-                            {% else %}
-                                {{ lesson.estimated_time.minutes }} min
-                            {% endif %}
+                            </span>
                         </div>
-                    </div>
-
-                    <div class="meta-item difficulty-{{ lesson.difficulty }}">
-                        <div class="meta-icon">📊</div>
-                        <div class="meta-text">
-                            {{ lesson.difficulty|title }}
+                        <div class="meta-cell">
+                            <span class="meta-label"><i class="icon-difficulty"></i> Difficulty</span>
+                            <span class="meta-value difficulty-{{ lesson.difficulty }}">{{ lesson.difficulty|title }}</span>
                         </div>
-                    </div>
-
-                    {% if lesson.tags %}
-                        <div class="meta-item">
-                            <div class="meta-icon">🏷️</div>
-                            <div class="meta-text tags">
+                        {% if lesson.tags %}
+                        <div class="meta-cell meta-tags">
+                            <span class="meta-label"><i class="icon-tags"></i> Tags</span>
+                            <span class="meta-value tags">
                                 {% for tag in lesson.tags %}
-                                    <span class="tag">{{ tag }}</span>
+                                    <span class="tag-badge">{{ tag }}</span>
                                 {% endfor %}
-                            </div>
+                            </span>
                         </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -215,11 +217,13 @@
             <div class="sidebar-card notes-card">
                 <div class="card-header">
                     <h3 class="sidebar-title">Your Notes</h3>
-                    <button type="button" id="save-notes" class="btn-small btn-outline" disabled>Save</button>
+                    <button type="button" id="save-notes" class="btn-notes-save" disabled><i class="icon-save"></i> Save</button>
                 </div>
 
-                <textarea id="user-notes" class="notes-textarea"
-                          placeholder="Take notes as you learn...">{{ user_notes }}</textarea>
+                <div class="notes-textarea-wrapper">
+                    <textarea id="user-notes" class="notes-textarea enhanced" required></textarea>
+                    <label for="user-notes" class="notes-label">Take notes as you learn...</label>
+                </div>
 
                 <div class="notes-status" id="notes-status"></div>
 
