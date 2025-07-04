@@ -1,5 +1,5 @@
 """"""
-from flask import Flask, request, Response, render_template, jsonify, session, redirect
+from flask import Flask, request, Response, render_template, jsonify, session, redirect, url_for
 from flask_sse import sse
 
 import redis
@@ -20,7 +20,7 @@ from utils.example_module import example_module
 
 from utils.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL, REDIS_HOST, REDIS_PORT
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL, REDIS_HOST, REDIS_PORT, DEBUG
 from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB
 
 from flask_cors import CORS
@@ -297,6 +297,16 @@ def index():
 
 @app.route('/login')
 def login():
+    print("DEBUG: auth_callback_route called", DEBUG)
+    if DEBUG:
+        # Simulate a user session in development mode
+        session['user'] = {
+            "email": "devuser@example.com",
+            "name": "Dev User",
+            "sub": "local-dev-user-id",
+            "mode": "student"
+        }
+        return redirect(url_for('index'))
     return redirect(COGNITO_LOGIN_URL)
 
 @app.route('/callback')
