@@ -3,76 +3,370 @@
 {% block title %}{{ page_title }} | Educational Platform{% endblock %}
 
 {% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/view.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/module.css') }}">
 {% endblock %}
 
 {% block breadcrumb %}
-    <span><a href="{{ url_for('list_modules') }}">Learning Modules</a></span>
+    {% if user and user.mode == 'teacher' %}
+        <span>Admin</span>
+        <span><a href="{{ url_for('list_modules') }}">Modules</a></span>
+    {% else %}
+        <span><a href="{{ url_for('list_modules') }}">Learning Modules</a></span>
+    {% endif %}
     <span>{{ page_title }}</span>
 {% endblock %}
 
 {% block page_title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-    <div class="module-header">
-        <div class="module-progress">
-            <div class="progress-text">Module Progress: {{ module_progress.completed }}/{{ module_progress.total }} Lessons</div>
-            <div class="progress-bar">
-                <div class="progress" style="width: 40%;">{{ module_progress.percentage }}%</div>
-            </div>
-        </div>
-        <div class="module-actions">
-            <a href="{{ module_download_materials_link }}" class="btn-outline">Download Materials</a>
-            <a href="{{ module_take_quiz_link }}" class="btn">Take Quiz</a>
-        </div>
-    </div>
-
-    <div class="module-description">
-        {{ module_description|safe }}
-    </div>
-
-    <div class="lesson-list">
-        <h2>Module Lessons</h2>
-
-        {% for lesson_card in lesson_cards %}
-            <div class="lesson-card {{ lesson_card.status }}">
-                <div class="lesson-status">{{ lesson_card.icon }}</div>
-                <div class="lesson-content">
-                    <h3>{{ lesson_card.title }}</h3>
-                    <p>{{ lesson_card.description }}</p>
-                    <div class="lesson-meta">
-                        <span>Duration: {{ lesson_card.duration }}</span>
-                        <span>{{ lesson_card.status }}</span>
-                    </div>
-                </div>
-                <div class="lesson-actions">
+    <div class="module-layout">
+        <div class="main-column">
+            <!-- Module Header -->
+            <div class="content-card">
+                <div class="module-header">
                     {% if user and user.mode == 'teacher' %}
-                        <a href="{{ url_for('edit_lesson', lesson_id=lesson_card.id) }}" class="btn">Edit Lesson</a>
+                        <!-- Teacher View -->
+                        <div class="module-meta">
+                            <div class="status-badge {% if module.published %}published{% else %}draft{% endif %}">
+                                {{ 'Published' if module.published else 'Draft' }}
+                            </div>
+                            <div class="module-course">
+                                Course: <a href="#">{{ module.course.title if module.course else 'No course assigned' }}</a>
+                            </div>
+                            <div class="module-order">Order: {{ module.order|default(1) }}</div>
+                        </div>
+                        
+                        <div class="module-actions">
+                            <a href="{{ url_for('edit_module', module_id=module.id) }}" class="btn btn-primary">
+                                <i class="icon-edit"></i> Edit Module
+                            </a>
+                            <a href="{{ url_for('list_modules') }}" class="btn-outline">
+                                <i class="icon-back"></i> Back to Modules
+                            </a>
+                        </div>
                     {% else %}
-                        <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn">View Lesson</a>
+                        <!-- Student View -->
+                        <div class="module-progress">
+                            <div class="progress-text">Module Progress: {{ module_progress.completed }}/{{ module_progress.total }} Lessons</div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: {{ module_progress.percentage }}%;">{{ module_progress.percentage }}%</div>
+                            </div>
+                        </div>
+                        <div class="module-actions">
+                            <a href="{{ module_download_materials_link }}" class="btn-outline">Download Materials</a>
+                            <a href="{{ module_take_quiz_link }}" class="btn">Take Quiz</a>
+                        </div>
                     {% endif %}
                 </div>
             </div>
-        {% endfor %}
-    </div>
 
-    <div class="module-resources">
-        <h2>Additional Resources</h2>
-        <ul class="resource-list">
-            {% for resource in resources %}
-                <li>
-                    <div class="resource-icon">{{ resource.icon }}</div>
-                    <div class="resource-details">
-                        <h4>{{ resource.title }}</h4>
-                        <p>{{ resource.description }}</p>
+            <!-- Module Description -->
+            <div class="content-card">
+                <h2>Description</h2>
+                {% if user and user.mode == 'teacher' %}
+                    <p class="module-description">{{ module.description }}</p>
+                {% else %}
+                    <div class="module-description">{{ module_description|safe }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Learning Outcomes (Teacher View Only) -->
+            {% if user and user.mode == 'teacher' and module.learning_outcomes %}
+            <div class="content-card">
+                <h2>Learning Outcomes</h2>
+                <ul class="learning-outcomes-list">
+                    {% for outcome in module.learning_outcomes %}
+                        <li class="outcome-item">{{ outcome }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Module Content (Teacher View Only) -->
+            {% if user and user.mode == 'teacher' %}
+            <div class="content-card">
+                <div class="content-tabs">
+                    <div class="tab-buttons">
+                        <button type="button" class="tab-btn active" data-tab="overview">Overview</button>
+                        <button type="button" class="tab-btn" data-tab="resources">Resources</button>
+                        <button type="button" class="tab-btn" data-tab="assessment">Assessment</button>
                     </div>
-                    <a href="{{ resource.link }}" class="resource-link">{{ resource.action }}</a>
-                </li>
-            {% endfor %}
-        </ul>
+
+                    <div id="tab-overview" class="tab-content active">
+                        <h3>Overview</h3>
+                        <div class="content-body markdown-content">
+                            {{ module.overview|safe if module.overview else '<p>No overview provided.</p>' }}
+                        </div>
+                    </div>
+
+                    <div id="tab-resources" class="tab-content">
+                        <h3>Resources</h3>
+                        <div class="content-body markdown-content">
+                            {{ module.resources|safe if module.resources else '<p>No resources provided.</p>' }}
+                        </div>
+                    </div>
+
+                    <div id="tab-assessment" class="tab-content">
+                        <h3>Assessment</h3>
+                        <div class="content-body markdown-content">
+                            {{ module.assessment|safe if module.assessment else '<p>No assessment criteria provided.</p>' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Module Lessons -->
+            <div class="content-card">
+                <h2>Module Lessons</h2>
+                {% if user and user.mode == 'teacher' %}
+                    <!-- Teacher View: Admin Lesson List -->
+                    {% if module.lessons %}
+                        <div class="lessons-list">
+                            {% for lesson in module.lessons %}
+                                <div class="lesson-item">
+                                    <div class="lesson-info">
+                                        <h4 class="lesson-title">{{ lesson.title }}</h4>
+                                        <div class="lesson-meta">
+                                            <span class="lesson-order">Order: {{ lesson.order }}</span>
+                                            <span class="lesson-status {% if lesson.published %}published{% else %}draft{% endif %}">
+                                                {{ 'Published' if lesson.published else 'Draft' }}
+                                            </span>
+                                        </div>
+                                        {% if lesson.description %}
+                                            <p class="lesson-description">{{ lesson.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="lesson-actions">
+                                        <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="btn-outline-small">
+                                            <i class="icon-view"></i> View
+                                        </a>
+                                        <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="btn-outline-small">
+                                            <i class="icon-edit"></i> Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-lessons">
+                            <p>No lessons added to this module yet.</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Student View: Progress-based Lesson List -->
+                    <div class="lesson-list">
+                        {% for lesson_card in lesson_cards %}
+                            <div class="lesson-card {{ lesson_card.status }}">
+                                <div class="lesson-status">{{ lesson_card.icon }}</div>
+                                <div class="lesson-content">
+                                    <h3>{{ lesson_card.title }}</h3>
+                                    <p>{{ lesson_card.description }}</p>
+                                    <div class="lesson-meta">
+                                        <span>Duration: {{ lesson_card.duration }}</span>
+                                        <span>{{ lesson_card.status }}</span>
+                                    </div>
+                                </div>
+                                <div class="lesson-actions">
+                                    <a href="{{ url_for('view_lesson', lesson_id=lesson_card.id) }}" class="btn">{{ lesson_card.action }}</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Media & Attachments (Teacher View Only) -->
+            {% if user and user.mode == 'teacher' and (module.featured_image or module.attachments) %}
+            <div class="content-card">
+                <h2>Media & Attachments</h2>
+                
+                {% if module.featured_image %}
+                <div class="media-section">
+                    <h3>Featured Image</h3>
+                    <div class="featured-image">
+                        <img src="{{ module.featured_image }}" alt="Featured image for {{ module.title }}">
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if module.attachments %}
+                <div class="media-section">
+                    <h3>Attachments ({{ module.attachments|length }})</h3>
+                    <div class="attachments-list">
+                        {% for attachment in module.attachments %}
+                            <div class="attachment-item">
+                                <div class="attachment-icon">
+                                    <i class="icon-file"></i>
+                                </div>
+                                <div class="attachment-info">
+                                    <div class="attachment-name">{{ attachment.name }}</div>
+                                    <div class="attachment-size">{{ attachment.size_formatted }}</div>
+                                </div>
+                                <div class="attachment-actions">
+                                    <a href="{{ attachment.url }}" class="btn-outline-small" target="_blank">
+                                        <i class="icon-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Additional Resources (Student View Only) -->
+            {% if not user or user.mode != 'teacher' %}
+            <div class="content-card">
+                <h2>Additional Resources</h2>
+                <ul class="resource-list">
+                    {% for resource in resources %}
+                        <li>
+                            <div class="resource-icon">{{ resource.icon }}</div>
+                            <div class="resource-details">
+                                <h4>{{ resource.title }}</h4>
+                                <p>{{ resource.description }}</p>
+                            </div>
+                            <a href="{{ resource.link }}" class="resource-link">{{ resource.action }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar (Teacher View Only) -->
+        {% if user and user.mode == 'teacher' %}
+        <div class="sidebar-column">
+            <!-- Module Details -->
+            <div class="content-card">
+                <h3>Module Details</h3>
+                
+                <div class="detail-group">
+                    <label>Status</label>
+                    <div class="status-display">
+                        <div class="status-dot {% if module.published %}published{% else %}draft{% endif %}"></div>
+                        <span>{{ 'Published' if module.published else 'Draft' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Course</label>
+                    <div class="detail-value">
+                        {{ module.course.title if module.course else 'No course assigned' }}
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Order</label>
+                    <div class="detail-value">{{ module.order|default(1) }}</div>
+                </div>
+
+                {% if module.difficulty %}
+                <div class="detail-group">
+                    <label>Difficulty</label>
+                    <div class="detail-value difficulty-{{ module.difficulty }}">
+                        {{ module.difficulty|title }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if module.tags %}
+                <div class="detail-group">
+                    <label>Tags</label>
+                    <div class="tags-list">
+                        {% for tag in module.tags %}
+                            <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if module.created_at %}
+                <div class="detail-group">
+                    <label>Created</label>
+                    <div class="detail-value">{{ module.created_at }}</div>
+                </div>
+                {% endif %}
+
+                {% if module.updated_at %}
+                <div class="detail-group">
+                    <label>Last Updated</label>
+                    <div class="detail-value">{{ module.updated_at }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Prerequisites -->
+            {% if module.prerequisites %}
+            <div class="content-card">
+                <h3>Prerequisites</h3>
+                <div class="prerequisites-list">
+                    {% for prereq in module.prerequisites %}
+                        <div class="prerequisite-item">
+                            <a href="{{ url_for('module', module_id=prereq.id) }}">{{ prereq.title }}</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Modules -->
+            {% if module.related_modules %}
+            <div class="content-card">
+                <h3>Related Modules</h3>
+                <div class="related-modules-list">
+                    {% for related in module.related_modules %}
+                        <div class="related-module-item">
+                            <a href="{{ url_for('module', module_id=related.id) }}">{{ related.title }}</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="content-card">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions">
+                    <a href="{{ url_for('edit_module', module_id=module.id) }}" class="btn btn-primary full-width">
+                        <i class="icon-edit"></i> Edit Module
+                    </a>
+                    <a href="{{ url_for('create_lesson') }}?module_id={{ module.id }}" class="btn-outline full-width">
+                        <i class="icon-plus"></i> Add Lesson
+                    </a>
+                    <a href="{{ url_for('list_modules') }}" class="btn-outline full-width">
+                        <i class="icon-list"></i> All Modules
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality (Teacher view only)
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
 
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Remove active class from all tabs and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                this.classList.add('active');
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+            });
+        });
+    });
+</script>
 {% endblock %}

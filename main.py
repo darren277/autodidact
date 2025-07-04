@@ -516,6 +516,7 @@ def module(module_id):
     return render_template(
         'module.html',
         active_page=f'module_{module_id}',
+        module=module,  # Pass the module object for teacher view
         **module_data,
         user=session['user']
     )
@@ -1080,11 +1081,8 @@ def edit_module(module_id):
 
 @app.route('/view_module/<module_id>')
 def view_module(module_id):
-    from models.lessons import Module
-    module = Module.query.get(module_id)
-    if not module:
-        return jsonify({"error": "Module not found"}), 404
-    return render_template('modules/view.html', module=module)
+    # Redirect to the unified module route
+    return redirect(url_for('module', module_id=module_id))
 
 @app.route('/module_complete/<module_id>')
 def module_complete(module_id):
