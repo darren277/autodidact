@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: flask-app, namespace: {{ .Values.namespace }} }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: flask-app } }
+  template:
+    metadata:
+      labels:
+        app: flask-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "5000"
+    spec:
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: api
+          image: "{{ .Values.flask.image.repository }}:{{ .Values.flask.image.tag }}"
+          imagePullPolicy: "{{ .Values.flask.image.pullPolicy }}"
+          env:
+            - name: APP_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: flask-secret, key: flaskAppSecret } }
+            - name: USER_POOL_ID
+              value: "{{ .Values.auth.cognito.userPoolId }}"
+            - name: USER_POOL_CLIENT_ID
+              value: "{{ .Values.auth.cognito.userPoolClientId }}"
+            - name: USER_POOL_CLIENT_SECRET
+              valueFrom: { secretKeyRef: { name: cognito-secret, key: userPoolClientSecret } }
+            - name: COGNITO_DOMAIN
+              value: "{{ .Values.auth.cognito.cognitoDomain }}"
+            - name: GOOGLE_REDIRECT_URI
+              value: "{{ .Values.auth.googleRedirectUri }}"
+            - name: REDIS_HOST
+              value: "{{ .Values.redis.host }}"
+            - name: REDIS_PORT
+              value: "{{ .Values.redis.port }}"
+            - name: POSTGRES_HOST
+              value: "{{ .Values.postgres.host }}"
+            - name: POSTGRES_PORT
+              value: "{{ .Values.postgres.port }}"
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgres.db }}"
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: user } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: postgres-secret, key: pass } }
+            - name: OPENAI_API_KEY
+              valueFrom: { secretKeyRef: { name: openai-secret-api-key, key: apiKey } }
+          ports: [ { containerPort: 5000 } ]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: flask-app, namespace: {{ .Values.namespace }} }
+spec:
+  selector: { app: flask-app }
+  ports: [ { port: 80, targetPort: 5000 } ]
