@@ -269,22 +269,28 @@
 <script src="{{ url_for('static', filename='js/view-lesson.js') }}"></script>
 
 <script>
-    document.getElementById('generate-audio-presentation').addEventListener('click', function () {
-        fetch("{{ url_for('generate_audio', lesson_id=lesson.id) }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('generate-audio-presentation').disabled = true;
-                    document.getElementById('generate-audio-presentation').innerText = 'Generate Audio Presentation (Already Generated - See Below)';
-                    document.getElementById('generate-audio-presentation-disabled').disabled = true;
-                }
-            });
-    });
+    const generateAudioBtn = document.getElementById('generate-audio-presentation');
+    if (generateAudioBtn) {
+        generateAudioBtn.addEventListener('click', function () {
+            fetch("{{ url_for('generate_audio', lesson_id=lesson.id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        generateAudioBtn.disabled = true;
+                        generateAudioBtn.innerText = 'Generate Audio Presentation (Already Generated - See Below)';
+                        const disabledBtn = document.getElementById('generate-audio-presentation-disabled');
+                        if (disabledBtn) {
+                            disabledBtn.disabled = true;
+                        }
+                    }
+                });
+        });
+    }
 </script>
 {% endblock %}
