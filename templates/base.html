@@ -17,15 +17,15 @@
         <div class="logo">autodidact</div>
         <div class="top-nav">
             {% if user %}
-                <a href="{{ url_for('profile') }}">Profile</a>
-                <a href="{{ url_for('settings') }}">Settings</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
                 <div class="mode-toggle">
                     <input type="checkbox" id="mode-toggle" class="mode-toggle-input">
                     <label for="mode-toggle" class="mode-toggle-label" data-mode="{{ user.mode }}">
-                        <span class="mode-toggle-label-text">{{ user.mode }}</span>
+                        <span class="mode-toggle-label-text">{{ user.mode | capitalize }}</span>
                     </label>
                 </div>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('settings') }}">Settings</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login or Signup</a>
             {% endif %}

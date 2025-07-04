@@ -10,7 +10,7 @@
     <span>Dashboard</span>
 {% endblock %}
 
-{% block page_title %}Student Dashboard{% endblock %}
+{% block page_title %}{{ user.mode | capitalize }} Dashboard{% endblock %}
 
 {% block content %}
     <!-- Debug: Check if variables exist -->

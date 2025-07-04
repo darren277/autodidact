@@ -13,13 +13,16 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 0.5rem 1rem;
-    border-radius: 2rem;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
     background: var(--surface-color);
     border: 2px solid var(--border-color);
     transition: all 0.3s ease;
     font-size: 0.875rem;
     font-weight: 500;
+    line-height: 42px;
+    height: 42px;
+    margin-top: 9px;
 }
 
 .mode-toggle-label:hover {
