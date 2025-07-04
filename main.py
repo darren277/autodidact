@@ -83,6 +83,30 @@ def ask():
 def stream():
     return stream_route(r)
 
+@app.route('/toggle_mode', methods=['POST'])
+def toggle_mode():
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        data = request.get_json()
+        if data and 'mode' in data:
+            new_mode = data['mode']
+            if new_mode in ['student', 'teacher']:
+                session['user']['mode'] = new_mode
+                return jsonify({"message": "Mode toggled successfully", "mode": new_mode})
+            else:
+                return jsonify({"error": "Invalid mode"}), 400
+        else:
+            # Fallback to toggle behavior if no mode specified
+            if session['user']['mode'] == 'student':
+                session['user']['mode'] = 'teacher'
+            else:
+                session['user']['mode'] = 'student'
+            return jsonify({"message": "Mode toggled successfully", "mode": session['user']['mode']})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/notes/cornell_notes/<notes_id>')
 def cornell_notes(notes_id):
     return render_template('notes/cornell.html', **data)

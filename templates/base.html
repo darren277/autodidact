@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Educational Platform{% endblock %}</title>
     <style></style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mode-toggle.css') }}">
 
     {% block styles %}{% endblock %}
 </head>
@@ -16,6 +19,12 @@
             {% if user %}
                 <a href="{{ url_for('profile') }}">Profile</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
+                <div class="mode-toggle">
+                    <input type="checkbox" id="mode-toggle" class="mode-toggle-input">
+                    <label for="mode-toggle" class="mode-toggle-label" data-mode="{{ user.mode }}">
+                        <span class="mode-toggle-label-text">{{ user.mode }}</span>
+                    </label>
+                </div>
             {% else %}
                 <a href="{{ url_for('login') }}">Login or Signup</a>
             {% endif %}
@@ -72,5 +81,11 @@
     {% block scripts %}
     <!-- Any page-specific scripts can be included here -->
     {% endblock %}
+
+    <script>
+        const modeToggleEndpoint = "{{ url_for('toggle_mode') }}";
+    </script>
+
+    <script src="{{ url_for('static', filename='js/mode-toggle.js') }}"></script>
 </body>
 </html>
