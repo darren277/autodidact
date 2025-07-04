@@ -30,13 +30,13 @@
                         <div class="meta-cell">
                             <span class="meta-label"><i class="icon-clock"></i> Time</span>
                             <span class="meta-value">
-                                {% if lesson.estimated_time.hours > 0 %}
-                                    {{ lesson.estimated_time.hours }} hr
-                                    {% if lesson.estimated_time.minutes > 0 %}
-                                        {{ lesson.estimated_time.minutes }} min
+                                {% if lesson.estimated_time_hours > 0 %}
+                                    {{ lesson.estimated_time_hours }} hr
+                                    {% if lesson.estimated_time_minutes > 0 %}
+                                        {{ lesson.estimated_time_minutes }} min
                                     {% endif %}
                                 {% else %}
-                                    {{ lesson.estimated_time.minutes }} min
+                                    {{ lesson.estimated_time_minutes }} min
                                 {% endif %}
                             </span>
                         </div>

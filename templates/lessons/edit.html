@@ -309,11 +309,11 @@
                         <label for="estimated_time">Estimated Duration</label>
                         <div class="time-input-group">
                             <input type="number" id="estimated_hours" name="estimated_hours"
-                                   value="{{ lesson.estimated_time.hours|default(0) }}"
+                                   value="{{ lesson.estimated_time_hours|default(0) }}"
                                    min="0" class="form-control time-input">
                             <span class="time-label">hours</span>
                             <input type="number" id="estimated_minutes" name="estimated_minutes"
-                                   value="{{ lesson.estimated_time.minutes|default(0) }}"
+                                   value="{{ lesson.estimated_time_minutes|default(0) }}"
                                    min="0" max="59" class="form-control time-input">
                             <span class="time-label">min</span>
                         </div>

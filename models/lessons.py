@@ -25,6 +25,15 @@ class Lesson(db.Model):
     exercises = db.Column(db.Text)  # Exercises content
     attachments = db.Column(db.Text)  # JSON string for attachments
     overview = db.Column(db.Text)  # Lesson overview/summary
+    
+    # Additional fields for lesson management
+    featured_image = db.Column(db.String(500))  # URL to featured image
+    published = db.Column(db.Boolean, default=False)  # Publication status
+    order = db.Column(db.Integer, default=1)  # Order within module
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    prerequisites = db.Column(db.Text)  # JSON string for prerequisite lesson IDs
+    related_lessons = db.Column(db.Text)  # JSON string for related lesson IDs
 
     def __repr__(self):
         return f"Lesson('{self.title}')"
@@ -45,7 +54,14 @@ class Lesson(db.Model):
             'examples': self.examples,
             'exercises': self.exercises,
             'attachments': self.get_attachments(),
-            'overview': self.overview
+            'overview': self.overview,
+            'featured_image': self.featured_image,
+            'published': self.published,
+            'order': self.order,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'prerequisites': self.get_prerequisites(),
+            'related_lessons': self.get_related_lessons()
         }
     
     def get_tags(self):
@@ -75,6 +91,26 @@ class Lesson(db.Model):
         try:
             import json
             return json.loads(self.attachments)
+        except:
+            return []
+    
+    def get_prerequisites(self):
+        """Parse and return prerequisites as list of lesson IDs"""
+        if not self.prerequisites:
+            return []
+        try:
+            import json
+            return json.loads(self.prerequisites)
+        except:
+            return []
+    
+    def get_related_lessons(self):
+        """Parse and return related lessons as list of lesson IDs"""
+        if not self.related_lessons:
+            return []
+        try:
+            import json
+            return json.loads(self.related_lessons)
         except:
             return []
 
