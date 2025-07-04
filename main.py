@@ -345,12 +345,8 @@ def submit_question():
         if not lesson_id or not question:
             return jsonify({"error": "Lesson ID and question are required"}), 400
         
-        # For now, just return a success response
-        # TODO: Implement actual question submission to database
-        return jsonify({
-            "success": True, 
-            "message": "Question submitted successfully"
-        })
+        # Use the existing assistant system
+        return ask_route(r)
         
     except Exception as e:
         return jsonify({"error": f"Failed to submit question: {str(e)}"}), 500

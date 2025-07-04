@@ -4,6 +4,13 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/view.css') }}">
+    <!-- Github markdown styles for chat responses -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+    <!-- Highlightjs for code highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css" />
+    <link rel="stylesheet" media="(prefers-color-scheme:dark)" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css" />
 {% endblock %}
 
 {% block breadcrumb %}
@@ -267,21 +274,37 @@
                 {% endif %}
             </div>
 
-            <div class="sidebar-card">
-                <h3 class="sidebar-title">Ask a Question</h3>
+            <div class="sidebar-card chat-card">
+                <div class="card-header">
+                    <h3 class="sidebar-title">Learning Assistant</h3>
+                    <button type="button" id="clear-chat" class="btn-small btn-outline" title="Clear chat history">Clear</button>
+                </div>
+                
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Chat messages will appear here -->
+                </div>
+                
                 <form id="question-form" class="question-form">
-                    <textarea id="question-text" class="question-textarea"
-                              placeholder="Have a question about this lesson?"></textarea>
-                    <button type="submit" class="btn btn-primary">Submit Question</button>
+                    <div class="input-group">
+                        <textarea id="question-text" class="question-textarea"
+                                  placeholder="Ask a question about this lesson..." rows="3"></textarea>
+                        <button type="submit" class="btn btn-primary" id="submit-question">
+                            <i class="icon-send"></i> Ask
+                        </button>
+                    </div>
                 </form>
+                
+                <div id="chat-loading" class="chat-loading" style="display: none;">
+                    <i class="icon-spinner"></i> Assistant is thinking...
+                </div>
             </div>
-<!--            Initiates chat with streaming GPT assistant... -->
         </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/view-lesson.js') }}"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
 
 <script>
     const generateAudioBtn = document.getElementById('generate-audio-presentation');

@@ -200,9 +200,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Submit a question
+    // Chat functionality
     const questionForm = document.getElementById('question-form');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatLoading = document.getElementById('chat-loading');
+    const clearChatBtn = document.getElementById('clear-chat');
+    let currentEventSource = null;
+    let currentAssistantMessageElement = null;
 
+    // Clear chat functionality
+    if (clearChatBtn) {
+        clearChatBtn.addEventListener('click', function() {
+            chatMessages.innerHTML = '';
+        });
+    }
+
+    // Submit a question
     if (questionForm) {
         questionForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -213,13 +226,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const submitBtn = questionForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.textContent;
+            const submitBtn = document.getElementById('submit-question');
+            const originalBtnText = submitBtn.innerHTML;
 
+            // Add user message to chat
+            addChatMessage('user', questionText);
+
+            // Clear input and show loading
+            document.getElementById('question-text').value = '';
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.innerHTML = '<i class="icon-spinner"></i> Asking...';
+            chatLoading.style.display = 'block';
 
-            fetch('/api/submit-question', {
+            // Close previous event source if exists
+            if (currentEventSource) {
+                currentEventSource.close();
+            }
+
+            // Send the question to server
+            fetch('/api/submit_question', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -229,50 +254,129 @@ document.addEventListener('DOMContentLoaded', function() {
                     question: questionText
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to submit question');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                document.getElementById('question-text').value = '';
-
-                // Show success message
-                const successDiv = document.createElement('div');
-                successDiv.className = 'success-message';
-                successDiv.textContent = 'Your question has been submitted successfully. An instructor will respond soon.';
-
-                questionForm.appendChild(successDiv);
-
-                // Reset button
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-
-                // Remove success message after 5 seconds
-                setTimeout(() => {
-                    successDiv.remove();
-                }, 5000);
+                if (data.thread_id) {
+                    // Start listening for SSE events
+                    startEventSource(data.thread_id);
+                } else {
+                    console.error('No thread_id received');
+                    chatLoading.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
             })
             .catch(error => {
-                console.error('Error submitting question:', error);
-
-                // Show error message
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = 'There was an error submitting your question. Please try again.';
-
-                questionForm.appendChild(errorDiv);
-
-                // Reset button
+                console.error('Error:', error);
+                chatLoading.style.display = 'none';
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-
-                // Remove error message after 5 seconds
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 5000);
+                submitBtn.innerHTML = originalBtnText;
+                
+                // Show error message
+                addChatMessage('assistant', 'Sorry, there was an error processing your question. Please try again.');
             });
         });
+    }
+
+    function addChatMessage(type, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${type}`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        if (type === 'assistant' && content) {
+            // Use zero-md for markdown rendering
+            const zeroMd = document.createElement('zero-md');
+            const scriptTag = document.createElement('script');
+            scriptTag.type = 'text/markdown';
+            scriptTag.textContent = content;
+            zeroMd.appendChild(scriptTag);
+            contentDiv.appendChild(zeroMd);
+        } else {
+            contentDiv.textContent = content;
+        }
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'message-time';
+        timeDiv.textContent = new Date().toLocaleTimeString();
+        
+        messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(timeDiv);
+        
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        return messageDiv;
+    }
+
+    function startEventSource(threadId) {
+        let assistantResponse = "";
+
+        // Create a new EventSource
+        currentEventSource = new EventSource(`/stream?channel=${threadId}`);
+
+        // Start assistant message
+        currentAssistantMessageElement = addChatMessage('assistant', '');
+
+        currentEventSource.addEventListener('message', function(event) {
+            const data = event.data;
+            console.log('Raw SSE data:', data);
+
+            if (data && currentAssistantMessageElement) {
+                // Append to the assistant's message
+                assistantResponse += data;
+
+                // Update the message content with markdown rendering
+                updateAssistantMessage(assistantResponse);
+
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        currentEventSource.addEventListener('error', function(event) {
+            console.error('EventSource error:', event);
+            currentEventSource.close();
+            chatLoading.style.display = 'none';
+            document.getElementById('submit-question').disabled = false;
+            document.getElementById('submit-question').innerHTML = '<i class="icon-send"></i> Ask';
+        });
+
+        currentEventSource.addEventListener('complete', function(event) {
+            console.log('COMPLETE event:', event);
+            try {
+                const parsedData = JSON.parse(event.data);
+                if (parsedData.full_message) {
+                    // Update with final message
+                    updateAssistantMessage(parsedData.full_message);
+                }
+            } catch (err) {
+                console.error('Error parsing complete event data:', err);
+            }
+
+            // Finish up
+            currentEventSource.close();
+            chatLoading.style.display = 'none';
+            document.getElementById('submit-question').disabled = false;
+            document.getElementById('submit-question').innerHTML = '<i class="icon-send"></i> Ask';
+        });
+    }
+
+    function updateAssistantMessage(content) {
+        const contentDiv = currentAssistantMessageElement.querySelector('.message-content');
+        
+        // Clear existing content
+        contentDiv.innerHTML = '';
+        
+        // Create new zero-md element
+        const zeroMd = document.createElement('zero-md');
+        const scriptTag = document.createElement('script');
+        scriptTag.type = 'text/markdown';
+        scriptTag.textContent = content;
+        zeroMd.appendChild(scriptTag);
+        contentDiv.appendChild(zeroMd);
     }
 });
