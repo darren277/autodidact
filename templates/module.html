@@ -76,9 +76,11 @@
             <div class="content-card">
                 <h2>Learning Outcomes</h2>
                 <ul class="learning-outcomes-list">
-                    {% for outcome in module.learning_outcomes %}
-                        <li class="outcome-item">{{ outcome }}</li>
-                    {% endfor %}
+                    {% if module.get_learning_outcomes() %}
+                        {% for outcome in module.get_learning_outcomes() %}
+                            <li class="outcome-item">{{ outcome }}</li>
+                        {% endfor %}
+                    {% endif %}
                 </ul>
             </div>
             {% endif %}
@@ -300,28 +302,34 @@
             </div>
 
             <!-- Prerequisites -->
-            {% if module.prerequisites %}
+            {% if module.get_prerequisites() %}
             <div class="content-card">
                 <h3>Prerequisites</h3>
                 <div class="prerequisites-list">
-                    {% for prereq in module.prerequisites %}
-                        <div class="prerequisite-item">
-                            <a href="{{ url_for('module', module_id=prereq.id) }}">{{ prereq.title }}</a>
-                        </div>
+                    {% for prereq_id in module.get_prerequisites() %}
+                        {% set prereq = prereq_modules.get(prereq_id) %}
+                        {% if prereq %}
+                            <div class="prerequisite-item">
+                                <a href="{{ url_for('module', module_id=prereq.id) }}">{{ prereq.title }}</a>
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
 
             <!-- Related Modules -->
-            {% if module.related_modules %}
+            {% if module.get_related_modules() %}
             <div class="content-card">
                 <h3>Related Modules</h3>
                 <div class="related-modules-list">
-                    {% for related in module.related_modules %}
-                        <div class="related-module-item">
-                            <a href="{{ url_for('module', module_id=related.id) }}">{{ related.title }}</a>
-                        </div>
+                    {% for related_id in module.get_related_modules() %}
+                        {% set related = related_modules.get(related_id) %}
+                        {% if related %}
+                            <div class="related-module-item">
+                                <a href="{{ url_for('module', module_id=related.id) }}">{{ related.title }}</a>
+                            </div>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>

@@ -535,10 +535,26 @@ def module(module_id):
         "resources": []  # TODO: Add resources field to model
     }
     
+    # Fetch prerequisite and related modules
+    prereq_modules = {}
+    related_modules = {}
+    
+    if module.get_prerequisites():
+        prereq_ids = module.get_prerequisites()
+        prereq_modules_list = Module.query.filter(Module.id.in_(prereq_ids)).all()
+        prereq_modules = {m.id: m for m in prereq_modules_list}
+    
+    if module.get_related_modules():
+        related_ids = module.get_related_modules()
+        related_modules_list = Module.query.filter(Module.id.in_(related_ids)).all()
+        related_modules = {m.id: m for m in related_modules_list}
+    
     return render_template(
         'module.html',
         active_page=f'module_{module_id}',
         module=module,  # Pass the module object for teacher view
+        prereq_modules=prereq_modules,
+        related_modules=related_modules,
         **module_data,
         user=session['user']
     )

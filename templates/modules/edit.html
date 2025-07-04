@@ -44,8 +44,8 @@
                         <label for="learning_outcomes" class="required">Learning Outcomes</label>
                         <div class="learning-objectives-container">
                             <div id="learning-outcomes-list">
-                                {% if module.learning_outcomes %}
-                                    {% for outcome in module.learning_outcomes %}
+                                {% if module.get_learning_outcomes() %}
+                                    {% for outcome in module.get_learning_outcomes() %}
                                         <div class="objective-item">
                                             <input type="text" name="learning_outcomes[]" value="{{ outcome }}"
                                                    class="form-control" placeholder="Learning outcome">
