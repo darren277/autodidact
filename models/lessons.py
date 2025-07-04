@@ -4,6 +4,7 @@
 # One Module consists of Many Lessons.
 
 from database import db
+from datetime import datetime
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,6 +71,12 @@ class Notes(db.Model):
     content = db.Column(db.Text)
     lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Additional fields for structured notes
+    note_type = db.Column(db.String(50), default='text')  # 'text', 'cornell', 'mindmap', etc.
+    structured_data = db.Column(db.Text)  # JSON string for structured notes
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f"Notes('{self.content}')"
@@ -79,8 +86,72 @@ class Notes(db.Model):
             'id': self.id,
             'content': self.content,
             'lesson_id': self.lesson_id,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'note_type': self.note_type,
+            'structured_data': self.structured_data,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+    
+    def get_structured_data(self):
+        """Parse and return structured data as dict"""
+        if not self.structured_data:
+            return None
+        try:
+            import json
+            return json.loads(self.structured_data)
+        except:
+            return None
+
+
+class Media(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    media_url = db.Column(db.String(500))
+    media_type = db.Column(db.String(50))  # 'video', 'audio', 'image'
+    annotations = db.Column(db.Text)  # JSON string for annotations
+    segments = db.Column(db.Text)  # JSON string for segments
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"Media('{self.title}')"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'media_url': self.media_url,
+            'media_type': self.media_type,
+            'annotations': self.get_annotations(),
+            'segments': self.get_segments(),
+            'lesson_id': self.lesson_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def get_annotations(self):
+        """Parse and return annotations as list"""
+        if not self.annotations:
+            return []
+        try:
+            import json
+            return json.loads(self.annotations)
+        except:
+            return []
+    
+    def get_segments(self):
+        """Parse and return segments as list"""
+        if not self.segments:
+            return []
+        try:
+            import json
+            return json.loads(self.segments)
+        except:
+            return []
 
 
 class Quiz(db.Model):

@@ -14,11 +14,6 @@ from routes.lo import lo_route
 from routes.summarize import summarize_route
 from routes.tts import tts_route
 from utils.convert_to_markdown import convert_to_simple_markdown
-from utils.example_lesson import example_lesson
-from utils.example_media_annotation import example_media_annotation
-from utils.example_module import example_module
-
-from utils.example_structured_notes import data
 
 from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL, REDIS_HOST, REDIS_PORT, DEBUG, MASTER_ENCRYPTION_KEY
 from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB
@@ -110,57 +105,183 @@ def toggle_mode():
 
 @app.route('/notes/cornell_notes/<notes_id>')
 def cornell_notes(notes_id):
-    return render_template('notes/cornell.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/cornell.html', **structured_data)
 
 @app.route('/api/notes/cornell_notes/<notes_id>')
 def api_cornell_notes(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/cornell.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/cornell.html', **structured_data)
 
 @app.route('/notes/digital_notebook/<notes_id>')
 def digital_notebook(notes_id):
-    return render_template('notes/digital-notebook.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/digital-notebook.html', **structured_data)
 
 @app.route('/api/notes/digital_notebook/<notes_id>')
 def api_digital_notebook(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/digital-notebook.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/digital-notebook.html', **structured_data)
 
 @app.route('/notes/mindmap/<notes_id>')
 def mindmap(notes_id):
-    return render_template('notes/mindmap.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/mindmap.html', **structured_data)
 
 @app.route('/api/notes/mindmap/<notes_id>')
 def api_mindmap(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/mindmap.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/mindmap.html', **structured_data)
 
 @app.route('/notes/stickynotes/<notes_id>')
 def stickynotes(notes_id):
-    return render_template('notes/stickynotes.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/stickynotes.html', **structured_data)
 
 @app.route('/api/notes/stickynotes/<notes_id>')
 def api_stickynotes(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/stickynotes.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/stickynotes.html', **structured_data)
 
 @app.route('/notes/vintage_cards/<notes_id>')
 def vintage_cards(notes_id):
-    return render_template('notes/vintage-cards.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/vintage-cards.html', **structured_data)
 
 @app.route('/api/notes/vintage_cards/<notes_id>')
 def api_vintage_cards(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/vintage-cards.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/vintage-cards.html', **structured_data)
 
 @app.route('/notes/augmented/<notes_id>')
 def augmented(notes_id):
-    return render_template('notes/augmented.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/augmented.html', **structured_data)
 
 @app.route('/api/notes/augmented/<notes_id>')
 def api_augmented(notes_id):
-    from utils.example_structured_notes import data
-    return render_template('notes/augmented.html', **data)
+    from models.lessons import Notes
+    notes = Notes.query.get(notes_id)
+    if not notes:
+        return jsonify({"error": "Notes not found"}), 404
+    
+    # Get structured data or fall back to example data
+    structured_data = notes.get_structured_data()
+    if not structured_data:
+        from utils.example_structured_notes import data
+        structured_data = data
+    
+    return render_template('notes/augmented.html', **structured_data)
 
 @app.route('/summarize', methods=['POST'])
 def summarize():
@@ -181,9 +302,54 @@ def dashboard():
 
 @app.route('/module/<module_id>')
 def module(module_id):
-    module_data = example_module
+    from models.lessons import Module, Lesson
+    module = Module.query.get(module_id)
+    if not module:
+        return jsonify({"error": "Module not found"}), 404
+    
+    # Get lessons for this module
+    lessons = Lesson.query.filter_by(module_id=module_id).all()
+    
+    # Build lesson cards
+    lesson_cards = []
+    completed_count = 0
+    for i, lesson in enumerate(lessons, 1):
+        # TODO: Implement actual progress tracking
+        status = "completed" if i <= 2 else "current" if i == 3 else ""
+        icon = "✓" if status == "completed" else "•" if status == "current" else ""
+        action = "Review" if status == "completed" else "Continue" if status == "current" else "Start"
+        
+        if status == "completed":
+            completed_count += 1
+        
+        lesson_cards.append({
+            "id": lesson.id,
+            "status": status,
+            "icon": icon,
+            "title": f"{i}. {lesson.title}",
+            "description": lesson.content[:100] + "..." if len(lesson.content) > 100 else lesson.content,
+            "duration": "15 min",  # TODO: Add duration field to model
+            "action": action
+        })
+    
+    # Build module data structure
+    module_data = {
+        "title": module.title,
+        "page_title": module.title,
+        "module_progress": {
+            "completed": completed_count,
+            "total": len(lessons),
+            "percentage": int((completed_count / len(lessons)) * 100) if lessons else 0
+        },
+        "module_download_materials_link": "#",  # TODO: Implement download functionality
+        "module_take_quiz_link": "#",  # TODO: Implement quiz functionality
+        "module_description": f"<p>This module contains {len(lessons)} lessons covering various topics.</p>",
+        "lesson_cards": lesson_cards,
+        "resources": []  # TODO: Add resources field to model
+    }
+    
     return render_template(
-        f'module.html',
+        'module.html',
         active_page=f'module_{module_id}',
         **module_data,
         user=session['user']
@@ -354,9 +520,7 @@ def submit_question():
 @app.route('/list_lessons')
 def list_lessons():
     from models.lessons import Lesson
-    #lessons = Lesson.query.all()
-    demo_lessons = [{"id": i, "title": f"Lesson {i}", "content": f"This is the content for Lesson {i}."} for i in range(1, 6)]
-    lessons = demo_lessons
+    lessons = Lesson.query.all()
     return render_template('lessons/list.html', lessons=lessons, total_pages=1)
 
 @app.route('/create_lesson')
@@ -367,16 +531,23 @@ def create_lesson():
 @app.route('/edit_lesson/<lesson_id>')
 def edit_lesson(lesson_id):
     from models.lessons import Lesson
-    #lesson = Lesson.query.get(lesson_id)
-    lesson = example_lesson
-    return render_template('lessons/edit.html', lesson=lesson, topic=lesson['topic'])
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({"error": "Lesson not found"}), 404
+    return render_template('lessons/edit.html', lesson=lesson, topic=lesson.title)
 
 @app.route('/view_lesson/<lesson_id>')
 def view_lesson(lesson_id):
     from models.lessons import Lesson
-    #lesson = Lesson.query.get(lesson_id)
-    lesson = example_lesson
-    other_lessons = []
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({"error": "Lesson not found"}), 404
+    
+    # Get related lessons from the same module
+    other_lessons = Lesson.query.filter_by(module_id=lesson.module_id).filter(Lesson.id != lesson.id).all()
+    
+    # Convert lesson content to markdown for display
+    from utils.convert_to_markdown import convert_to_simple_markdown
     notes = convert_to_simple_markdown(data)
     audio_notes = 'presentation'
     
@@ -398,10 +569,22 @@ def view_lesson(lesson_id):
         except Exception as e:
             print(f"Error loading user notes: {e}")
     
+    # Create lesson data structure for template
+    lesson_data = {
+        'id': lesson.id,
+        'title': lesson.title,
+        'content': lesson.content,
+        'content_html': lesson.content,  # TODO: Convert to HTML if needed
+        'examples_html': '',  # TODO: Add examples field to model
+        'exercises_html': '',  # TODO: Add exercises field to model
+        'learning_objectives': [],  # TODO: Add learning objectives field to model
+        'user_progress': {'completed': False}  # TODO: Implement progress tracking
+    }
+    
     return render_template(
         'lessons/view.html',
-        lesson=lesson,
-        user_progress=lesson['user_progress'],
+        lesson=lesson_data,
+        user_progress=lesson_data['user_progress'],
         other_lessons=other_lessons,
         user_notes=user_notes,
         audio_notes=audio_notes
@@ -509,18 +692,29 @@ def generate_audio(lesson_id):
 @app.route('/preview_lesson/<lesson_id>')
 def preview_lesson(lesson_id):
     # Basically, "view_lesson" but as instructor, not student...
-    # TODO...
     from models.lessons import Lesson
-    #lesson = Lesson.query.get(lesson_id)
-    lesson = example_lesson
-    return render_template('lessons/preview.html', lesson=lesson)
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({"error": "Lesson not found"}), 404
+    
+    # Create lesson data structure for template (same as view_lesson)
+    lesson_data = {
+        'id': lesson.id,
+        'title': lesson.title,
+        'content': lesson.content,
+        'content_html': lesson.content,  # TODO: Convert to HTML if needed
+        'examples_html': '',  # TODO: Add examples field to model
+        'exercises_html': '',  # TODO: Add exercises field to model
+        'learning_objectives': [],  # TODO: Add learning objectives field to model
+        'user_progress': {'completed': False}  # TODO: Implement progress tracking
+    }
+    
+    return render_template('lessons/preview.html', lesson=lesson_data)
 
 @app.route('/list_modules')
 def list_modules():
     from models.lessons import Module
-    #modules = Module.query.all()
-    demo_modules = [{"id": 1, "title": f"Module {i}"} for i in range(1, 6)]
-    modules = demo_modules
+    modules = Module.query.all()
     return render_template('modules/list.html', modules=modules, total_pages=1)
 
 @app.route('/create_module')
@@ -537,15 +731,17 @@ def edit_module(module_id):
 @app.route('/view_module/<module_id>')
 def view_module(module_id):
     from models.lessons import Module
-    #module = Module.query.get(module_id)
-    module = {"id": 1, "title": "Module 1"}
+    module = Module.query.get(module_id)
+    if not module:
+        return jsonify({"error": "Module not found"}), 404
     return render_template('modules/view.html', module=module)
 
 @app.route('/module_complete/<module_id>')
 def module_complete(module_id):
     from models.lessons import Module
-    #module = Module.query.get(module_id)
-    module = {"id": 1, "title": "Module 1"}
+    module = Module.query.get(module_id)
+    if not module:
+        return jsonify({"error": "Module not found"}), 404
     return render_template('modules/complete.html', module=module)
 
 @app.route('/lo_chat')
@@ -554,7 +750,21 @@ def lo_chat_endpoint():
 
 @app.route('/annotated_media/<media_id>')
 def annotated_media(media_id):
-    return render_template('media/annotated.html', media=example_media_annotation)
+    from models.lessons import Media
+    media = Media.query.get(media_id)
+    if not media:
+        return jsonify({"error": "Media not found"}), 404
+    
+    # Build media data structure for template
+    media_data = {
+        "title": media.title,
+        "description": media.description,
+        "media_url": media.media_url,
+        "annotations": media.get_annotations(),
+        "segments": media.get_segments()
+    }
+    
+    return render_template('media/annotated.html', media=media_data)
 
 @app.route('/')
 def index():
