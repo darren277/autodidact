@@ -4,7 +4,8 @@
 import asyncio
 import sys
 from flask import Flask
-from main import app, db
+from main import app
+from database import db
 
 def test_tts_with_api_key():
     """Test TTS functionality with API key from database"""

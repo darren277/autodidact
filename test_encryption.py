@@ -61,7 +61,8 @@ def test_user_model():
     
     try:
         from models.user import User
-        from main import app, db
+        from main import app
+        from database import db
         
         with app.app_context():
             # Create a test user

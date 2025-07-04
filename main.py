@@ -25,7 +25,7 @@ from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS,
 
 from flask_cors import CORS
 
-from flask_sqlalchemy import SQLAlchemy
+from database import db
 
 from flask_wtf.csrf import CSRFProtect
 
@@ -35,7 +35,8 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# Initialize the database with the app
+db.init_app(app)
 
 csrf = CSRFProtect(app)
 

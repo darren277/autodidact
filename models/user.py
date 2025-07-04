@@ -1,7 +1,7 @@
 """"""
 # SQL-Alchemy User model with encrypted API key storage
 
-from main import db
+from database import db
 from datetime import datetime
 import os
 from cryptography.fernet import Fernet

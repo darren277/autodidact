@@ -3,7 +3,7 @@
 # One Course consists of Many Modules.
 # One Module consists of Many Lessons.
 
-from main import db
+from database import db
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
