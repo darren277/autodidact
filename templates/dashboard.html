@@ -13,13 +13,18 @@
 {% block page_title %}Student Dashboard{% endblock %}
 
 {% block content %}
+    <!-- Debug: Check if variables exist -->
+    <!-- progress_summary: {{ progress_summary|default('NOT DEFINED') }} -->
+    <!-- user: {{ user|default('NOT DEFINED') }} -->
+    <!-- achievements: {{ achievements|default('NOT DEFINED') }} -->
+    
     <div class="dashboard-summary">
         <div class="summary-card">
             <h3>Your Progress</h3>
             <div class="progress-bar">
-                <div class="progress" style="width: {{ progress_summary.completion_percentage }}%;">{{ progress_summary.completion_percentage }}%</div>
+                <div class="progress" style="width: {{ progress_summary.completion_percentage|default(0) }}%;">{{ progress_summary.completion_percentage|default(0) }}%</div>
             </div>
-            <p>You've completed {{ progress_summary.completed_lessons }} of {{ progress_summary.total_lessons }} lessons</p>
+            <p>You've completed {{ progress_summary.completed_lessons|default(0) }} of {{ progress_summary.total_lessons|default(0) }} lessons</p>
         </div>
 
         <div class="summary-card">
@@ -43,14 +48,14 @@
 
         <div class="summary-card">
             <h3>Achievements</h3>
-            <p><span class="badge">{{ achievements.modules_completed }}</span> Modules completed</p>
-            <p><span class="badge">{{ achievements.quizzes_passed }}</span> Quizzes passed</p>
+            <p><span class="badge">{{ achievements.modules_completed|default(0) }}</span> Modules completed</p>
+            <p><span class="badge">{{ achievements.quizzes_passed|default(0) }}</span> Quizzes passed</p>
         </div>
     </div>
 
     <h2>Recent Activity</h2>
     <div class="activity-list">
-        {% if recent_activity %}
+        {% if recent_activity and recent_activity|length > 0 %}
             {% for activity in recent_activity %}
                 <div class="activity-item">
                     <div class="activity-icon">

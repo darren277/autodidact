@@ -297,7 +297,18 @@ def tts():
 
 @app.route('/dashboard')
 def dashboard():
-    user = session['user'] if session else None
+    # Debug: Check session contents
+    print("=== SESSION DEBUG ===")
+    print(f"Session keys: {list(session.keys())}")
+    print(f"Session user: {session.get('user', 'NOT FOUND')}")
+    print("====================")
+    
+    # Check if user is logged in
+    if 'user' not in session:
+        # Redirect to login if not authenticated
+        return redirect(url_for('login'))
+    
+    user = session['user']
     
     # Initialize dashboard data with defaults
     dashboard_data = {
@@ -320,8 +331,12 @@ def dashboard():
             from models.lessons import Lesson, Module, UserProgress
             from datetime import datetime, timedelta
             
+            print(f"Looking for user with sub: {user['sub']}")
+            
             # Get user from database
             user_obj = User.find_by_sub(user['sub'])
+            print(f"User object found: {user_obj}")
+            
             if user_obj:
                 # Get completion statistics
                 stats = user_obj.get_completion_stats()
@@ -386,8 +401,37 @@ def dashboard():
                 
         except Exception as e:
             print(f"Error loading dashboard data: {e}")
+            # Keep default values if there's an error
     
-    return render_template('dashboard.html', active_page='dashboard', user=user, **dashboard_data)
+    # Debug: Print what we're passing to template
+    print("=== DASHBOARD DEBUG ===")
+    print(f"User: {user}")
+    print(f"Progress summary: {dashboard_data['progress_summary']}")
+    print(f"Next session: {dashboard_data['next_session']}")
+    print(f"Achievements: {dashboard_data['achievements']}")
+    print(f"Recent activity: {dashboard_data['recent_activity']}")
+    print("=======================")
+    
+    # Try passing variables as a single dictionary first
+    template_vars = {
+        'active_page': 'dashboard',
+        'user': user,
+        'progress_summary': dashboard_data['progress_summary'],
+        'next_session': dashboard_data['next_session'],
+        'achievements': dashboard_data['achievements'],
+        'recent_activity': dashboard_data['recent_activity']
+    }
+    
+    print("=== TEMPLATE VARS ===")
+    print(f"Template vars: {template_vars}")
+    print("====================")
+    
+    try:
+        return render_template('dashboard.html', **template_vars)
+    except Exception as e:
+        print(f"Template rendering error: {e}")
+        # Fallback to simple template
+        return f"Dashboard error: {e}", 500
 
 @app.route('/module/<module_id>')
 def module(module_id):
@@ -1075,7 +1119,8 @@ def annotated_media(media_id):
 @app.route('/')
 def index():
     if 'user' in session:
-        return render_template('dashboard.html', user=session['user'])
+        # Redirect to dashboard instead of rendering dashboard template directly
+        return redirect(url_for('dashboard'))
     return render_template('index.html')
 
 @app.route('/login')
@@ -1145,6 +1190,98 @@ def publish_hello():
     print("Publishing message...", msg)
     sse.publish(msg, type='greeting')
     return "Message sent!"
+
+@app.route('/test-dashboard')
+def test_dashboard():
+    """Simple test route to verify template rendering"""
+    test_data = {
+        'progress_summary': {
+            'completed_lessons': 5,
+            'total_lessons': 10,
+            'completion_percentage': 50
+        },
+        'next_session': {
+            'lesson_title': 'Test Lesson',
+            'module_title': 'Test Module',
+            'lesson_id': 1,
+            'module_id': 1
+        },
+        'achievements': {
+            'modules_completed': 2,
+            'quizzes_passed': 3
+        },
+        'recent_activity': [
+            {
+                'type': 'Lesson Completed',
+                'lesson_title': 'Test Lesson 1',
+                'time_ago': '2 hours ago',
+                'percentage': 100,
+                'is_completed': True
+            }
+        ]
+    }
+    
+    print("=== TEST DASHBOARD DEBUG ===")
+    print(f"Test data: {test_data}")
+    print("============================")
+    
+    return render_template('dashboard.html', 
+                         active_page='dashboard', 
+                         user={'name': 'Test User'},
+                         **test_data)
+
+@app.route('/test-dashboard-minimal')
+def test_dashboard_minimal():
+    """Test with minimal template"""
+    test_data = {
+        'progress_summary': {
+            'completed_lessons': 5,
+            'total_lessons': 10,
+            'completion_percentage': 50
+        },
+        'achievements': {
+            'modules_completed': 2,
+            'quizzes_passed': 3
+        }
+    }
+    
+    return render_template('dashboard_test.html', 
+                         user={'name': 'Test User'},
+                         **test_data)
+
+@app.route('/session-status')
+def session_status():
+    """Check current session status"""
+    return {
+        'session_keys': list(session.keys()),
+        'user_in_session': 'user' in session,
+        'user_data': session.get('user', None),
+        'debug_mode': DEBUG
+    }
+
+@app.route('/create-test-user')
+def create_test_user():
+    """Create the test user in the database"""
+    try:
+        from models.user import User
+        
+        # Create the test user that matches the session
+        user = User.create_or_update(
+            email="devuser@example.com",
+            name="Dev User", 
+            sub="local-dev-user-id"
+        )
+        
+        return {
+            'success': True,
+            'user_created': user.id,
+            'message': f'User created/updated: {user.name} (ID: {user.id})'
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 
 @app.errorhandler(400)
