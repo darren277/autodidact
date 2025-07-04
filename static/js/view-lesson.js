@@ -102,6 +102,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const notesStatus = document.getElementById('notes-status');
     let originalNotes = notesTextarea.value;
 
+    // Initialize save button state
+    saveNotesBtn.disabled = true;
+
     notesTextarea.addEventListener('input', function() {
         // Enable save button if content has changed
         saveNotesBtn.disabled = notesTextarea.value === originalNotes;
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notesStatus.textContent = 'Saving...';
 
         // Send to server
-        fetch('/api/save-notes', {
+        fetch('/api/save_notes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

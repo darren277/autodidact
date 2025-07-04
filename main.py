@@ -217,6 +217,144 @@ def api_courses():
 def api_course(course_id):
     return course_route(db, course_id)
 
+@app.route('/api/save_notes', methods=['POST'])
+def save_notes():
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        lesson_id = data.get('lesson_id')
+        content = data.get('content', '').strip()
+        
+        if not lesson_id:
+            return jsonify({"error": "Lesson ID is required"}), 400
+        
+        # Get user from database
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Check if notes already exist for this user and lesson
+        from models.lessons import Notes
+        existing_notes = Notes.query.filter_by(
+            lesson_id=lesson_id, 
+            user_id=user.id
+        ).first()
+        
+        if existing_notes:
+            # Update existing notes
+            existing_notes.content = content
+        else:
+            # Create new notes
+            new_notes = Notes(
+                content=content,
+                lesson_id=lesson_id,
+                user_id=user.id
+            )
+            db.session.add(new_notes)
+        
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "Notes saved successfully"})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Failed to save notes: {str(e)}"}), 500
+
+@app.route('/api/get_notes/<lesson_id>', methods=['GET'])
+def get_notes(lesson_id):
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        # Get user from database
+        from models.user import User
+        user_sub = session['user']['sub']
+        user = User.find_by_sub(user_sub)
+        
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get notes for this user and lesson
+        from models.lessons import Notes
+        notes = Notes.query.filter_by(
+            lesson_id=lesson_id, 
+            user_id=user.id
+        ).first()
+        
+        if notes:
+            return jsonify({
+                "success": True, 
+                "content": notes.content
+            })
+        else:
+            return jsonify({
+                "success": True, 
+                "content": ""
+            })
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to get notes: {str(e)}"}), 500
+
+@app.route('/api/mark_lesson_complete', methods=['POST'])
+def mark_lesson_complete():
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        lesson_id = data.get('lesson_id')
+        
+        if not lesson_id:
+            return jsonify({"error": "Lesson ID is required"}), 400
+        
+        # For now, just return a success response with updated progress
+        # TODO: Implement actual progress tracking in database
+        return jsonify({
+            "success": True, 
+            "message": "Lesson marked as complete",
+            "new_percentage": 100
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to mark lesson complete: {str(e)}"}), 500
+
+@app.route('/api/submit_question', methods=['POST'])
+def submit_question():
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        lesson_id = data.get('lesson_id')
+        question = data.get('question', '').strip()
+        
+        if not lesson_id or not question:
+            return jsonify({"error": "Lesson ID and question are required"}), 400
+        
+        # For now, just return a success response
+        # TODO: Implement actual question submission to database
+        return jsonify({
+            "success": True, 
+            "message": "Question submitted successfully"
+        })
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to submit question: {str(e)}"}), 500
+
 @app.route('/list_lessons')
 def list_lessons():
     from models.lessons import Lesson
@@ -245,12 +383,31 @@ def view_lesson(lesson_id):
     other_lessons = []
     notes = convert_to_simple_markdown(data)
     audio_notes = 'presentation'
+    
+    # Get user's notes for this lesson if authenticated
+    user_notes = ""
+    if 'user' in session:
+        try:
+            from models.user import User
+            from models.lessons import Notes
+            user_sub = session['user']['sub']
+            user = User.find_by_sub(user_sub)
+            if user:
+                notes_obj = Notes.query.filter_by(
+                    lesson_id=lesson_id, 
+                    user_id=user.id
+                ).first()
+                if notes_obj:
+                    user_notes = notes_obj.content
+        except Exception as e:
+            print(f"Error loading user notes: {e}")
+    
     return render_template(
         'lessons/view.html',
         lesson=lesson,
         user_progress=lesson['user_progress'],
         other_lessons=other_lessons,
-        user_notes=notes,
+        user_notes=user_notes,
         audio_notes=audio_notes
     )
 

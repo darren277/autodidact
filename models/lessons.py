@@ -65,10 +65,11 @@ class Course(db.Model):
 
 
 class Notes(db.Model):
-    # Notes have a one to one relationship with a lesson
+    # Notes have a one to one relationship with a lesson and user
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
     lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
         return f"Notes('{self.content}')"
@@ -77,7 +78,8 @@ class Notes(db.Model):
         return {
             'id': self.id,
             'content': self.content,
-            'lesson_id': self.lesson_id
+            'lesson_id': self.lesson_id,
+            'user_id': self.user_id
         }
 
 
