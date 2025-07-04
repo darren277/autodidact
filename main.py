@@ -20,8 +20,8 @@ from utils.example_module import example_module
 
 from utils.example_structured_notes import data
 
-from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL
-from settings import PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DB
+from settings import REDIS_URL, ENABLE_CORS, APP_SECRET_KEY, COGNITO_LOGIN_URL, REDIS_HOST, REDIS_PORT
+from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB
 
 from flask_cors import CORS
 
@@ -32,7 +32,7 @@ from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{PG_USER}:{PG_PASS}@{PG_HOST}:{PG_PORT}/{PG_DB}'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -48,7 +48,7 @@ if ENABLE_CORS:
 
 app.config["REDIS_URL"] = REDIS_URL
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+r = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
 #app.register_blueprint(sse, url_prefix='/stream')
 
