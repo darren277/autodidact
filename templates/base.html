@@ -9,7 +9,7 @@
 
     {% block styles %}{% endblock %}
 </head>
-<body>
+<body class="{% if user %}signed-in{% else %}signed-out{% endif %}">
     <header>
         <div class="logo">autodidact</div>
         <div class="top-nav">
@@ -26,6 +26,7 @@
         </div>
     </header>
 
+    {% if user %}
     <aside class="sidebar">
         <nav>
             <ul class="side-menu">
@@ -46,6 +47,7 @@
             </ul>
         </nav>
     </aside>
+    {% endif %}
 
     <main>
         <div class="breadcrumb">

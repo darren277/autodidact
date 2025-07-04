@@ -269,7 +269,7 @@ def annotated_media(media_id):
 def index():
     if 'user' in session:
         return render_template('dashboard.html', user=session['user'])
-    return render_template('login.html')
+    return render_template('index.html')
 
 @app.route('/login')
 def login():
