@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingressName }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-{{ .Values.namespace }}
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [ {{ .Values.host }} ]
+      secretName: tls-{{ .Values.namespace }}
+  rules:
+    - host: {{ .Values.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: flask-app
+                port: { number: 80 }
