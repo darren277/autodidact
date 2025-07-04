@@ -30,6 +30,9 @@ POSTGRES_DB = os.environ.get('POSTGRES_DB', 'autodidact')
 
 APP_SECRET_KEY = os.environ.get('FLASK_APP_SECRET', 'some super secret key that is changed before deployment')
 
+# Master key for encrypting API keys - should be a strong, random key in production
+MASTER_ENCRYPTION_KEY = os.environ.get('MASTER_ENCRYPTION_KEY', 'your-super-secret-master-key-change-this-in-production')
+
 
 # AWS Cognito Configuration
 AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
