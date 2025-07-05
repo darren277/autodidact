@@ -50,7 +50,7 @@
                         <div class="module-progress">
                             <div class="progress-text">Module Progress: {{ module_progress.completed }}/{{ module_progress.total }} Lessons</div>
                             <div class="progress-bar">
-                                <div class="progress" style="width: {{ module_progress.percentage }}%;">{{ module_progress.percentage }}%</div>
+                                <div class="progress" data-width="{{ module_progress.percentage }}">{{ module_progress.percentage }}%</div>
                             </div>
                         </div>
                         <div class="module-actions">
@@ -165,7 +165,7 @@
                         {% if lesson_cards %}
                             {% for lesson_card in lesson_cards %}
                                 <div class="lesson-card {{ lesson_card.status }}">
-                                    <div class="lesson-status">{{ lesson_card.icon }}</div>
+                                    <div class="lesson-status">{{ lesson_card.icon if lesson_card.icon else '○' }}</div>
                                     <div class="lesson-content">
                                         <h3>{{ lesson_card.title }}</h3>
                                         <p>{{ lesson_card.description }}</p>
@@ -383,6 +383,15 @@
                 this.classList.add('active');
                 document.getElementById(`tab-${tabName}`).classList.add('active');
             });
+        });
+
+        // Set progress bar width based on data attribute
+        const progressBars = document.querySelectorAll('.progress[data-width]');
+        progressBars.forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            if (width !== null) {
+                bar.style.width = width + '%';
+            }
         });
     });
 </script>

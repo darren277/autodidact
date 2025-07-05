@@ -107,7 +107,10 @@
     font-size: 12px;
     font-weight: 500;
     transition: width 0.3s ease;
+    width: 0%;
 }
+
+
 
 /* Module Actions */
 .module-actions {
@@ -371,16 +374,21 @@
     justify-content: center;
     margin-right: 15px;
     font-weight: bold;
+    background-color: #e5e7eb;
+    color: #6b7280;
+    border: 2px solid #d1d5db;
 }
 
 .lesson-card.completed .lesson-status {
     background-color: #4CAF50;
     color: white;
+    border-color: #4CAF50;
 }
 
 .lesson-card.current .lesson-status {
     background-color: var(--accent-color, #3b82f6);
     color: white;
+    border-color: var(--accent-color, #3b82f6);
 }
 
 .lesson-card .lesson-content {
@@ -406,6 +414,26 @@
 
 .lesson-card .lesson-actions {
     padding-left: 20px;
+}
+
+/* Fix for lesson action buttons in student view */
+.lesson-card .lesson-actions .btn {
+    display: inline-block;
+    background-color: white;
+    color: var(--primary-color, #3b82f6);
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 2px solid var(--primary-color, #3b82f6);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.lesson-card .lesson-actions .btn:hover {
+    background-color: var(--primary-color, #3b82f6);
+    color: white;
 }
 
 /* Media & Attachments */

@@ -5,6 +5,8 @@
     --text-color: #333;
     --active-bg: #e1e9f0;
     --border-color: #ddd;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
 }
 
 body {
