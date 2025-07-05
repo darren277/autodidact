@@ -19,7 +19,7 @@ drop:
 	python manage.py drop
 
 # Usage: make migrate COURSE_ID=anthropology
-migrate:
+migrate-openproject:
 	python manage.py migrate $(COURSE_ID)
 
 
