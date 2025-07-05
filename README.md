@@ -1,59 +1,215 @@
-# autodidact
+# Autodidact
 
-## TODO:
+You are the teacher and the student.
 
-Make this into something the user adds from a dashboard UI of some kind:
+An LLM-enriched learning platform for designing lesson plans for others or for yourself. Built with Python, Flask, and OpenAI's GPT models.
 
-OPENPROJECT_API_KEY=<YOUR_OPENPROJECT_API_KEY>
-OPENPROJECT_URL=https://op.apphosting.services
+## A Note About Educational Principles
 
-## Description
+An important foundational goal for this project is to encourage critical thinking, metacognition, and epistemic humility.
 
-You are the teacher and the student. An LLM enriched learning platform for designing lesson plans for others or for yourself.
+Self-directed learning, especially with the aid of LLM tools, where they are known for "hallucinating" as a direct side effect of how token prediction works, requires extra care to ensure one does not succumb to overconfidence or confirmation bias.
 
-An LLM rich web app built in Python using Flask, Flask-SSE, Redis, and the OpenAI API to facilitate self-education outcomes.
+Before contributing to this project, it is important to have some understanding of the following principles:
+* [Epistemic Cognition](https://en.wikipedia.org/wiki/Epistemic_cognition).
+* [Metacognition](https://en.wikipedia.org/wiki/Metacognition).
+* [Memory Effects](https://en.wikipedia.org/wiki/Memory_effect).
+* [Dunning-Kruger Effect](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect).
 
-## How to Use
+### General Learning Theory
 
-On Windows, install `Make` if you don't already have it.
+Learning theory and cognitive psychology are fundamental to building an effective educational platform.
 
-Also, install the Python package `waitress` (`pip install waitress`).
+The automated learning objective generator, for example, uses [Bloom's Taxonomy](https://en.wikipedia.org/wiki/Bloom%27s_taxonomy) to help define learning objectives for measuring different levels of understanding.
 
-Then, simply enter `make w` to start.
+I hope to add more educational theory to the knowledge base in this project over time so that future features are aligned with them in mind.
 
-### Environment Variables
+## 🚀 Quick Start
 
-At the very least, you will need the following environment variables:
-```shell
-OPENAI_API_KEY=...
+### Prerequisites
+- Python 3.12+
+- PostgreSQL 12+
+- Redis 6+
+- ~~OpenAI API Key~~ (Optional - added via `settings` page from the app itself)
+  - Get your API key from: https://platform.openai.com/api-keys
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/darren277/autodidact.git
+   cd autodidact
+   ```
+
+2. **Set up environment**
+   ```bash
+   # Create virtual environment
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   
+   # Install dependencies
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   # Copy and edit the environment template
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Set up database**
+   ```bash
+   python manage.py create_tables
+   python manage.py seed_data  # Optional: add sample data
+   ```
+
+5. **Run the application**
+   ```bash
+   make w  # Development mode
+   # or
+   python main.py
+   ```
+
+Visit http://localhost:5000 to access the application.
+
+## 📚 Documentation
+
+- **[Setup Guide](./SETUP.md)** - Detailed setup instructions
+- **[Deployment Guide](./DEPLOYMENT.md)** - Production deployment (Kubernetes, Docker, etc.)
+- **[Environment Variables](./ENVIRONMENT_VARIABLES.md)** - Complete environment variable reference
+- **[Database Migration](./DATABASE_MIGRATION_SUMMARY.md)** - Database schema and migration details
+- **[Encryption Guide](./ENCRYPTION_README.md)** - Security and encryption implementation
+
+## 🏗️ Architecture
+
+### Core Components
+- **Flask Web Application** - Main web interface
+- **PostgreSQL Database** - Data persistence
+- **Redis** - Caching and session management
+- **OpenAI GPT** - AI-powered learning assistance
+- **AWS Cognito** - User authentication (production)
+
+### Key Features
+- **Course Management** - Create and organize learning content
+- **AI Assistant** - Interactive learning companion
+- **Note Taking** - Multiple note formats (Cornell, Mind Map, etc.)
+- **Progress Tracking** - Monitor learning progress
+- **Media Integration** - Support for videos and annotations
+
+## 🛠️ Development
+
+### Project Structure
+```
+autodidact/
+├── lib/                    # Core application logic
+│   ├── assistant/         # AI assistant functionality
+│   ├── apis/             # External API integrations
+│   └── tools/            # Utility tools
+├── models/               # Database models
+├── routes/               # Flask routes and endpoints
+├── templates/            # HTML templates
+├── static/              # CSS, JS, and media files
+├── k8s/                 # Kubernetes deployment files
+└── tests/               # Test suite
 ```
 
-There are many more optional environment variables (see `settings.py`).
+### Available Commands
 
-## Notes
-
-### TTS
-
-#### Stage Directions
-
-The first iteration of each of the special prompts included instructions for including stage directions to the narrating / conversing personas.
-
-This is a cool idea, in principle, to add even more depth to the experience.
-
-However, it does not seem to be feasible just yet as the narration will include all included text.
-
-For now, I will be removing any instruction to provide such details, but it may be worth exploring a way to somehow incorporate them.
-
-For example, perhaps they can be included somehow into the `instructions` parameter.
-
-Here is one example of what they looked like with the initial prompts:
-
+#### Development
+```bash
+make w          # Run with Waitress (Windows-friendly)
+make g          # Run with Gunicorn
+python main.py  # Run directly with Flask
 ```
-Main Narrator:  Welcome, everyone, to our exploration of a fascinating topic
-Historian:  (Enthusiastically takes the stage) Picture this
-Innovator:  (Steps forward with a twinkle of curiosity in their eye) Building on our historian's brilliant insights, let's fast-forward just a bit. Once the lorem community unlocked the secrets of ipsum, they began cultivating it in vast quantities. But here's a question that invites our imagination
-Main Narrator:  (Interjects to connect the threads) Thank you both for those vivid descriptions and thought-provoking ideas. Indeed, it's interesting to consider how a discovery turns into widespread cultivation�and how this simple process might lead to broader, unforeseen impacts. This naturally brings us to an important reflection point in our learning journey.
-Historian:  (Nods and returns to the stage) A critical example to ponder
-Innovator:  (Chimes in with zeal) Exactly! And every event invites us to think about the ripple effects of innovation. How might the endeavors initiated by the lorems inspire the next generations? We can liken it to turning a page in a book, revealing new adventures and knowledge ripe for exploration. Let's continue to picture the uncharted map of possibilities as we reflect on future implications.
-Main Narrator:  (Summarizes with warmth) Today, we've explored an era and an idea that continues to inspire. From the monumental discovery of ipsum in 1967 to its cultivation and potential future impacts, each piece of this narrative is a testament to the power of discovery and innovation. Remember, these moments are not isolated�they're interconnected, painting a richer picture of progress. Thank you for joining us on this engaging journey through history and ideas. Let these thoughts simmer as we step into future explorations together!
+
+#### Database Management
+```bash
+python manage.py create_tables    # Create database tables
+python manage.py drop_tables      # Drop all tables
+python manage.py seed_data        # Add sample data
+python manage.py show_tables      # Display table contents
 ```
+
+#### Docker & Kubernetes
+```bash
+make docker-flask    # Build Docker image
+make k8s-deploy      # Deploy to Kubernetes
+make k8s-debug       # Debug Kubernetes deployment
+```
+
+## 🔧 Configuration
+
+### Required Environment Variables
+```bash
+# Database
+POSTGRES_HOST=localhost
+POSTGRES_USER=autodidact_user
+POSTGRES_PASS=your_password
+POSTGRES_DB=autodidact
+
+# Security
+FLASK_APP_SECRET=your-secret-key
+MASTER_ENCRYPTION_KEY=your-master-key
+```
+
+See [Environment Variables](./docs/ENVIRONMENT_VARIABLES.md) for complete configuration options.
+
+## 🚀 Deployment
+
+### Local Development
+```bash
+make w  # Start development server
+```
+
+### Docker
+```bash
+docker build -t autodidact .
+docker run -p 5000:5000 --env-file .env autodidact
+```
+
+### Kubernetes (Production)
+```bash
+make k8s-deploy  # Deploy to Kubernetes cluster
+```
+
+See [Deployment Guide](./docs/DEPLOYMENT.md) for detailed deployment instructions.
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+python -m pytest tests/
+
+# Run specific test files
+python -m pytest tests/test_dashboard.py
+python -m pytest tests/test_encryption.py
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+- **Documentation**: Check the docs folder for detailed guides
+- **Issues**: Report bugs and feature requests via GitHub Issues
+- **Discussions**: Use GitHub Discussions for questions and ideas
+
+## 🔗 Related Projects
+
+- **OpenProject Integration** - Import courses from OpenProject
+- **Google Calendar Integration** - Schedule learning sessions
+- **TTS Integration** - Text-to-speech for accessibility
+
+---
+
+**Note**: This is an educational platform designed to enhance self-directed learning through AI assistance. The system supports both individual learners and educators creating content for others.

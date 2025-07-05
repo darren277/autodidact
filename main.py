@@ -550,7 +550,7 @@ def module(module_id):
         related_modules = {m.id: m for m in related_modules_list}
     
     return render_template(
-        'module.html',
+        'modules/view.html',
         active_page=f'module_{module_id}',
         module=module,  # Pass the module object for teacher view
         prereq_modules=prereq_modules,

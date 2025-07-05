@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Flask Application
+  flask:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - DEBUG=True
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+    restart: unless-stopped
+    networks:
+      - autodidact-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=autodidact
+      - POSTGRES_USER=autodidact_user
+      - POSTGRES_PASSWORD=autodidact_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    networks:
+      - autodidact-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autodidact_user -d autodidact"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - autodidact-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@autodidact.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - autodidact-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  autodidact-network:
+    driver: bridge 
