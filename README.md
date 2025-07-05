@@ -10,7 +10,8 @@ An LLM-enriched learning platform for designing lesson plans for others or for y
 - Python 3.12+
 - PostgreSQL 12+
 - Redis 6+
-- OpenAI API Key
+- ~~OpenAI API Key~~ (Optional - added via `settings` page from the app itself)
+  - Get your API key from: https://platform.openai.com/api-keys
 
 ### Installation
 
@@ -130,9 +131,6 @@ POSTGRES_DB=autodidact
 # Security
 FLASK_APP_SECRET=your-secret-key
 MASTER_ENCRYPTION_KEY=your-master-key
-
-# OpenAI
-OPENAI_API_KEY=your-openai-api-key
 ```
 
 See [Environment Variables](./ENVIRONMENT_VARIABLES.md) for complete configuration options.

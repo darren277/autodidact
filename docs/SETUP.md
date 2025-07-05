@@ -98,9 +98,6 @@ REDIS_PORT=6379
 FLASK_APP_SECRET=your-super-secret-flask-key-change-this
 DEBUG=True
 
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key-here
-
 # Master Encryption Key (for encrypting user API keys)
 MASTER_ENCRYPTION_KEY=your-super-secret-master-key-change-this-in-production
 ```

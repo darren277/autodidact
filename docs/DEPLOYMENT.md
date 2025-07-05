@@ -75,9 +75,6 @@ REDIS_PORT=6379
 FLASK_APP_SECRET=your-super-secret-production-key
 DEBUG=False
 
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key
-
 # Master Encryption Key
 MASTER_ENCRYPTION_KEY=your-super-secret-master-key
 

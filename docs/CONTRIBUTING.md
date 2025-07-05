@@ -36,7 +36,6 @@ Thank you for your interest in contributing to Autodidact! This document provide
    
    # Edit .env with your development settings
    # At minimum, you need:
-   # - OPENAI_API_KEY
    # - Database credentials
    # - Flask secret keys
    ```

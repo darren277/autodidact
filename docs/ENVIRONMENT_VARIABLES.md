@@ -8,7 +8,6 @@ Create a `.env` file in the root directory with the minimum required variables:
 
 ```bash
 # Required for basic functionality
-OPENAI_API_KEY=your-openai-api-key
 POSTGRES_HOST=localhost
 POSTGRES_USER=autodidact_user
 POSTGRES_PASS=your_password
@@ -58,7 +57,6 @@ MASTER_ENCRYPTION_KEY=your-master-key
 
 | Variable | Default | Required | Description |
 |----------|---------|----------|-------------|
-| `OPENAI_API_KEY` | - | Yes | OpenAI API key for GPT models |
 | `GPT_MODEL_ID` | `gpt-4o` | No | Default GPT model to use |
 | `GPT_ASSISTANT_NAME` | `Interactive Learning Companion` | No | Name for the AI assistant |
 | `DEFAULT_ASSISTANT_ID` | `asst_X0dIT6aOTHFQgJNE923sjv8E` | No | Default OpenAI assistant ID |
@@ -111,7 +109,6 @@ POSTGRES_HOST=localhost
 REDIS_HOST=localhost
 FLASK_APP_SECRET=dev-secret-key-change-in-production
 MASTER_ENCRYPTION_KEY=dev-master-key-change-in-production
-OPENAI_API_KEY=your-openai-api-key
 ```
 
 ### Production Environment
@@ -124,7 +121,6 @@ POSTGRES_HOST=your-production-db-host
 REDIS_HOST=your-production-redis-host
 FLASK_APP_SECRET=your-super-secure-production-secret
 MASTER_ENCRYPTION_KEY=your-super-secure-production-master-key
-OPENAI_API_KEY=your-openai-api-key
 AWS_REGION=us-east-1
 COGNITO_DOMAIN=your-cognito-domain
 USER_POOL_ID=your-user-pool-id
@@ -159,10 +155,6 @@ DEBUG=False
    - Minimum 32 characters recommended
    - Used to encrypt user API keys in the database
 
-3. **OPENAI_API_KEY**
-   - Valid OpenAI API key
-   - Keep secure and rotate regularly
-
 ### Variable Security Guidelines
 
 - **Never commit `.env` files** to version control
@@ -181,9 +173,6 @@ python manage.py show_tables
 
 # Test Redis connection
 python -c "import redis; r = redis.Redis(); r.ping()"
-
-# Test OpenAI connection
-python -c "import openai; openai.api_key='your-key'; print('Valid')"
 ```
 
 ### Environment Variable Validation
@@ -193,7 +182,6 @@ The application validates required environment variables on startup:
 ```python
 # Required variables that will cause startup failure if missing:
 required_vars = [
-    'OPENAI_API_KEY',
     'POSTGRES_HOST',
     'POSTGRES_USER', 
     'POSTGRES_PASS',
@@ -214,11 +202,6 @@ required_vars = [
 2. **Redis Connection Errors**
    - Verify `REDIS_HOST`, `REDIS_PORT`
    - Check if Redis is running
-
-3. **OpenAI API Errors**
-   - Verify `OPENAI_API_KEY` is valid
-   - Check API key permissions
-   - Ensure sufficient credits
 
 4. **Authentication Errors**
    - Verify Cognito configuration
