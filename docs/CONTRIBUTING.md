@@ -14,7 +14,7 @@ Thank you for your interest in contributing to Autodidact! This document provide
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/your-username/autodidact.git
+   git clone https://github.com/darren277/autodidact.git
    cd autodidact
    ```
 
@@ -324,8 +324,8 @@ If you find a security vulnerability:
 ## 📞 Getting Help
 
 ### Resources
-- [GitHub Issues](https://github.com/your-repo/autodidact/issues)
-- [GitHub Discussions](https://github.com/your-repo/autodidact/discussions)
+- [GitHub Issues](https://github.com/darren277/autodidact/issues)
+- [GitHub Discussions](https://github.com/darren277/autodidact/discussions)
 - [Documentation](./README.md)
 - [Flask Documentation](https://flask.palletsprojects.com/)
 

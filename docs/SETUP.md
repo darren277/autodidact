@@ -19,7 +19,7 @@ This guide will help you set up and run the Autodidact application locally for d
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/darren277/autodidact.git
 cd autodidact
 ```
 

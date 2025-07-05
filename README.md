@@ -17,7 +17,7 @@ An LLM-enriched learning platform for designing lesson plans for others or for y
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/darren277/autodidact.git
    cd autodidact
    ```
 
@@ -133,7 +133,7 @@ FLASK_APP_SECRET=your-secret-key
 MASTER_ENCRYPTION_KEY=your-master-key
 ```
 
-See [Environment Variables](./ENVIRONMENT_VARIABLES.md) for complete configuration options.
+See [Environment Variables](./docs/ENVIRONMENT_VARIABLES.md) for complete configuration options.
 
 ## 🚀 Deployment
 
@@ -153,7 +153,7 @@ docker run -p 5000:5000 --env-file .env autodidact
 make k8s-deploy  # Deploy to Kubernetes cluster
 ```
 
-See [Deployment Guide](./DEPLOYMENT.md) for detailed deployment instructions.
+See [Deployment Guide](./docs/DEPLOYMENT.md) for detailed deployment instructions.
 
 ## 🧪 Testing
 
