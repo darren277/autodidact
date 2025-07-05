@@ -104,6 +104,17 @@
     color: var(--accent-color);
 }
 
+.empty-activity {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-activity p {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
 .recommendations {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

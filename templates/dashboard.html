@@ -10,69 +10,108 @@
     <span>Dashboard</span>
 {% endblock %}
 
-{% block page_title %}Student Dashboard{% endblock %}
+{% block page_title %}{{ user.mode | capitalize }} Dashboard{% endblock %}
 
 {% block content %}
+    <!-- Debug: Check if variables exist -->
+    <!-- progress_summary: {{ progress_summary|default('NOT DEFINED') }} -->
+    <!-- user: {{ user|default('NOT DEFINED') }} -->
+    <!-- achievements: {{ achievements|default('NOT DEFINED') }} -->
+    
     <div class="dashboard-summary">
         <div class="summary-card">
             <h3>Your Progress</h3>
             <div class="progress-bar">
-                <div class="progress" style="width: 65%;">65%</div>
+                <div class="progress" style="width: {{ progress_summary.completion_percentage|default(0) }}%;">{{ progress_summary.completion_percentage|default(0) }}%</div>
             </div>
-            <p>You've completed 13 of 20 lessons</p>
+            <p>You've completed {{ progress_summary.completed_lessons|default(0) }} of {{ progress_summary.total_lessons|default(0) }} lessons</p>
         </div>
 
         <div class="summary-card">
             <h3>Next Session</h3>
-            <p>Lorem Ipsum Dolor: Advanced Concepts</p>
-            <p><strong>Last accessed:</strong> 2 days ago</p>
-            <a href="{{ url_for('module', module_id=3) }}" class="btn-continue">Continue Learning</a>
+            {% if next_session %}
+                <p>{{ next_session.lesson_title }}: {{ next_session.module_title }}</p>
+                <p><strong>Last accessed:</strong> 
+                    {% if next_session.last_accessed %}
+                        Recently
+                    {% else %}
+                        Not started
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('view_lesson', lesson_id=next_session.lesson_id) }}" class="btn-continue">Continue Learning</a>
+            {% else %}
+                <p>No active sessions</p>
+                <p><strong>Get started:</strong> Choose a module to begin</p>
+                <a href="{{ url_for('list_modules') }}" class="btn-continue">Browse Modules</a>
+            {% endif %}
         </div>
 
         <div class="summary-card">
             <h3>Achievements</h3>
-            <p><span class="badge">5</span> Modules completed</p>
-            <p><span class="badge">12</span> Quizzes passed</p>
+            <p><span class="badge">{{ achievements.modules_completed|default(0) }}</span> Modules completed</p>
+            <p><span class="badge">{{ achievements.quizzes_passed|default(0) }}</span> Quizzes passed</p>
         </div>
     </div>
 
     <h2>Recent Activity</h2>
     <div class="activity-list">
-        <div class="activity-item">
-            <div class="activity-icon">📝</div>
-            <div class="activity-details">
-                <h4>Quiz Completed</h4>
-                <p>Sit Amet Consectetur: Basics Quiz</p>
-                <span class="activity-time">Yesterday at 3:45 PM</span>
+        {% if recent_activity and recent_activity|length > 0 %}
+            {% for activity in recent_activity %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        {% if activity.is_completed %}
+                            🏆
+                        {% elif activity.percentage > 50 %}
+                            📚
+                        {% else %}
+                            📝
+                        {% endif %}
+                    </div>
+                    <div class="activity-details">
+                        <h4>{{ activity.type }}</h4>
+                        <p>{{ activity.lesson_title }}</p>
+                        <span class="activity-time">{{ activity.time_ago }}</span>
+                    </div>
+                    {% if activity.percentage > 0 %}
+                        <div class="activity-score">{{ activity.percentage }}%</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-activity">
+                <p>No recent activity. Start learning to see your progress here!</p>
+                <a href="{{ url_for('list_modules') }}" class="btn">Browse Modules</a>
             </div>
-            <div class="activity-score">85%</div>
-        </div>
-
-        <div class="activity-item">
-            <div class="activity-icon">📚</div>
-            <div class="activity-details">
-                <h4>Lesson Completed</h4>
-                <p>Adipiscing Elit: Introduction</p>
-                <span class="activity-time">3 days ago at 2:15 PM</span>
-            </div>
-        </div>
-
-        <div class="activity-item">
-            <div class="activity-icon">🏆</div>
-            <div class="activity-details">
-                <h4>Achievement Unlocked</h4>
-                <p>Fast Learner: Complete 3 lessons in one day</p>
-                <span class="activity-time">5 days ago at 7:30 PM</span>
-            </div>
-        </div>
+        {% endif %}
     </div>
 
     <h2>Recommended Next Steps</h2>
     <div class="recommendations">
+        {% if user.mode == 'teacher' %}
+        <div class="recommendation-card">
+            <h3>Create New Course</h3>
+            <p>Start building a complete educational course with multiple modules</p>
+            <a href="{{ url_for('create_course') }}" class="btn">Create Course</a>
+        </div>
+
+        <div class="recommendation-card">
+            <h3>Create New Module</h3>
+            <p>Start building new educational content for your students</p>
+            <a href="{{ url_for('create_module') }}" class="btn">Create Module</a>
+        </div>
+
+        <div class="recommendation-card">
+            <h3>Create New Lesson</h3>
+            <p>Add individual lessons to your existing modules</p>
+            <a href="{{ url_for('create_lesson') }}" class="btn">Create Lesson</a>
+        </div>
+        {% endif %}
+
+        {% if user.mode == 'student' %}
         <div class="recommendation-card">
             <h3>Continue Your Journey</h3>
             <p>Pick up where you left off in the Adipiscing Elit module</p>
-            <a href="{{ url_for('module', module_id=3) }}" class="btn">Go to Module</a>
+            <a href="{{ url_for('module', module_id=1) }}" class="btn">Go to Module</a>
         </div>
 
         <div class="recommendation-card">
@@ -80,6 +119,7 @@
             <p>Revisit the concepts you learned with these practice exercises</p>
             <a href="{{ url_for('practice') }}" class="btn">Practice Now</a>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
 

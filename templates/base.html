@@ -3,16 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}Educational Platform{% endblock %}</title>
     <style></style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mode-toggle.css') }}">
+
     {% block styles %}{% endblock %}
 </head>
-<body>
+<body class="{% if user %}signed-in mode-{{ user.mode }}{% else %}signed-out{% endif %}">
     <header>
         <div class="logo">autodidact</div>
         <div class="top-nav">
+            {% if user %}
+                <div class="mode-toggle">
+                    <input type="checkbox" id="mode-toggle" class="mode-toggle-input">
+                    <label for="mode-toggle" class="mode-toggle-label" data-mode="{{ user.mode }}">
+                        <span class="mode-toggle-label-text">{{ user.mode | capitalize }}</span>
+                    </label>
+                </div>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('settings') }}">Settings</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login or Signup</a>
+            {% endif %}
             <a href="{{ url_for('dashboard') }}">Home</a>
             <a href="{{ url_for('dashboard') }}">About</a>
 <!--            <a href="{{ url_for('dashboard') }}">Courses</a>-->
@@ -20,15 +36,26 @@
         </div>
     </header>
 
+    {% if user %}
     <aside class="sidebar">
         <nav>
             <ul class="side-menu">
-                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">
+                    {% if user.mode == 'teacher' %}Admin Dashboard{% else %}Dashboard{% endif %}
+                </a></li>
 <!--                <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'progress' %}active{% endif %}">My Progress</a></li>-->
 
                 <div class="side-menu-section">
+                    <div class="side-menu-section-title">
+                        {% if user.mode == 'teacher' %}Manage Modules{% else %}My Modules{% endif %}
+                    </div>
+                    {% for module in modules %}
+                        <li><a href="{{ url_for('module', module_id=module.id) }}" class="{% if active_page == 'module_' + module.id|string %}active{% endif %}">{{ module.title }}</a></li>
+                    {% endfor %}
+                </div>
+
+                <div class="side-menu-section">
                     <div class="side-menu-section-title">Learning Tools</div>
-                    <li><a href="{{ url_for('module', module_id=1) }}" class="{% if active_page == 'module_1' %}active{% endif %}">Lorem Ipsum Dolor</a></li>
                 </div>
 
                 <div class="side-menu-section">
@@ -37,13 +64,21 @@
 <!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'glossary' %}active{% endif %}">Glossary</a></li>-->
 <!--                    <li><a href="{{ url_for('dashboard') }}" class="{% if active_page == 'faq' %}active{% endif %}">FAQ</a></li>-->
                 </div>
+
+                <div class="side-menu-section">
+                    <div class="side-menu-section-title">Account</div>
+                    <li><a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">
+                        {% if user.mode == 'teacher' %}Admin Settings{% else %}Settings{% endif %}
+                    </a></li>
+                </div>
             </ul>
         </nav>
     </aside>
+    {% endif %}
 
     <main>
         <div class="breadcrumb">
-            <span>Home</span>
+            <span><a href="{{ url_for('index') }}">Home</a></span>
             {% block breadcrumb %}{% endblock %}
         </div>
 
@@ -64,5 +99,11 @@
     {% block scripts %}
     <!-- Any page-specific scripts can be included here -->
     {% endblock %}
+
+    <script>
+        const modeToggleEndpoint = "{{ url_for('toggle_mode') }}";
+    </script>
+
+    <script src="{{ url_for('static', filename='js/mode-toggle.js') }}"></script>
 </body>
 </html>

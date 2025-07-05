@@ -46,8 +46,8 @@
                         <label for="learning_objectives" class="required">Learning Objectives</label>
                         <div class="learning-objectives-container">
                             <div id="learning-objectives-list">
-                                {% if lesson.learning_objectives %}
-                                    {% for objective in lesson.learning_objectives %}
+                                {% if lesson.get_learning_objectives() %}
+                                {% for objective in lesson.get_learning_objectives() %}
                                         <div class="objective-item">
                                             <input type="text" name="learning_objectives[]" value="{{ objective }}"
                                                    class="form-control" placeholder="Learning objective">
@@ -69,6 +69,72 @@
                             <button type="button" id="auto-generate-objective" class="btn-outline-small">
                                 <i class="icon-plus-small"></i> Auto Generate Objective
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloom's Taxonomy Modal -->
+                <div id="bloom-modal" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Select Bloom's Taxonomy Level</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                                Choose the cognitive level for your learning objective:
+                            </p>
+                            <div class="bloom-levels">
+                                <div class="bloom-level knowledge" data-level="Knowledge">
+                                    <div class="bloom-level-icon">K</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Knowledge</div>
+                                        <div class="bloom-level-description">Remember, recall, recognize facts and basic concepts</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level comprehension" data-level="Comprehension">
+                                    <div class="bloom-level-icon">C</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Comprehension</div>
+                                        <div class="bloom-level-description">Understand, explain, interpret, and summarize information</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level application" data-level="Application">
+                                    <div class="bloom-level-icon">A</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Application</div>
+                                        <div class="bloom-level-description">Apply, use, implement, and solve problems</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level analysis" data-level="Analysis">
+                                    <div class="bloom-level-icon">A</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Analysis</div>
+                                        <div class="bloom-level-description">Analyze, compare, contrast, and examine relationships</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level synthesis" data-level="Synthesis">
+                                    <div class="bloom-level-icon">S</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Synthesis</div>
+                                        <div class="bloom-level-description">Create, design, develop, and construct new ideas</div>
+                                    </div>
+                                </div>
+                                <div class="bloom-level evaluation" data-level="Evaluation">
+                                    <div class="bloom-level-icon">E</div>
+                                    <div class="bloom-level-info">
+                                        <div class="bloom-level-name">Evaluation</div>
+                                        <div class="bloom-level-description">Evaluate, judge, assess, and critique</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="loading-indicator">
+                                <div class="spinner"></div>
+                                <span>Generating learning objective...</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-outline" id="cancel-bloom-modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="generate-objective" disabled>Generate Objective</button>
                         </div>
                     </div>
                 </div>
@@ -239,17 +305,23 @@
             <div class="sidebar-column">
                 <div class="content-card">
                     <div class="form-actions">
-                        <button type="submit" name="action" value="save" class="btn btn-primary save-btn">
-                            <i class="icon-save"></i> Save
-                        </button>
-                        <button type="submit" name="action" value="publish" class="btn publish-btn">
-                            <i class="icon-publish"></i> {% if lesson.published %}Update{% else %}Publish{% endif %}
-                        </button>
-                        {% if lesson.id %}
-                            <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}"
-                               class="btn-outline preview-btn" target="_blank">
-                                <i class="icon-preview"></i> Preview
-                            </a>
+                        {% if user and user.mode == 'teacher' %}
+                            <button type="submit" name="action" value="save" class="btn btn-primary save-btn">
+                                <i class="icon-save"></i> Save
+                            </button>
+                            <button type="submit" name="action" value="publish" class="btn publish-btn">
+                                <i class="icon-publish"></i> {% if lesson.published %}Update{% else %}Publish{% endif %}
+                            </button>
+                            {% if lesson.id %}
+                                <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}"
+                                   class="btn-outline preview-btn" target="_blank">
+                                    <i class="icon-preview"></i> Preview
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <div class="student-notice">
+                                <p><i class="icon-info"></i> You are in student mode. Switch to teacher mode to edit lessons.</p>
+                            </div>
                         {% endif %}
                     </div>
 
@@ -303,11 +375,11 @@
                         <label for="estimated_time">Estimated Duration</label>
                         <div class="time-input-group">
                             <input type="number" id="estimated_hours" name="estimated_hours"
-                                   value="{{ lesson.estimated_time.hours|default(0) }}"
+                                   value="{{ lesson.estimated_time_hours|default(0) }}"
                                    min="0" class="form-control time-input">
                             <span class="time-label">hours</span>
                             <input type="number" id="estimated_minutes" name="estimated_minutes"
-                                   value="{{ lesson.estimated_time.minutes|default(0) }}"
+                                   value="{{ lesson.estimated_time_minutes|default(0) }}"
                                    min="0" max="59" class="form-control time-input">
                             <span class="time-label">min</span>
                         </div>
@@ -324,7 +396,7 @@
 
                     <div class="form-group">
                         <label for="tags">Tags</label>
-                        <input type="text" id="tags" name="tags" value="{{ lesson.tags|join(', ') }}"
+                        <input type="text" id="tags" name="tags" value="{{ lesson.get_tags()|join(', ') }}"
                                class="form-control" placeholder="Enter tags separated by commas">
                     </div>
                 </div>
@@ -367,13 +439,63 @@
 <script src="{{ url_for('static', filename='js/edit-lessons.js') }}"></script>
 
 <script>
-    function autoGenerateObjective() {
-        const levels = ['Knowledge', 'Comprehension', 'Application', 'Analysis', 'Synthesis', 'Evaluation'];
-        const level = prompt('Select a Bloom\'s taxonomy level:', levels.join(', '));
-        if (!level) return;
+    // Bloom's Taxonomy Modal functionality
+    const bloomModal = document.getElementById('bloom-modal');
+    const autoGenerateBtn = document.getElementById('auto-generate-objective');
+    const cancelBtn = document.getElementById('cancel-bloom-modal');
+    const generateBtn = document.getElementById('generate-objective');
+    const bloomLevels = document.querySelectorAll('.bloom-level');
+    const loadingIndicator = document.querySelector('.loading-indicator');
+    let selectedLevel = null;
+
+    // Open modal
+    autoGenerateBtn.addEventListener('click', () => {
+        bloomModal.classList.add('active');
+        selectedLevel = null;
+        generateBtn.disabled = true;
+        // Reset selection
+        bloomLevels.forEach(level => level.classList.remove('selected'));
+    });
+
+    // Close modal
+    function closeModal() {
+        bloomModal.classList.remove('active');
+        selectedLevel = null;
+        generateBtn.disabled = true;
+        loadingIndicator.classList.remove('active');
+    }
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    bloomModal.addEventListener('click', (e) => {
+        if (e.target === bloomModal) {
+            closeModal();
+        }
+    });
+
+    // Handle level selection
+    bloomLevels.forEach(level => {
+        level.addEventListener('click', () => {
+            // Remove previous selection
+            bloomLevels.forEach(l => l.classList.remove('selected'));
+            // Add selection to clicked level
+            level.classList.add('selected');
+            selectedLevel = level.dataset.level;
+            generateBtn.disabled = false;
+        });
+    });
+
+    // Generate objective
+    generateBtn.addEventListener('click', () => {
+        if (!selectedLevel) return;
+
+        // Show loading state
+        loadingIndicator.classList.add('active');
+        generateBtn.disabled = true;
 
         const topic = document.querySelector('meta[name="topic"]').content;
-        const url = `/lo_chat?stage=${level}&topic=${encodeURIComponent(topic)}`;
+        const url = `/lo_chat?stage=${selectedLevel}&topic=${encodeURIComponent(topic)}`;
 
         fetch(url)
             .then(response => response.json())
@@ -388,12 +510,22 @@
                     <button type="button" class="remove-objective" title="Remove objective">✕</button>
                 `;
                 learningObjectivesList.appendChild(objectiveItem);
+                
+                // Close modal and reset
+                closeModal();
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Failed to generate learning objective. Please try again.');
+                closeModal();
             });
-    }
+    });
 
-    document.getElementById('auto-generate-objective').addEventListener('click', autoGenerateObjective);
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && bloomModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
 </script>
 {% endblock %}

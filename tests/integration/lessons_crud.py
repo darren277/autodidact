@@ -142,6 +142,56 @@ def test_delete_lesson():
     print(response.json())
 
 
+def test_save_notes():
+    data = {
+        "lesson_id": 1,
+        "content": "These are my notes for lesson 1. I learned about important concepts."
+    }
+
+    with requests.Session() as s:
+        response = s.post(f'http://localhost:{PORT}/api/save_notes', json=data, headers=headers(s))
+
+    print("Save Notes Response:")
+    print(response.status_code)
+    print(response.json())
+
+
+def test_get_notes():
+    with requests.Session() as s:
+        response = s.get(f'http://localhost:{PORT}/api/get_notes/1', headers=headers(s))
+
+    print("Get Notes Response:")
+    print(response.status_code)
+    print(response.json())
+
+
+def test_mark_lesson_complete():
+    data = {
+        "lesson_id": 1
+    }
+
+    with requests.Session() as s:
+        response = s.post(f'http://localhost:{PORT}/api/mark_lesson_complete', json=data, headers=headers(s))
+
+    print("Mark Lesson Complete Response:")
+    print(response.status_code)
+    print(response.json())
+
+
+def test_submit_question():
+    data = {
+        "lesson_id": 1,
+        "question": "Can you explain the concept of inheritance in more detail?"
+    }
+
+    with requests.Session() as s:
+        response = s.post(f'http://localhost:{PORT}/api/submit_question', json=data, headers=headers(s))
+
+    print("Submit Question Response:")
+    print(response.status_code)
+    print(response.json())
+
+
 if __name__ == '__main__':
     test_create_course()
     test_get_courses()
@@ -160,4 +210,9 @@ if __name__ == '__main__':
     test_get_specific_lesson()
     test_update_lesson()
     test_delete_lesson()
+
+    test_save_notes()
+    test_get_notes()
+    test_mark_lesson_complete()
+    test_submit_question()
 

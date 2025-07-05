@@ -2,6 +2,17 @@
 
 {% block title %}{{ lesson.title }} | {{ lesson.module_title }} | Educational Platform{% endblock %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/view.css') }}">
+    <!-- Github markdown styles for chat responses -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+    <!-- Highlightjs for code highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css" />
+    <link rel="stylesheet" media="(prefers-color-scheme:dark)" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github-dark.min.css" />
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css" />
+{% endblock %}
+
 {% block breadcrumb %}
     <span><a href="{{ url_for('list_modules') }}">Modules</a></span>
     <span><a href="{{ url_for('view_module', module_id=lesson.module_id) }}">{{ lesson.module_title }}</a></span>
@@ -12,43 +23,61 @@
     <div class="lesson-container">
         <div class="lesson-main">
             <div class="lesson-header">
-                <h1 class="lesson-title">{{ lesson.title }}</h1>
-
-                <div class="lesson-meta">
-                    <div class="meta-item">
-                        <div class="meta-icon">⏱️</div>
-                        <div class="meta-text">
-                            {% if lesson.estimated_time.hours > 0 %}
-                                {{ lesson.estimated_time.hours }} hr
-                                {% if lesson.estimated_time.minutes > 0 %}
-                                    {{ lesson.estimated_time.minutes }} min
-                                {% endif %}
-                            {% else %}
-                                {{ lesson.estimated_time.minutes }} min
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="meta-item difficulty-{{ lesson.difficulty }}">
-                        <div class="meta-icon">📊</div>
-                        <div class="meta-text">
-                            {{ lesson.difficulty|title }}
-                        </div>
-                    </div>
-
-                    {% if lesson.tags %}
-                        <div class="meta-item">
-                            <div class="meta-icon">🏷️</div>
-                            <div class="meta-text tags">
-                                {% for tag in lesson.tags %}
-                                    <span class="tag">{{ tag }}</span>
-                                {% endfor %}
-                            </div>
+                <div class="lesson-title-section">
+                    <h1 class="lesson-title">{{ lesson.title }}</h1>
+                    
+                    {% if user and user.mode == 'teacher' %}
+                        <div class="teacher-actions">
+                            <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="btn btn-primary">
+                                <i class="icon-edit"></i> Edit Lesson
+                            </a>
+                            <a href="{{ url_for('preview_lesson', lesson_id=lesson.id) }}" class="btn btn-outline">
+                                <i class="icon-eye"></i> Preview
+                            </a>
+                            <button type="button" class="btn btn-outline" id="duplicate-lesson">
+                                <i class="icon-copy"></i> Duplicate
+                            </button>
+                            <button type="button" class="btn btn-outline" id="delete-lesson">
+                                <i class="icon-trash"></i> Delete
+                            </button>
                         </div>
                     {% endif %}
                 </div>
+
+                <div class="lesson-meta-card">
+                    <div class="meta-grid">
+                        <div class="meta-cell">
+                            <span class="meta-label"><i class="icon-clock"></i> Time</span>
+                            <span class="meta-value">
+                                {% if lesson.estimated_time_hours > 0 %}
+                                    {{ lesson.estimated_time_hours }} hr
+                                    {% if lesson.estimated_time_minutes > 0 %}
+                                        {{ lesson.estimated_time_minutes }} min
+                                    {% endif %}
+                                {% else %}
+                                    {{ lesson.estimated_time_minutes }} min
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="meta-cell">
+                            <span class="meta-label"><i class="icon-difficulty"></i> Difficulty</span>
+                            <span class="meta-value difficulty-{{ lesson.difficulty }}">{{ lesson.difficulty|title }}</span>
+                        </div>
+                        {% if lesson.get_tags() %}
+                        <div class="meta-cell meta-tags">
+                            <span class="meta-label"><i class="icon-tags"></i> Tags</span>
+                            <span class="meta-value tags">
+                                {% for tag in lesson.get_tags() %}
+                                    <span class="tag-badge">{{ tag }}</span>
+                                {% endfor %}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
+            {% if not user or user.mode != 'teacher' %}
             <div class="lesson-progress-wrapper">
                 <div class="lesson-progress">
                     <div class="progress-bar">
@@ -67,6 +96,7 @@
                     </button>
                 </div>
             </div>
+            {% endif %}
 
             <div class="lesson-tabs">
                 <button type="button" class="tab-button active" data-tab="content">Lesson Content</button>
@@ -77,11 +107,11 @@
 
             <div class="lesson-content-wrapper">
                 <div class="tab-content active" id="tab-content">
-                    {% if lesson.learning_objectives %}
+                    {% if lesson.get_learning_objectives() %}
                         <div class="learning-objectives">
                             <h2>Learning Objectives</h2>
                             <ul>
-                                {% for objective in lesson.learning_objectives %}
+                                {% for objective in lesson.get_learning_objectives() %}
                                     <li>{{ objective }}</li>
                                 {% endfor %}
                             </ul>
@@ -168,6 +198,92 @@
                 </div>
             </div>
 
+            {% if user and user.mode == 'teacher' %}
+            <div class="teacher-dashboard">
+                <div class="teacher-dashboard-header">
+                    <h2><i class="icon-teacher"></i> Teacher Dashboard</h2>
+                    <p>Manage and monitor this lesson</p>
+                </div>
+                
+                <div class="teacher-dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Lesson Analytics</h3>
+                        <div class="analytics-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">0</span>
+                                <span class="stat-label">Students Enrolled</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">0%</span>
+                                <span class="stat-label">Completion Rate</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">0</span>
+                                <span class="stat-label">Average Time</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions">
+                            <button type="button" class="btn btn-outline" id="publish-lesson">
+                                <i class="icon-publish"></i> Publish Lesson
+                            </button>
+                            <button type="button" class="btn btn-outline" id="create-quiz">
+                                <i class="icon-quiz"></i> Create Quiz
+                            </button>
+                            <button type="button" class="btn btn-outline" id="add-assignment">
+                                <i class="icon-assignment"></i> Add Assignment
+                            </button>
+                            <button type="button" class="btn btn-outline" id="export-lesson">
+                                <i class="icon-export"></i> Export Lesson
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Student Progress</h3>
+                        <div class="student-progress-list">
+                            <div class="empty-state">
+                                <i class="icon-users"></i>
+                                <p>No students have enrolled in this lesson yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <h3>Lesson Settings</h3>
+                        <div class="lesson-settings">
+                            <div class="setting-item">
+                                <label class="setting-label">Visibility</label>
+                                <select class="setting-control" id="lesson-visibility">
+                                    <option value="public">Public</option>
+                                    <option value="private">Private</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label">Difficulty</label>
+                                <select class="setting-control" id="lesson-difficulty">
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label">Estimated Time</label>
+                                <div class="time-inputs">
+                                    <input type="number" class="setting-control" id="time-hours" placeholder="Hours" min="0">
+                                    <input type="number" class="setting-control" id="time-minutes" placeholder="Minutes" min="0" max="59">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="lesson-footer">
                 <div class="lesson-navigation">
                     {% if prev_lesson %}
@@ -204,6 +320,40 @@
         </div>
 
         <div class="lesson-sidebar">
+            {% if user and user.mode == 'teacher' %}
+                <div class="sidebar-card teacher-info-card">
+                    <h3 class="sidebar-title">Lesson Details</h3>
+                    <div class="teacher-info">
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value {% if lesson.published %}published{% else %}draft{% endif %}">
+                                {{ 'Published' if lesson.published else 'Draft' }}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Module:</span>
+                            <span class="info-value">{{ lesson.module.title if lesson.module else 'No module' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Order:</span>
+                            <span class="info-value">{{ lesson.order|default(1) }}</span>
+                        </div>
+                        {% if lesson.created_at %}
+                        <div class="info-item">
+                            <span class="info-label">Created:</span>
+                            <span class="info-value">{{ lesson.created_at.strftime('%Y-%m-%d') if lesson.created_at else 'N/A' }}</span>
+                        </div>
+                        {% endif %}
+                        {% if lesson.updated_at %}
+                        <div class="info-item">
+                            <span class="info-label">Updated:</span>
+                            <span class="info-value">{{ lesson.updated_at.strftime('%Y-%m-%d') if lesson.updated_at else 'N/A' }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
             <div class="sidebar-card toc-card">
                 <h3 class="sidebar-title">Table of Contents</h3>
                 <div class="toc-content" id="toc-content">
@@ -212,26 +362,40 @@
                 </div>
             </div>
 
+            {% if not user or user.mode != 'teacher' %}
             <div class="sidebar-card notes-card">
                 <div class="card-header">
                     <h3 class="sidebar-title">Your Notes</h3>
-                    <button type="button" id="save-notes" class="btn-small btn-outline" disabled>Save</button>
+                    <button type="button" id="save-notes" class="btn-notes-save" disabled><i class="icon-save"></i> Save</button>
                 </div>
 
-                <textarea id="user-notes" class="notes-textarea"
-                          placeholder="Take notes as you learn...">{{ user_notes }}</textarea>
+                <div class="notes-textarea-wrapper">
+                    <textarea id="user-notes" class="notes-textarea enhanced" required>{{ user_notes }}</textarea>
+                    <label for="user-notes" class="notes-label">Take notes as you learn...</label>
+                </div>
 
                 <div class="notes-status" id="notes-status"></div>
 
                 <h3>Alternative Views</h3>
-                <ul>
-                    <li><a href="{{ url_for('cornell_notes', notes_id=lesson.id) }}">View as Cornell (Paper) Notes</a></li>
-                    <li><a href="{{ url_for('digital_notebook', notes_id=lesson.id) }}">View Digital Notebook</a></li>
-                    <li><a href="{{ url_for('augmented', notes_id=lesson.id) }}">View Augmented Notes</a></li>
-                    <li><a href="{{ url_for('mindmap', notes_id=lesson.id) }}">View MindMap</a></li>
-                    <li><a href="{{ url_for('stickynotes', notes_id=lesson.id) }}">View Sticky Notes</a></li>
-                    <li><a href="{{ url_for('vintage_cards', notes_id=lesson.id) }}">View Vintage Cards</a></li>
+                <ul class="alternative-views-list">
+                    <li><a href="#" class="view-link" data-view="cornell_notes" data-notes-id="{{ lesson.id }}">View as Cornell (Paper) Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="digital_notebook" data-notes-id="{{ lesson.id }}">View Digital Notebook</a></li>
+                    <li><a href="#" class="view-link" data-view="augmented" data-notes-id="{{ lesson.id }}">View Augmented Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="mindmap" data-notes-id="{{ lesson.id }}">View MindMap</a></li>
+                    <li><a href="#" class="view-link" data-view="stickynotes" data-notes-id="{{ lesson.id }}">View Sticky Notes</a></li>
+                    <li><a href="#" class="view-link" data-view="vintage_cards" data-notes-id="{{ lesson.id }}">View Vintage Cards</a></li>
                 </ul>
+
+                <!-- Embedded note view container -->
+                <div id="embedded-note-view" class="embedded-note-view">
+                    <div class="embedded-note-header">
+                        <h4 id="embedded-note-title">Alternative Note View</h4>
+                        <button type="button" id="close-embedded-view" class="btn-small btn-outline">×</button>
+                    </div>
+                    <div id="embedded-note-content" class="embedded-note-content">
+                        <!-- Note view content will be loaded here -->
+                    </div>
+                </div>
 
                 {% if audio_notes %}
                     <button type="button" id="generate-audio-presentation-disabled" class="btn-small btn-outline" disabled>Generate Audio Presentation (Already Generated - See Below)</button>
@@ -251,40 +415,125 @@
                     </audio>
                 {% endif %}
             </div>
+            {% endif %}
 
-            <div class="sidebar-card">
-                <h3 class="sidebar-title">Ask a Question</h3>
-                <form id="question-form" class="question-form">
-                    <textarea id="question-text" class="question-textarea"
-                              placeholder="Have a question about this lesson?"></textarea>
-                    <button type="submit" class="btn btn-primary">Submit Question</button>
+            <div class="sidebar-card chat-card">
+                <div class="card-header">
+                    <h3 class="sidebar-title">Learning Assistant</h3>
+                    <button type="button" id="clear-chat" class="btn-small btn-outline" title="Clear chat history">Clear</button>
+                </div>
+                
+                {% if not user.has_api_key %}
+                <div class="chat-warning">
+                    <i class="icon-warning"></i>
+                    <p>You need to configure your OpenAI API key to use the chat assistant.</p>
+                    <a href="{{ url_for('settings') }}" class="btn btn-primary btn-small">Configure API Key</a>
+                </div>
+                {% endif %}
+                
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Chat messages will appear here -->
+                </div>
+                
+                <form id="question-form" class="question-form" {% if not user.has_api_key %}style="display: none;"{% endif %}>
+                    <div class="input-group">
+                        <textarea id="question-text" class="question-textarea"
+                                  placeholder="Ask a question about this lesson..." rows="3"></textarea>
+                        <button type="submit" class="btn btn-primary" id="submit-question">
+                            <i class="icon-send"></i> Ask
+                        </button>
+                    </div>
                 </form>
+                
+                <div id="chat-loading" class="chat-loading" style="display: none;">
+                    <i class="icon-spinner"></i> Assistant is thinking...
+                </div>
             </div>
-<!--            Initiates chat with streaming GPT assistant... -->
         </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/view-lesson.js') }}"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/zero-md@3?register"></script>
 
 <script>
-    document.getElementById('generate-audio-presentation').addEventListener('click', function () {
-        fetch("{{ url_for('generate_audio', lesson_id=lesson.id) }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('generate-audio-presentation').disabled = true;
-                    document.getElementById('generate-audio-presentation').innerText = 'Generate Audio Presentation (Already Generated - See Below)';
-                    document.getElementById('generate-audio-presentation-disabled').disabled = true;
-                }
+    // Pass lesson data to JavaScript
+    const lessonData = {
+        id: "{{ lesson.id }}",
+        title: "{{ lesson.title | e }}"
+    };
+    
+    const generateAudioBtn = document.getElementById('generate-audio-presentation');
+    if (generateAudioBtn) {
+        generateAudioBtn.addEventListener('click', function () {
+            fetch("{{ url_for('generate_audio', lesson_id=lesson.id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        generateAudioBtn.disabled = true;
+                        generateAudioBtn.innerText = 'Generate Audio Presentation (Already Generated - See Below)';
+                        const disabledBtn = document.getElementById('generate-audio-presentation-disabled');
+                        if (disabledBtn) {
+                            disabledBtn.disabled = true;
+                        }
+                    }
+                });
+        });
+    }
+
+    // Embedded note view functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewLinks = document.querySelectorAll('.view-link');
+        const embeddedView = document.getElementById('embedded-note-view');
+        const embeddedContent = document.getElementById('embedded-note-content');
+        const embeddedTitle = document.getElementById('embedded-note-title');
+        const closeBtn = document.getElementById('close-embedded-view');
+
+        // Handle view link clicks
+        viewLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const viewType = this.getAttribute('data-view');
+                const notesId = this.getAttribute('data-notes-id');
+                const viewTitle = this.textContent;
+
+                // Update title
+                embeddedTitle.textContent = viewTitle;
+
+                // Show loading state
+                embeddedContent.innerHTML = '<div class="loading">Loading...</div>';
+                embeddedView.style.display = 'block';
+
+                // Load the note view content
+                fetch(`/api/notes/${viewType}/${notesId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        embeddedContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        embeddedContent.innerHTML = '<div class="error">Error loading view: ' + error.message + '</div>';
+                    });
             });
+        });
+
+        // Handle close button
+        closeBtn.addEventListener('click', function() {
+            embeddedView.style.display = 'none';
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && embeddedView.style.display === 'block') {
+                embeddedView.style.display = 'none';
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Modules | Educational Platform{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/list.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Admin</span>
+    <span>Modules</span>
+{% endblock %}
+
+{% block page_title %}Manage Modules{% endblock %}
+
+{% block content %}
+    <div class="admin-controls">
+        <div class="admin-search">
+            <input type="text" id="module-search" placeholder="Search modules..." class="search-input">
+            <select id="course-filter" class="filter-select">
+                <option value="">All Courses</option>
+                {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <a href="{{ url_for('create_module') }}" class="btn btn-primary">
+            <i class="icon-plus"></i> Create New Module
+        </a>
+    </div>
+
+    <div class="lessons-list">
+        <div class="lessons-header">
+            <div class="col-title">Title</div>
+            <div class="col-module">Course</div>
+            <div class="col-order">Order</div>
+            <div class="col-lessons">Lessons</div>
+            <div class="col-status">Status</div>
+            <div class="col-actions">Actions</div>
+        </div>
+
+        <div id="modules-container">
+            {% for module in modules %}
+                <div class="lesson-row" data-course="{{ module.course_id }}">
+                    <div class="col-title">
+                        <a href="{{ url_for('edit_module', module_id=module.id) }}" class="lesson-title">
+                            {{ module.title }}
+                        </a>
+                        <div class="lesson-overview">{{ module.description|truncate(100) if module.description else 'No description available' }}</div>
+                    </div>
+                    <div class="col-module">{{ module.course_title if module.course_title else 'Unassigned' }}</div>
+                    <div class="col-order">{{ module.order if module.order else '-' }}</div>
+                    <div class="col-lessons">{{ module.lesson_count if module.lesson_count else 0 }} lessons</div>
+                    <div class="col-status">
+                        <span class="status-badge {{ 'published' if module.published else 'draft' }}">
+                            {{ 'Published' if module.published else 'Draft' }}
+                        </span>
+                    </div>
+                    <div class="col-actions">
+                        {% if user and user.mode == 'teacher' %}
+                            <a href="{{ url_for('edit_module', module_id=module.id) }}" class="action-btn edit" title="Edit">
+                                <i class="icon-edit"></i>
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('module', module_id=module.id) }}" class="action-btn view" title="View">
+                                <i class="icon-eye"></i>
+                            </a>
+                        {% endif %}
+<!--                        <button class="action-btn delete" title="Delete" data-module-id="{{ module.id }}"-->
+<!--                                data-module-title="{{ module.title }}" onclick="confirmDelete(this)">-->
+<!--                            <i class="icon-trash"></i>-->
+<!--                        </button>-->
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <h3>No modules yet</h3>
+                    <p>Get started by creating your first module</p>
+                    <a href="{{ url_for('create_module') }}" class="btn">Create Module</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Search and filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('module-search');
+        const courseFilter = document.getElementById('course-filter');
+        const modulesContainer = document.getElementById('modules-container');
+        const moduleRows = document.querySelectorAll('.lesson-row');
+
+        function filterModules() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const courseId = courseFilter.value;
+
+            moduleRows.forEach(row => {
+                const title = row.querySelector('.lesson-title').textContent.toLowerCase();
+                const overview = row.querySelector('.lesson-overview').textContent.toLowerCase();
+                const rowCourseId = row.dataset.course;
+
+                const matchesSearch = title.includes(searchTerm) || overview.includes(searchTerm);
+                const matchesCourse = courseId === '' || rowCourseId === courseId;
+
+                if (matchesSearch && matchesCourse) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterModules);
+        courseFilter.addEventListener('change', filterModules);
+    });
+</script>
+{% endblock %}

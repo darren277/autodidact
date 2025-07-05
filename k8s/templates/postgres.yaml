@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: postgres, namespace: {{ .Values.namespace }} }
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          args: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+          env:
+            - { name: POSTGRES_USER, valueFrom: { secretKeyRef: { name: postgres-secret, key: user } } }
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: postgres-secret, key: pass } } }
+          ports: [ { containerPort: 8000 } ]
+          volumeMounts:
+            - { name: data, mountPath: /mydata }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ ReadWriteOnce ]
+        resources: { requests: { storage: 5Gi } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: postgres, namespace: {{ .Values.namespace }} }
+spec:
+  ports: [ { port: 8000 } ]
+  selector: { app: postgres }

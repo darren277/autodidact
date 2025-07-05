@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if course.id %}Edit Course: {{ course.title }}{% else %}Create New Course{% endif %} | Educational Platform
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lessons/edit.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Admin</span>
+    <span><a href="{{ url_for('list_courses') }}">Courses</a></span>
+    <span>{% if course.id %}Edit{% else %}Create{% endif %} Course</span>
+{% endblock %}
+
+{% block page_title %}
+    {% if course.id %}Edit Course: {{ course.title }}{% else %}Create New Course{% endif %}
+{% endblock %}
+
+{% block content %}
+    <form id="course-form" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if course.id %}
+            <input type="hidden" name="course_id" value="{{ course.id }}">
+        {% endif %}
+
+        <div class="form-layout">
+            <div class="main-column">
+                <div class="content-card">
+                    <div class="form-group">
+                        <label for="title" class="required">Course Title</label>
+                        <input type="text" id="title" name="title" value="{{ course.title }}" required
+                               class="form-control" placeholder="Enter course title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="required">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="3"
+                                  placeholder="Brief description of this course" required>{{ course.description }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="objectives" class="required">Course Objectives</label>
+                        <div class="objectives-container">
+                            <div id="objectives-list">
+                                {% if course.objectives %}
+                                    {% for objective in course.get_objectives() %}
+                                        <div class="objective-item">
+                                            <input type="text" name="objectives[]" value="{{ objective }}"
+                                                   class="form-control" placeholder="Course objective">
+                                            <button type="button" class="remove-objective" title="Remove objective">✕</button>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="objective-item">
+                                        <input type="text" name="objectives[]" class="form-control"
+                                               placeholder="Course objective">
+                                        <button type="button" class="remove-objective" title="Remove objective">✕</button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" id="add-objective" class="btn-outline-small">
+                                <i class="icon-plus-small"></i> Add Objective
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-section-header">
+                        <h2>Course Content</h2>
+                        <div class="editor-controls">
+                            <button type="button" class="btn-outline-small" id="toggle-preview">Preview</button>
+                            <button type="button" class="btn-outline-small" id="toggle-fullscreen">
+                                <i class="icon-fullscreen"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="editor-container">
+                        <div id="editor-tabs" class="editor-tabs">
+                            <button type="button" class="tab-btn active" data-tab="overview">Overview</button>
+                            <button type="button" class="tab-btn" data-tab="prerequisites">Prerequisites</button>
+                        </div>
+
+                        <div id="tab-overview" class="tab-content active">
+                            <textarea id="overview" name="overview" class="form-control editor-textarea"
+                                      rows="15" placeholder="Course overview and introduction...">{{ course.overview }}</textarea>
+                        </div>
+
+                        <div id="tab-prerequisites" class="tab-content">
+                            <div class="prerequisites-container">
+                                <div id="prerequisites-list">
+                                    {% if course.prerequisites %}
+                                        {% for prereq in course.get_prerequisites() %}
+                                            <div class="prerequisite-item">
+                                                <input type="text" name="prerequisites[]" value="{{ prereq }}"
+                                                       class="form-control" placeholder="Prerequisite">
+                                                <button type="button" class="remove-prerequisite" title="Remove prerequisite">✕</button>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="prerequisite-item">
+                                            <input type="text" name="prerequisites[]" class="form-control"
+                                                   placeholder="Prerequisite">
+                                            <button type="button" class="remove-prerequisite" title="Remove prerequisite">✕</button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <button type="button" id="add-prerequisite" class="btn-outline-small">
+                                    <i class="icon-plus-small"></i> Add Prerequisite
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="markdown-preview" class="markdown-preview">
+                            <!-- Preview will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    {% if course.id %}Update Course{% else %}Create Course{% endif %}
+                </button>
+                <a href="{{ url_for('list_courses') }}" class="btn btn-secondary">Cancel</a>
+                {% if course.id %}
+                    <button type="button" class="btn btn-danger" id="delete-course">Delete Course</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Objectives management
+        const addObjectiveBtn = document.getElementById('add-objective');
+        const objectivesList = document.getElementById('objectives-list');
+
+        addObjectiveBtn.addEventListener('click', function() {
+            const objectiveItem = document.createElement('div');
+            objectiveItem.classList.add('objective-item');
+            objectiveItem.innerHTML = `
+                <input type="text" name="objectives[]" class="form-control" placeholder="Course objective">
+                <button type="button" class="remove-objective" title="Remove objective">✕</button>
+            `;
+            objectivesList.appendChild(objectiveItem);
+        });
+
+        // Remove objective functionality
+        objectivesList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-objective')) {
+                e.target.parentElement.remove();
+            }
+        });
+
+        // Prerequisites management
+        const addPrerequisiteBtn = document.getElementById('add-prerequisite');
+        const prerequisitesList = document.getElementById('prerequisites-list');
+
+        addPrerequisiteBtn.addEventListener('click', function() {
+            const prerequisiteItem = document.createElement('div');
+            prerequisiteItem.classList.add('prerequisite-item');
+            prerequisiteItem.innerHTML = `
+                <input type="text" name="prerequisites[]" class="form-control" placeholder="Prerequisite">
+                <button type="button" class="remove-prerequisite" title="Remove prerequisite">✕</button>
+            `;
+            prerequisitesList.appendChild(prerequisiteItem);
+        });
+
+        // Remove prerequisite functionality
+        prerequisitesList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-prerequisite')) {
+                e.target.parentElement.remove();
+            }
+        });
+
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Remove active class from all tabs and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                this.classList.add('active');
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+            });
+        });
+
+        // Preview functionality
+        const togglePreviewBtn = document.getElementById('toggle-preview');
+        const markdownPreview = document.getElementById('markdown-preview');
+        const activeTabContent = document.querySelector('.tab-content.active');
+
+        if (togglePreviewBtn && markdownPreview && activeTabContent) {
+            togglePreviewBtn.addEventListener('click', function() {
+                const isPreviewVisible = markdownPreview.style.display === 'block';
+                
+                if (isPreviewVisible) {
+                    markdownPreview.style.display = 'none';
+                    activeTabContent.style.display = 'block';
+                    this.textContent = 'Preview';
+                } else {
+                    activeTabContent.style.display = 'none';
+                    markdownPreview.style.display = 'block';
+                    this.textContent = 'Edit';
+                    
+                    // Simple markdown preview
+                    const content = activeTabContent.querySelector('textarea')?.value || '';
+                    markdownPreview.innerHTML = content.replace(/\n/g, '<br>');
+                }
+            });
+        }
+
+        // Delete course functionality
+        const deleteCourseBtn = document.getElementById('delete-course');
+        if (deleteCourseBtn) {
+            deleteCourseBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+                    const courseId = {{ course.id or 'null' }};
+                    if (courseId) {
+                        fetch(`/delete_course/${courseId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }).then(response => {
+                            if (response.ok) {
+                                window.location.href = '{{ url_for("list_courses") }}';
+                            } else {
+                                alert('Error deleting course');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                            alert('Error deleting course');
+                        });
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

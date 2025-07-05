@@ -5,6 +5,8 @@
     --text-color: #333;
     --active-bg: #e1e9f0;
     --border-color: #ddd;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
 }
 
 body {
@@ -19,6 +21,24 @@ body {
     grid-template-columns: 250px 1fr;
     height: 100vh;
     color: var(--text-color);
+}
+
+/* Layout for the signed-out (landing page) view */
+body.signed-out {
+    grid-template-areas:
+        "header"
+        "main";
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 1fr; /* A single, full-width column */
+}
+
+/* Layout for the signed-in (dashboard) view */
+body.signed-in {
+    grid-template-areas:
+        "header header"
+        "sidebar main";
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 250px 1fr; /* Two columns */
 }
 
 header {

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Test</title>
+</head>
+<body>
+    <h1>Dashboard Test</h1>
+    
+    <!-- Debug info -->
+    <p>User: {{ user|default('NOT DEFINED') }}</p>
+    <p>Progress Summary: {{ progress_summary|default('NOT DEFINED') }}</p>
+    <p>Achievements: {{ achievements|default('NOT DEFINED') }}</p>
+    
+    <!-- Test the actual variables -->
+    {% if progress_summary %}
+        <h2>Progress: {{ progress_summary.completion_percentage|default(0) }}%</h2>
+        <p>Completed: {{ progress_summary.completed_lessons|default(0) }} of {{ progress_summary.total_lessons|default(0) }}</p>
+    {% else %}
+        <h2>No progress data</h2>
+    {% endif %}
+    
+    {% if achievements %}
+        <h2>Achievements</h2>
+        <p>Modules: {{ achievements.modules_completed|default(0) }}</p>
+        <p>Quizzes: {{ achievements.quizzes_passed|default(0) }}</p>
+    {% else %}
+        <h2>No achievement data</h2>
+    {% endif %}
+</body>
+</html> 

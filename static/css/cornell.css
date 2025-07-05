@@ -1,5 +1,5 @@
 /* Paper-like appearance for the entire page */
-body {
+.cornell-notes-view {
     background-color: #f8f8f8;
     padding: 20px;
     font-family: "Times New Roman", Times, serif;
@@ -8,7 +8,7 @@ body {
 }
 
 /* The note container with paper-like styling */
-article {
+.cornell-notes-view article {
     width: 90%;
     max-width: 800px;
     margin: 20px auto;
@@ -23,7 +23,7 @@ article {
 }
 
 /* Paper texture overlay */
-article::before {
+.cornell-notes-view article::before {
     content: "";
     position: absolute;
     top: 0;
@@ -36,7 +36,7 @@ article::before {
 }
 
 /* Header section styling */
-header {
+.cornell-notes-view header {
     display: flex;
     border-bottom: 2px solid #000;
     padding-bottom: 10px;
@@ -45,31 +45,31 @@ header {
     z-index: 2;
 }
 
-.leftheader {
+.cornell-notes-view .leftheader {
     width: 30%;
     font-weight: bold;
     padding-left: 10px;
 }
 
-.rightheader {
+.cornell-notes-view .rightheader {
     width: 70%;
     padding-left: 15px;
 }
 
 /* Main content layout with two columns */
-article {
+.cornell-notes-view article {
     display: grid;
     grid-template-columns: 30% 70%;
     grid-auto-rows: auto;
 }
 
 /* Override the grid for header and footer */
-header, footer {
+.cornell-notes-view header, .cornell-notes-view footer {
     grid-column: 1 / -1;
 }
 
 /* Left margin styling (Cue column) */
-.leftmargin {
+.cornell-notes-view .leftmargin {
     padding: 10px;
     position: relative;
     z-index: 2;
@@ -77,18 +77,18 @@ header, footer {
     font-style: italic;
 }
 
-.leftmargin { grid-column: 1; }
-.main { grid-column: 2; }
+.cornell-notes-view .leftmargin { grid-column: 1; }
+.cornell-notes-view .main { grid-column: 2; }
 
 /* Main content styling (Notes column) */
-.main {
+.cornell-notes-view .main {
     padding: 10px 15px;
     position: relative;
     z-index: 2;
 }
 
 /* Footer styling (Summary) */
-footer {
+.cornell-notes-view footer {
     margin-top: 20px;
     padding-top: 10px;
     border-top: 2px solid #000;
@@ -98,7 +98,7 @@ footer {
 }
 
 /* Cornell notes vertical red margin line */
-article::after {
+.cornell-notes-view article::after {
     content: "";
     position: absolute;
     top: 0;
@@ -110,19 +110,19 @@ article::after {
 }
 
 /* Make the note look like it's on a paper with a slight rotation */
-article {
+.cornell-notes-view article {
     transform: rotate(0.2deg);
 }
 
 /* Styling for any emphasized text */
-em {
+.cornell-notes-view em {
     color: #cc0000;
     font-style: normal;
     text-decoration: underline;
 }
 
 /* Add some additional elements for a paper-like feel */
-.paper-hole {
+.cornell-notes-view .paper-hole {
     position: absolute;
     width: 20px;
     height: 20px;

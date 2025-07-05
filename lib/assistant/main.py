@@ -11,18 +11,20 @@ DEFAULT_ASSISTANT_ID = "asst_X0dIT6aOTHFQgJNE923sjv8E"
 
 
 class AssistantHandler:
-    def __init__(self, prompt: str, assistant_id: Optional[str] = None, tools: Optional[List[Dict]] = None):
+    def __init__(self, prompt: str, assistant_id: Optional[str] = None, tools: Optional[List[Dict]] = None, api_key: Optional[str] = None):
         """
-        Initialize the AssistantHandler with a prompt and optional assistant ID and tools.
+        Initialize the AssistantHandler with a prompt and optional assistant ID, tools, and API key.
 
         Args:
             prompt: The user's question or prompt
             assistant_id: The OpenAI Assistant ID to use (optional)
             tools: List of tools to make available to the assistant (optional)
+            api_key: OpenAI API key to use (optional, uses default if not provided)
         """
         self.prompt = prompt
         self.assistant_id = assistant_id
         self.tools = tools or []
+        self.api_key = api_key
 
         # Internal state
         self._full_message = ""
@@ -90,7 +92,8 @@ class AssistantHandler:
             event_stream, openai_thread_id = start_assistant_run(
                 self.prompt,
                 self.assistant_id,
-                self.tools
+                self.tools,
+                self.api_key
             )
 
             # Process events and call the callback for each message chunk

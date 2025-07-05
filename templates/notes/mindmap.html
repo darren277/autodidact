@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='/css/mindmap.css') }}">
 </head>
 <body>
+<div class="mindmap-view">
 <div class="container">
     <div class="header">
         <h1 class="title">{{ title }}</h1>
@@ -83,5 +84,6 @@ document.querySelectorAll('.node').forEach(node => {
     });
 });
 </script>
+</div>
 </body>
 </html>

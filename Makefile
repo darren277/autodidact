@@ -9,6 +9,9 @@ w:
 w2:
 	waitress-serve --host=127.0.0.1 --port=8000 --asyncore-loop-timeout=3600 --connection-limit=100 wsgi:app
 
+create-db:
+	python manage.py create_db
+
 create:
 	python manage.py create
 
@@ -18,6 +21,39 @@ drop:
 # Usage: make migrate COURSE_ID=anthropology
 migrate:
 	python manage.py migrate $(COURSE_ID)
+
+
+
+# Docker
+auth:
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(DOCKER_REGISTRY)
+
+create-repo:
+	aws ecr create-repository --repository-name $(FLASK_IMAGE) --region us-east-1 || true
+
+docker-flask:
+	docker build --build-arg PORT=$(FLASK_PORT) -t $(DOCKER_REGISTRY)/$(FLASK_IMAGE):$(FLASK_VERSION) -f Dockerfile .
+	docker push $(DOCKER_REGISTRY)/$(FLASK_IMAGE):$(FLASK_VERSION)
+
+
+# Kubernetes and Helm
+k8s-init:
+	kubectl create namespace $(NAMESPACE)
+
+k8s-auth:
+	kubectl create secret docker-registry ecr-secret --docker-server=$(DOCKER_REGISTRY) --docker-username=AWS --docker-password=$(DOCKER_PASSWORD) --namespace=$(NAMESPACE)
+
+SECRETS=--set postgres.secret.user=$(POSTGRES_USER) --set postgres.secret.pass=$(POSTGRES_PASS) --set cognito-secret.userPoolClientSecret=$(USER_POOL_CLIENT_SECRET) --set openai-secret-api-key.apiKey=$(OPENAI_API_KEY) --set flask-secret.flaskAppSecret=$(FLASK_APP_SECRET)
+
+k8s-deploy:
+	kubectl create namespace $(NAMESPACE) || true
+	helm upgrade --install $(NAMESPACE) ./k8s --namespace $(NAMESPACE) $(SECRETS) -f ./k8s/values.yaml
+
+
+k8s-debug:
+	kubectl create namespace $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f -
+	helm template $(NAMESPACE) ./k8s -f ./k8s/values.yaml | kubectl apply --namespace $(NAMESPACE) -f - --dry-run=server
+
 
 
 # Makefile for AWS Cognito deployment on Windows

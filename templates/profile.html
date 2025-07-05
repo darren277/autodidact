@@ -1,19 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }} Profile{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
+{% block breadcrumb %}
+    <span>Dashboard | Profile</span>
+{% endblock %}
+
+{% block page_title %}{{ user.name }} Profile{% endblock %}
+
+{% block content %}
     <div class="container">
         <h1>Welcome, {{ user.name }}</h1>
         <div class="profile-box">
             <img src="{{ user.picture }}" alt="Profile Picture" class="profile-pic">
             <p><strong>Email:</strong> {{ user.email }}</p>
+            <h2>Bio</h2>
+            <p id="bio">{{ user.bio }}</p>
+            <a class="edit-btn">Edit Bio</a>
+            <h2>Courses</h2>
+            <ul>
+                {% for course in user.courses %}
+                    <li>{{ course.name }} - {{ course.description }}</li>
+                {% endfor %}
+            </ul>
+            <h2>Achievements</h2>
+            <ul>
+                {% for achievement in user.achievements %}
+                    <li>{{ achievement.name }} - {{ achievement.description }}</li>
+                {% endfor %}
+            </ul>
             <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         </div>
     </div>
-</body>
-</html>
+
+    <script>
+        document.querySelector('.edit-btn').addEventListener('click', function() {
+            // Convert the bio paragraph to an input field for editing
+            const bio = document.getElementById('bio');
+            const currentBio = bio.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentBio;
+            bio.textContent = ''; // Clear the current bio
+            bio.appendChild(input);
+            input.focus();
+
+            // Change the button to "Save"
+            this.textContent = 'Save';
+            this.classList.remove('edit-btn');
+            this.classList.add('save-btn');
+            this.addEventListener('click', function() {
+                // Save the new bio
+                const newBio = input.value;
+                bio.textContent = newBio; // Update the bio paragraph
+                this.textContent = 'Edit Bio'; // Change back to "Edit Bio"
+                this.classList.remove('save-btn');
+                this.classList.add('edit-btn');
+
+                // Here you would typically send the new bio to the server to save it
+                // For example, using fetch or AJAX
+
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                fetch('/update_bio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ bio: newBio })
+                })
+            });
+        });
+    </script>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

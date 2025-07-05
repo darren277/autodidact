@@ -1,21 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Learning Objectives
+    // Learning Objectives (for lessons)
     const objectivesList = document.getElementById('learning-objectives-list');
     const addObjectiveBtn = document.getElementById('add-objective');
 
-    addObjectiveBtn.addEventListener('click', function() {
-        const newObjective = document.createElement('div');
-        newObjective.className = 'objective-item';
-        newObjective.innerHTML = `
-            <input type="text" name="learning_objectives[]" class="form-control" placeholder="Learning objective">
-            <button type="button" class="remove-objective" title="Remove objective">✕</button>
-        `;
-        objectivesList.appendChild(newObjective);
+    if (addObjectiveBtn && objectivesList) {
+        addObjectiveBtn.addEventListener('click', function() {
+            const newObjective = document.createElement('div');
+            newObjective.className = 'objective-item';
+            newObjective.innerHTML = `
+                <input type="text" name="learning_objectives[]" class="form-control" placeholder="Learning objective">
+                <button type="button" class="remove-objective" title="Remove objective">✕</button>
+            `;
+            objectivesList.appendChild(newObjective);
 
-        // Focus on the new input
-        const input = newObjective.querySelector('input');
-        input.focus();
-    });
+            // Focus on the new input
+            const input = newObjective.querySelector('input');
+            input.focus();
+        });
+    }
+
+    // Learning Outcomes (for modules)
+    const outcomesList = document.getElementById('learning-outcomes-list');
+    const addOutcomeBtn = document.getElementById('add-outcome');
+
+    if (addOutcomeBtn && outcomesList) {
+        addOutcomeBtn.addEventListener('click', function() {
+            const newOutcome = document.createElement('div');
+            newOutcome.className = 'objective-item';
+            newOutcome.innerHTML = `
+                <input type="text" name="learning_outcomes[]" class="form-control" placeholder="Learning outcome">
+                <button type="button" class="remove-objective" title="Remove outcome">✕</button>
+            `;
+            outcomesList.appendChild(newOutcome);
+
+            // Focus on the new input
+            const input = newOutcome.querySelector('input');
+            input.focus();
+        });
+    }
 
     // Remove objective handlers (including existing ones)
     document.addEventListener('click', function(e) {
@@ -35,62 +57,76 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Deactivate all tabs
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
+    if (tabButtons.length > 0) {
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Deactivate all tabs
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
 
-            // Activate the clicked tab
-            const tabName = this.dataset.tab;
-            this.classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
+                // Activate the clicked tab
+                const tabName = this.dataset.tab;
+                this.classList.add('active');
+                const targetTab = document.getElementById(`tab-${tabName}`);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+            });
         });
-    });
+    }
 
     // Preview toggle
     const togglePreviewBtn = document.getElementById('toggle-preview');
     const markdownPreview = document.getElementById('markdown-preview');
     const editorContainer = document.querySelector('.editor-container');
 
-    togglePreviewBtn.addEventListener('click', function() {
-        const activeTab = document.querySelector('.tab-content.active');
-        const activeTextarea = activeTab.querySelector('textarea');
+    if (togglePreviewBtn && markdownPreview && editorContainer) {
+        togglePreviewBtn.addEventListener('click', function() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+            
+            const activeTextarea = activeTab.querySelector('textarea');
+            if (!activeTextarea) return;
 
-        if (markdownPreview.style.display === 'block') {
-            // Hide preview
-            markdownPreview.style.display = 'none';
-            activeTab.style.display = 'block';
-            togglePreviewBtn.textContent = 'Preview';
-        } else {
-            // Show preview
-            markdownPreview.style.display = 'block';
-            activeTab.style.display = 'none';
-            togglePreviewBtn.textContent = 'Edit';
+            if (markdownPreview.style.display === 'block') {
+                // Hide preview
+                markdownPreview.style.display = 'none';
+                activeTab.style.display = 'block';
+                togglePreviewBtn.textContent = 'Preview';
+            } else {
+                // Show preview
+                markdownPreview.style.display = 'block';
+                activeTab.style.display = 'none';
+                togglePreviewBtn.textContent = 'Edit';
 
-            // Convert markdown to HTML (simplified - you'd use a proper library)
-            markdownPreview.innerHTML = convertMarkdownToHTML(activeTextarea.value);
-        }
-    });
+                // Convert markdown to HTML (simplified - you'd use a proper library)
+                markdownPreview.innerHTML = convertMarkdownToHTML(activeTextarea.value);
+            }
+        });
+    }
 
     // Markdown help toggle
     const toggleMarkdownHelpBtn = document.getElementById('toggle-markdown-help');
     const markdownHelpPanel = document.getElementById('markdown-help-panel');
 
-    toggleMarkdownHelpBtn.addEventListener('click', function() {
-        if (markdownHelpPanel.style.display === 'block') {
-            markdownHelpPanel.style.display = 'none';
-        } else {
-            markdownHelpPanel.style.display = 'block';
-        }
-    });
+    if (toggleMarkdownHelpBtn && markdownHelpPanel) {
+        toggleMarkdownHelpBtn.addEventListener('click', function() {
+            if (markdownHelpPanel.style.display === 'block') {
+                markdownHelpPanel.style.display = 'none';
+            } else {
+                markdownHelpPanel.style.display = 'block';
+            }
+        });
+    }
 
     // Hide markdown help panel when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.markdown-help') && markdownHelpPanel.style.display === 'block') {
-            markdownHelpPanel.style.display = 'none';
-        }
-    });
+    if (markdownHelpPanel) {
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.markdown-help') && markdownHelpPanel.style.display === 'block') {
+                markdownHelpPanel.style.display = 'none';
+            }
+        });
+    }
 
     // Featured image preview
     const featuredImageInput = document.getElementById('featured_image');
@@ -98,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const removeFeaturedImageBtn = document.getElementById('remove-featured-image');
     const removeFeaturedImageInput = document.getElementById('remove_featured_image');
 
-    if (featuredImageInput) {
+    if (featuredImageInput && featuredImagePreview) {
         featuredImageInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
@@ -117,12 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (removeFeaturedImageBtn) {
+    if (removeFeaturedImageBtn && featuredImagePreview && featuredImageInput) {
         removeFeaturedImageBtn.addEventListener('click', function() {
             featuredImagePreview.innerHTML = `<div class="placeholder-text">No image selected</div>`;
             featuredImagePreview.classList.remove('has-image');
             featuredImageInput.value = '';
-            removeFeaturedImageInput.value = "1";
+            if (removeFeaturedImageInput) {
+                removeFeaturedImageInput.value = "1";
+            }
         });
     }
 
@@ -130,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const attachmentFilesInput = document.getElementById('attachment_files');
     const attachmentsContainer = document.getElementById('attachments-container');
 
-    if (attachmentFilesInput) {
+    if (attachmentFilesInput && attachmentsContainer) {
         attachmentFilesInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 for (let i = 0; i < this.files.length; i++) {
@@ -244,47 +282,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleFullscreenBtn = document.getElementById('toggle-fullscreen');
     const editorTabs = document.getElementById('editor-tabs');
 
-    toggleFullscreenBtn.addEventListener('click', function() {
-        editorContainer.classList.toggle('fullscreen');
+    if (toggleFullscreenBtn && editorContainer && editorTabs) {
+        toggleFullscreenBtn.addEventListener('click', function() {
+            editorContainer.classList.toggle('fullscreen');
 
-        if (editorContainer.classList.contains('fullscreen')) {
-            editorContainer.style.position = 'fixed';
-            editorContainer.style.top = '0';
-            editorContainer.style.left = '0';
-            editorContainer.style.width = '100%';
-            editorContainer.style.height = '100%';
-            editorContainer.style.zIndex = '1000';
-            editorContainer.style.backgroundColor = 'white';
-            editorTabs.style.position = 'sticky';
-            editorTabs.style.top = '0';
-            document.body.style.overflow = 'hidden';
+            if (editorContainer.classList.contains('fullscreen')) {
+                editorContainer.style.position = 'fixed';
+                editorContainer.style.top = '0';
+                editorContainer.style.left = '0';
+                editorContainer.style.width = '100%';
+                editorContainer.style.height = '100%';
+                editorContainer.style.zIndex = '1000';
+                editorContainer.style.backgroundColor = 'white';
+                editorTabs.style.position = 'sticky';
+                editorTabs.style.top = '0';
+                document.body.style.overflow = 'hidden';
 
-            // Expand the active textarea
-            const activeTab = document.querySelector('.tab-content.active');
-            const activeTextarea = activeTab.querySelector('textarea');
-            activeTextarea.style.height = 'calc(100vh - 100px)';
+                // Expand the active textarea
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab) {
+                    const activeTextarea = activeTab.querySelector('textarea');
+                    if (activeTextarea) {
+                        activeTextarea.style.height = 'calc(100vh - 100px)';
+                    }
+                }
 
-            // Change icon
-            this.innerHTML = '<i class="icon-exit-fullscreen"></i>';
-        } else {
-            editorContainer.style.position = '';
-            editorContainer.style.top = '';
-            editorContainer.style.left = '';
-            editorContainer.style.width = '';
-            editorContainer.style.height = '';
-            editorContainer.style.zIndex = '';
-            editorContainer.style.backgroundColor = '';
-            editorTabs.style.position = '';
-            editorTabs.style.top = '';
-            document.body.style.overflow = '';
+                // Change icon
+                this.innerHTML = '<i class="icon-exit-fullscreen"></i>';
+            } else {
+                editorContainer.style.position = '';
+                editorContainer.style.top = '';
+                editorContainer.style.left = '';
+                editorContainer.style.width = '';
+                editorContainer.style.height = '';
+                editorContainer.style.zIndex = '';
+                editorContainer.style.backgroundColor = '';
+                editorTabs.style.position = '';
+                editorTabs.style.top = '';
+                document.body.style.overflow = '';
 
-            // Reset textarea height
-            const activeTab = document.querySelector('.tab-content.active');
-            const activeTextarea = activeTab.querySelector('textarea');
-            activeTextarea.style.height = '';
+                // Reset textarea height
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab) {
+                    const activeTextarea = activeTab.querySelector('textarea');
+                    if (activeTextarea) {
+                        activeTextarea.style.height = '';
+                    }
+                }
 
-            // Change icon back
-            this.innerHTML = '<i class="icon-fullscreen"></i>';
-        }
-    });
+                // Change icon back
+                this.innerHTML = '<i class="icon-fullscreen"></i>';
+            }
+        });
+    }
 });

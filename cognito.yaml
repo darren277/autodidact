@@ -17,10 +17,15 @@ Parameters:
     Description: Google OAuth Client Secret
     NoEcho: true
 
-  CallbackURL:
+  AppCallbackURL:
     Type: String
-    Default: http://localhost:5055/callback
-    Description: Callback URL for your application
+    Default: 'https://autodidact.apphosting.services/callback'
+    Description: The full callback URL for your deployed application after a successful sign-in.
+
+  AppLogoutURL:
+    Type: String
+    Default: 'https://autodidact.apphosting.services/'
+    Description: The full URL where users are redirected after signing out.
 
 Resources:
   # Cognito User Pool
@@ -91,9 +96,9 @@ Resources:
       ClientName: !Sub ${AppName}-app-client
       UserPoolId: !Ref UserPool
       CallbackURLs:
-        - !Ref CallbackURL
+        - !Ref AppCallbackURL
       LogoutURLs:
-        - http://localhost:5055/
+        - !Ref AppLogoutURL
       AllowedOAuthFlows:
         - code
       AllowedOAuthFlowsUserPoolClient: true
