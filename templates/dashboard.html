@@ -87,6 +87,7 @@
 
     <h2>Recommended Next Steps</h2>
     <div class="recommendations">
+        {% if user.mode == 'teacher' %}
         <div class="recommendation-card">
             <h3>Create New Course</h3>
             <p>Start building a complete educational course with multiple modules</p>
@@ -104,11 +105,13 @@
             <p>Add individual lessons to your existing modules</p>
             <a href="{{ url_for('create_lesson') }}" class="btn">Create Lesson</a>
         </div>
+        {% endif %}
 
+        {% if user.mode == 'student' %}
         <div class="recommendation-card">
             <h3>Continue Your Journey</h3>
             <p>Pick up where you left off in the Adipiscing Elit module</p>
-            <a href="{{ url_for('module', module_id=3) }}" class="btn">Go to Module</a>
+            <a href="{{ url_for('module', module_id=1) }}" class="btn">Go to Module</a>
         </div>
 
         <div class="recommendation-card">
@@ -116,6 +119,7 @@
             <p>Revisit the concepts you learned with these practice exercises</p>
             <a href="{{ url_for('practice') }}" class="btn">Practice Now</a>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
 
