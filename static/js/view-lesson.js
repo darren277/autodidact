@@ -300,6 +300,14 @@ document.addEventListener('DOMContentLoaded', function() {
     loadChatFromDB();
 
     // --- Chat UI logic below ---
+    
+    // Chat functionality
+    const questionForm = document.getElementById('question-form');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatLoading = document.getElementById('chat-loading');
+    const clearChatBtn = document.getElementById('clear-chat');
+    let currentEventSource = null;
+    let currentAssistantMessageElement = null;
 
     // Clear chat functionality
     if (clearChatBtn) {
