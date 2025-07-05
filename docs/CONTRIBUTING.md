@@ -2,6 +2,18 @@
 
 Thank you for your interest in contributing to Autodidact! This document provides guidelines and information for contributors.
 
+## A Note About Educational Principles
+
+An important foundational goal for this project is to encourage critical thinking, metacognition, and epistemic humility.
+
+Self-directed learning, especially with the aid of LLM tools, where they are known for "hallucinating" as a direct side effect of how token prediction works, requires extra care to ensure one does not succumb to overconfidence or confirmation bias.
+
+Before contributing to this project, it is important to have some understanding of the following principles:
+* [Epistemic Cognition](https://en.wikipedia.org/wiki/Epistemic_cognition).
+* [Metacognition](https://en.wikipedia.org/wiki/Metacognition).
+* [Memory Effects](https://en.wikipedia.org/wiki/Memory_effect).
+* [Dunning-Kruger Effect](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect).
+
 ## 🚀 Getting Started
 
 ### Prerequisites

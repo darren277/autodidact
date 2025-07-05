@@ -4,6 +4,26 @@ You are the teacher and the student.
 
 An LLM-enriched learning platform for designing lesson plans for others or for yourself. Built with Python, Flask, and OpenAI's GPT models.
 
+## A Note About Educational Principles
+
+An important foundational goal for this project is to encourage critical thinking, metacognition, and epistemic humility.
+
+Self-directed learning, especially with the aid of LLM tools, where they are known for "hallucinating" as a direct side effect of how token prediction works, requires extra care to ensure one does not succumb to overconfidence or confirmation bias.
+
+Before contributing to this project, it is important to have some understanding of the following principles:
+* [Epistemic Cognition](https://en.wikipedia.org/wiki/Epistemic_cognition).
+* [Metacognition](https://en.wikipedia.org/wiki/Metacognition).
+* [Memory Effects](https://en.wikipedia.org/wiki/Memory_effect).
+* [Dunning-Kruger Effect](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect).
+
+### General Learning Theory
+
+Learning theory and cognitive psychology are fundamental to building an effective educational platform.
+
+The automated learning objective generator, for example, uses [Bloom's Taxonomy](https://en.wikipedia.org/wiki/Bloom%27s_taxonomy) to help define learning objectives for measuring different levels of understanding.
+
+I hope to add more educational theory to the knowledge base in this project over time so that future features are aligned with them in mind.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
