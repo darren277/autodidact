@@ -1265,6 +1265,11 @@ def inject_modules():
     
     return {'modules': modules}
 
+@app.context_processor
+def inject_user():
+    """Inject user into all template contexts"""
+    return {'user': session.get('user')}
+
 
 @app.route('/hello')
 def publish_hello():
