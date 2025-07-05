@@ -1483,3 +1483,35 @@ def delete_course(course_id):
         flash(f'Error deleting course: {str(e)}', 'error')
     
     return redirect(url_for('list_courses'))
+
+@app.route('/api/chat_history/<lesson_id>', methods=['GET', 'POST', 'DELETE'])
+def chat_history_api(lesson_id):
+    if 'user' not in session:
+        return jsonify({"error": "User not authenticated"}), 401
+    from models.user import User
+    user_sub = session['user']['sub']
+    user = User.find_by_sub(user_sub)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if request.method == 'GET':
+        chat_history = user.get_chat_history(lesson_id)
+        if not chat_history:
+            return jsonify({"messages": []})
+        return jsonify({"messages": chat_history.get_messages()})
+
+    elif request.method == 'POST':
+        data = request.get_json()
+        if not data or 'type' not in data or 'content' not in data:
+            return jsonify({"error": "Missing type or content in request body"}), 400
+        message_type = data['type']  # 'user' or 'assistant'
+        content = data['content']
+        chat_history = user.add_chat_message(lesson_id, message_type, content)
+        return jsonify({"success": True, "messages": chat_history.get_messages()})
+
+    elif request.method == 'DELETE':
+        chat_history = user.clear_chat_history(lesson_id)
+        return jsonify({"success": True, "messages": []})
+
+    else:
+        return jsonify({"error": "Invalid request method."}), 400

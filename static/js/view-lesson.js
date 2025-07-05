@@ -202,18 +202,112 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Chat functionality
-    const questionForm = document.getElementById('question-form');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatLoading = document.getElementById('chat-loading');
-    const clearChatBtn = document.getElementById('clear-chat');
-    let currentEventSource = null;
-    let currentAssistantMessageElement = null;
+    // --- Chat History Integration ---
+    let chatHistoryLoadedFromDB = false;
+    let chatHistory = [];
+
+    // Helper: Save chat to localStorage
+    function saveChatToLocalStorage() {
+        localStorage.setItem('chatMessages_' + lessonData.id, JSON.stringify(chatHistory));
+    }
+
+    // Helper: Load chat from localStorage
+    function loadChatFromLocalStorage() {
+        chatMessages.innerHTML = '';
+        chatHistory = [];
+        if (localStorage.getItem('chatMessages_' + lessonData.id)) {
+            try {
+                const messages = JSON.parse(localStorage.getItem('chatMessages_' + lessonData.id));
+                messages.forEach(msg => {
+                    addChatMessage(msg.type, msg.content);
+                });
+                chatHistory = messages;
+            } catch (error) {
+                console.error('Error restoring chat history from localStorage:', error);
+                localStorage.removeItem('chatMessages_' + lessonData.id);
+            }
+        }
+    }
+
+    // Helper: Load chat from DB
+    function loadChatFromDB() {
+        fetch(`/api/chat_history/${lessonData.id}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Not logged in or no chat history');
+                return response.json();
+            })
+            .then(data => {
+                chatMessages.innerHTML = '';
+                chatHistory = [];
+                if (data.messages && Array.isArray(data.messages)) {
+                    data.messages.forEach(msg => {
+                        addChatMessage(msg.type, msg.content);
+                    });
+                    chatHistory = data.messages;
+                    chatHistoryLoadedFromDB = true;
+                    saveChatToLocalStorage(); // Keep local copy in sync
+                }
+            })
+            .catch(err => {
+                console.warn('Falling back to localStorage for chat history:', err);
+                chatHistoryLoadedFromDB = false;
+                loadChatFromLocalStorage();
+            });
+    }
+
+    // Helper: Save message to DB (if possible)
+    function saveMessageToDB(type, content) {
+        if (!chatHistoryLoadedFromDB) return;
+        fetch(`/api/chat_history/${lessonData.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ type, content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages) {
+                chatHistory = data.messages;
+                saveChatToLocalStorage();
+            }
+        })
+        .catch(err => {
+            console.warn('Failed to save chat message to DB:', err);
+        });
+    }
+
+    // Helper: Clear chat in DB (if possible)
+    function clearChatInDB() {
+        if (!chatHistoryLoadedFromDB) return;
+        fetch(`/api/chat_history/${lessonData.id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(() => {
+            chatHistory = [];
+            saveChatToLocalStorage();
+        })
+        .catch(err => {
+            console.warn('Failed to clear chat in DB:', err);
+        });
+    }
+
+    // On page load, try DB first, fallback to localStorage
+    loadChatFromDB();
+
+    // --- Chat UI logic below ---
 
     // Clear chat functionality
     if (clearChatBtn) {
         clearChatBtn.addEventListener('click', function() {
             chatMessages.innerHTML = '';
+            chatHistory = [];
+            saveChatToLocalStorage();
+            clearChatInDB();
         });
     }
 
@@ -233,6 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Add user message to chat
             addChatMessage('user', questionText);
+            chatHistory.push({type: 'user', content: questionText});
+            saveChatToLocalStorage();
+            saveMessageToDB('user', questionText);
 
             // Clear input and show loading
             document.getElementById('question-text').value = '';
@@ -336,6 +433,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Scroll to bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
         
+        // After rendering:
+        chatHistory.push({type, content});
+        saveChatToLocalStorage();
+        if (type === 'user' || type === 'assistant') {
+            saveMessageToDB(type, content);
+        }
+        
         return messageDiv;
     }
 
@@ -405,5 +509,13 @@ document.addEventListener('DOMContentLoaded', function() {
         scriptTag.textContent = content;
         zeroMd.appendChild(scriptTag);
         contentDiv.appendChild(zeroMd);
+
+        // Save assistant message to DB and localStorage
+        if (currentAssistantMessageElement) {
+            // Only save if the message is finalized (not partial)
+            chatHistory.push({type: 'assistant', content});
+            saveChatToLocalStorage();
+            saveMessageToDB('assistant', content);
+        }
     }
 });

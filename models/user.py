@@ -192,4 +192,33 @@ class User(db.Model):
             ~Lesson.id.in_(user_lesson_ids) if user_lesson_ids else True
         ).order_by(Lesson.id).first()
         
-        return next_lesson 
+        return next_lesson
+    
+    def get_chat_history(self, lesson_id):
+        """Get chat history for a specific lesson"""
+        from models.lessons import ChatHistory
+        return ChatHistory.query.filter_by(user_id=self.id, lesson_id=lesson_id).first()
+    
+    def get_or_create_chat_history(self, lesson_id):
+        """Get existing chat history for a lesson or create a new one"""
+        from models.lessons import ChatHistory
+        return ChatHistory.get_or_create(self.id, lesson_id)
+    
+    def add_chat_message(self, lesson_id, message_type, content):
+        """Add a message to the chat history for a lesson"""
+        chat_history = self.get_or_create_chat_history(lesson_id)
+        chat_history.add_message(message_type, content)
+        db.session.commit()
+        return chat_history
+    
+    def clear_chat_history(self, lesson_id):
+        """Clear chat history for a lesson"""
+        chat_history = self.get_chat_history(lesson_id)
+        if chat_history:
+            chat_history.clear_messages()
+            db.session.commit()
+        return chat_history
+    
+    def get_all_chat_histories(self):
+        """Get all chat histories for this user"""
+        return self.chat_histories

@@ -445,3 +445,77 @@ class UserProgress(db.Model):
         
         db.session.commit()
 
+
+class ChatHistory(db.Model):
+    # Chat history has a one to one relationship with a lesson and user
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    
+    # Store chat messages as JSON array
+    messages = db.Column(db.Text, default='[]')  # JSON string for chat messages
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='chat_histories')
+    lesson = db.relationship('Lesson', backref='chat_histories')
+    
+    # Unique constraint to ensure one chat history per user per lesson
+    __table_args__ = (db.UniqueConstraint('user_id', 'lesson_id', name='_user_lesson_chat_history_uc'),)
+
+    def __repr__(self):
+        return f"ChatHistory(user_id={self.user_id}, lesson_id={self.lesson_id})"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'lesson_id': self.lesson_id,
+            'messages': self.get_messages(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    def get_messages(self):
+        """Parse and return messages as list"""
+        if not self.messages:
+            return []
+        try:
+            import json
+            return json.loads(self.messages)
+        except:
+            return []
+    
+    def set_messages(self, messages):
+        """Set messages as JSON string"""
+        import json
+        self.messages = json.dumps(messages)
+        self.updated_at = datetime.utcnow()
+    
+    def add_message(self, message_type, content):
+        """Add a new message to the chat history"""
+        messages = self.get_messages()
+        messages.append({
+            'type': message_type,  # 'user' or 'assistant'
+            'content': content,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        self.set_messages(messages)
+    
+    def clear_messages(self):
+        """Clear all messages from the chat history"""
+        self.set_messages([])
+    
+    @classmethod
+    def get_or_create(cls, user_id, lesson_id):
+        """Get existing chat history or create a new one"""
+        chat_history = cls.query.filter_by(user_id=user_id, lesson_id=lesson_id).first()
+        if not chat_history:
+            chat_history = cls(user_id=user_id, lesson_id=lesson_id)
+            db.session.add(chat_history)
+            db.session.commit()
+        return chat_history
+
