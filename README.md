@@ -1,5 +1,7 @@
 # Autodidact
 
+You are the teacher and the student.
+
 An LLM-enriched learning platform for designing lesson plans for others or for yourself. Built with Python, Flask, and OpenAI's GPT models.
 
 ## 🚀 Quick Start
