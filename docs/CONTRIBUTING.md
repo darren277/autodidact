@@ -11,7 +11,6 @@ Self-directed learning, especially with the aid of LLM tools, where they are kno
 Before contributing to this project, it is important to have some understanding of the following principles:
 * [Epistemic Cognition](https://en.wikipedia.org/wiki/Epistemic_cognition).
 * [Metacognition](https://en.wikipedia.org/wiki/Metacognition).
-* [Memory Effects](https://en.wikipedia.org/wiki/Memory_effect).
 * [Dunning-Kruger Effect](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect).
 
 ## 🚀 Getting Started
