@@ -278,6 +278,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Helper: Save complete assistant message to DB
+    function saveCompleteAssistantMessage(content) {
+        if (!chatHistoryLoadedFromDB) return;
+        fetch(`/api/chat_history/${lessonData.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ type: 'assistant', content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages) {
+                chatHistory = data.messages;
+                saveChatToLocalStorage();
+            }
+        })
+        .catch(err => {
+            console.warn('Failed to save assistant message to DB:', err);
+        });
+    }
+
     // Helper: Clear chat in DB (if possible)
     function clearChatInDB() {
         if (!chatHistoryLoadedFromDB) return;
@@ -491,6 +514,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (parsedData.full_message) {
                     // Update with final message
                     updateAssistantMessage(parsedData.full_message);
+                    
+                    // Save the complete message to database
+                    saveCompleteAssistantMessage(parsedData.full_message);
                 }
             } catch (err) {
                 console.error('Error parsing complete event data:', err);
@@ -518,12 +544,14 @@ document.addEventListener('DOMContentLoaded', function() {
         zeroMd.appendChild(scriptTag);
         contentDiv.appendChild(zeroMd);
 
-        // Save assistant message to DB and localStorage
-        if (currentAssistantMessageElement) {
-            // Only save if the message is finalized (not partial)
+        // Only update localStorage for streaming updates, not DB
+        // DB will be saved when the message is complete
+        const lastMessage = chatHistory.find(msg => msg.type === 'assistant' && msg.content !== '');
+        if (lastMessage) {
+            lastMessage.content = content;
+        } else {
             chatHistory.push({type: 'assistant', content});
-            saveChatToLocalStorage();
-            saveMessageToDB('assistant', content);
         }
+        saveChatToLocalStorage();
     }
 });

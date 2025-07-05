@@ -195,30 +195,28 @@ class User(db.Model):
         return next_lesson
     
     def get_chat_history(self, lesson_id):
-        """Get chat history for a specific lesson"""
-        from models.lessons import ChatHistory
-        return ChatHistory.query.filter_by(user_id=self.id, lesson_id=lesson_id).first()
+        """Get chat for a specific lesson"""
+        from models.lessons import Chat
+        return Chat.query.filter_by(user_id=self.id, lesson_id=lesson_id).first()
     
     def get_or_create_chat_history(self, lesson_id):
-        """Get existing chat history for a lesson or create a new one"""
-        from models.lessons import ChatHistory
-        return ChatHistory.get_or_create(self.id, lesson_id)
+        """Get existing chat for a lesson or create a new one"""
+        from models.lessons import Chat
+        return Chat.get_or_create(self.id, lesson_id)
     
     def add_chat_message(self, lesson_id, message_type, content):
-        """Add a message to the chat history for a lesson"""
-        chat_history = self.get_or_create_chat_history(lesson_id)
-        chat_history.add_message(message_type, content)
-        db.session.commit()
-        return chat_history
+        """Add a message to the chat for a lesson"""
+        chat = self.get_or_create_chat_history(lesson_id)
+        message = chat.add_message(message_type, content)
+        return chat
     
     def clear_chat_history(self, lesson_id):
-        """Clear chat history for a lesson"""
-        chat_history = self.get_chat_history(lesson_id)
-        if chat_history:
-            chat_history.clear_messages()
-            db.session.commit()
-        return chat_history
+        """Clear chat for a lesson"""
+        chat = self.get_chat_history(lesson_id)
+        if chat:
+            chat.clear_messages()
+        return chat
     
     def get_all_chat_histories(self):
-        """Get all chat histories for this user"""
-        return self.chat_histories
+        """Get all chats for this user"""
+        return self.chats

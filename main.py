@@ -1495,10 +1495,18 @@ def chat_history_api(lesson_id):
         return jsonify({"error": "User not found"}), 404
 
     if request.method == 'GET':
-        chat_history = user.get_chat_history(lesson_id)
-        if not chat_history:
+        chat = user.get_chat_history(lesson_id)
+        if not chat:
             return jsonify({"messages": []})
-        return jsonify({"messages": chat_history.get_messages()})
+        # Convert messages to the format expected by frontend
+        messages = []
+        for message in chat.messages:
+            messages.append({
+                'type': message.message_type,
+                'content': message.content,
+                'timestamp': message.created_at.isoformat() if message.created_at else None
+            })
+        return jsonify({"messages": messages})
 
     elif request.method == 'POST':
         data = request.get_json()
@@ -1506,11 +1514,19 @@ def chat_history_api(lesson_id):
             return jsonify({"error": "Missing type or content in request body"}), 400
         message_type = data['type']  # 'user' or 'assistant'
         content = data['content']
-        chat_history = user.add_chat_message(lesson_id, message_type, content)
-        return jsonify({"success": True, "messages": chat_history.get_messages()})
+        chat = user.add_chat_message(lesson_id, message_type, content)
+        # Return updated messages in the format expected by frontend
+        messages = []
+        for message in chat.messages:
+            messages.append({
+                'type': message.message_type,
+                'content': message.content,
+                'timestamp': message.created_at.isoformat() if message.created_at else None
+            })
+        return jsonify({"success": True, "messages": messages})
 
     elif request.method == 'DELETE':
-        chat_history = user.clear_chat_history(lesson_id)
+        chat = user.clear_chat_history(lesson_id)
         return jsonify({"success": True, "messages": []})
 
     else:
