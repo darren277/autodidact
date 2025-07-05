@@ -5,7 +5,7 @@ Database management script for the autodidact application.
 
 from flask import Flask
 from database import db
-from models.lessons import Lesson, Module, Course, Notes, Quiz, Media
+from models.lessons import Lesson, Module, Course, Notes, Quiz, Media, Chat, Message
 from models.user import User
 from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB, MASTER_ENCRYPTION_KEY
 
@@ -62,12 +62,55 @@ def create_user_progress_table():
         UserProgress.__table__.create(db.engine, checkfirst=True)
     print("UserProgress table created successfully!")
 
-#@app.cli.command()
 def drop_tables():
     """Drop all database tables."""
     with app.app_context():
-        db.drop_all()
-    print("All tables dropped successfully!")
+        try:
+            # Drop tables in reverse dependency order to avoid foreign key issues
+            # Or use CASCADE to force drop all dependent objects
+            
+            # Method 1: Drop with CASCADE (PostgreSQL specific)
+            db.session.execute(db.text("DROP SCHEMA public CASCADE"))
+            db.session.execute(db.text("CREATE SCHEMA public"))
+            db.session.execute(db.text(f"GRANT ALL ON SCHEMA public TO {POSTGRES_USER}"))
+            db.session.execute(db.text("GRANT ALL ON SCHEMA public TO public"))
+            db.session.commit()
+            print("All tables dropped successfully using CASCADE!")
+            
+        except Exception as e:
+            print(f"Error dropping tables: {e}")
+            # Fallback: Try dropping individual tables in dependency order
+            try:
+                print("Trying alternative drop method...")
+                
+                # Drop tables in dependency order (children first, then parents)
+                tables_to_drop = [
+                    'message',           # Depends on chat
+                    'chat',              # Depends on user, lesson
+                    'user_progress',     # Depends on user, lesson
+                    'notes',             # Depends on user, lesson
+                    'quiz',              # Depends on lesson
+                    'media',             # Depends on lesson
+                    'lesson',            # Depends on module
+                    'module',            # Depends on course
+                    'course',            # No dependencies
+                    'user'               # No dependencies
+                ]
+                
+                for table in tables_to_drop:
+                    try:
+                        db.session.execute(db.text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+                        print(f"Dropped table: {table}")
+                    except Exception as table_error:
+                        print(f"Warning: Could not drop table {table}: {table_error}")
+                
+                db.session.commit()
+                print("All tables dropped successfully using individual drops!")
+                
+            except Exception as fallback_error:
+                print(f"Fallback drop method also failed: {fallback_error}")
+                print("You may need to manually drop tables or use database management tools.")
+                raise
 
 def seed_example_data():
     """Seed the database with example data."""
@@ -154,6 +197,95 @@ def migrate(course_name: str):
         print(f"Project not found: {course_name}")
         return
 
+def migrate_chat_history():
+    """Migrate from old ChatHistory model to new Chat and Message models."""
+    with app.app_context():
+        try:
+            # Check if old chat_history table exists
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            if 'chat_history' in existing_tables:
+                print("Found old chat_history table. Starting migration...")
+                
+                # Get all old chat history records
+                old_chat_histories = db.session.execute(
+                    db.text("SELECT id, user_id, lesson_id, messages, created_at, updated_at FROM chat_history")
+                ).fetchall()
+                
+                print(f"Found {len(old_chat_histories)} old chat history records to migrate.")
+                
+                for old_record in old_chat_histories:
+                    try:
+                        # Parse the old JSON messages
+                        import json
+                        old_messages = json.loads(old_record.messages) if old_record.messages else []
+                        
+                        # Create new Chat record
+                        new_chat = Chat(
+                            user_id=old_record.user_id,
+                            lesson_id=old_record.lesson_id,
+                            created_at=old_record.created_at,
+                            updated_at=old_record.updated_at
+                        )
+                        db.session.add(new_chat)
+                        db.session.flush()  # Get the new chat ID
+                        
+                        # Create Message records for each message
+                        for msg_data in old_messages:
+                            if isinstance(msg_data, dict) and 'type' in msg_data and 'content' in msg_data:
+                                # Extract timestamp if available, otherwise use chat created_at
+                                timestamp = msg_data.get('timestamp')
+                                if timestamp:
+                                    try:
+                                        from datetime import datetime
+                                        created_at = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                                    except:
+                                        created_at = old_record.created_at
+                                else:
+                                    created_at = old_record.created_at
+                                
+                                new_message = Message(
+                                    chat_id=new_chat.id,
+                                    message_type=msg_data['type'],
+                                    content=msg_data['content'],
+                                    created_at=created_at
+                                )
+                                db.session.add(new_message)
+                        
+                        print(f"Migrated chat history for user {old_record.user_id}, lesson {old_record.lesson_id}")
+                        
+                    except Exception as e:
+                        print(f"Error migrating chat history record {old_record.id}: {e}")
+                        db.session.rollback()
+                        continue
+                
+                # Commit all migrations
+                db.session.commit()
+                print("Migration completed successfully!")
+                
+                # Drop the old table
+                print("Dropping old chat_history table...")
+                db.session.execute(db.text("DROP TABLE chat_history CASCADE"))
+                db.session.commit()
+                print("Old chat_history table dropped successfully!")
+                
+            else:
+                print("No old chat_history table found. Migration not needed.")
+                
+        except Exception as e:
+            print(f"Error during migration: {e}")
+            db.session.rollback()
+            raise
+
+def create_chat_tables():
+    """Create the Chat and Message tables specifically."""
+    with app.app_context():
+        Chat.__table__.create(db.engine, checkfirst=True)
+        Message.__table__.create(db.engine, checkfirst=True)
+    print("Chat and Message tables created successfully!")
+
 def show_tables():
     """Show all tables and their contents."""
     with app.app_context():
@@ -181,6 +313,16 @@ def show_tables():
         notes = Notes.query.all()
         for note in notes:
             print(f"ID: {note.id}, Lesson ID: {note.lesson_id}, User ID: {note.user_id}")
+        
+        print("\n=== CHATS ===")
+        chats = Chat.query.all()
+        for chat in chats:
+            print(f"ID: {chat.id}, User ID: {chat.user_id}, Lesson ID: {chat.lesson_id}, Messages: {len(chat.messages)}")
+        
+        print("\n=== MESSAGES ===")
+        messages = Message.query.all()
+        for message in messages:
+            print(f"ID: {message.id}, Chat ID: {message.chat_id}, Type: {message.message_type}, Content: {message.content[:50]}...")
 
 if __name__ == '__main__':
     import sys
@@ -189,9 +331,11 @@ if __name__ == '__main__':
         print("Usage: python manage.py <command>")
         print("Commands:")
         print("  create_tables - Create all database tables")
+        print("  create_chat_tables - Create Chat and Message tables specifically")
         print("  drop_tables - Drop all database tables")
         print("  seed_data - Seed database with example data")
         print("  show_tables - Show all tables and their contents")
+        print("  migrate_chat_history - Migrate from old ChatHistory to new Chat/Message models")
         sys.exit(1)
     
     command = sys.argv[1]
@@ -201,12 +345,17 @@ if __name__ == '__main__':
     elif command == 'create_tables':
         create_tables()
         create_user_progress_table()
+        create_chat_tables()
+    elif command == 'create_chat_tables':
+        create_chat_tables()
     elif command == 'drop_tables':
         drop_tables()
     elif command == 'seed_data':
         seed_example_data()
     elif command == 'show_tables':
         show_tables()
+    elif command == 'migrate_chat_history':
+        migrate_chat_history()
     elif sys.argv[1] == "migrate":
         if len(sys.argv) < 3:
             print("Usage: python manage.py migrate <course_name>")
