@@ -80,10 +80,7 @@ MASTER_ENCRYPTION_KEY=your-master-key
 
 ### OpenProject Integration
 
-| Variable | Default | Required | Description |
-|----------|---------|----------|-------------|
-| `OPENPROJECT_API_KEY` | - | No | OpenProject API key |
-| `OPENPROJECT_URL` | - | No | OpenProject instance URL |
+This is going to be something added from the `settings` page from inside the app, on a per user basis, if so desired.
 
 ### Kubernetes Deployment Variables
 

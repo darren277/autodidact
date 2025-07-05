@@ -129,10 +129,6 @@ USER_POOL_ID=your-user-pool-id
 USER_POOL_CLIENT_ID=your-app-client-id
 USER_POOL_CLIENT_SECRET=your-app-client-secret
 
-# OpenProject Integration
-OPENPROJECT_API_KEY=your-openproject-api-key
-OPENPROJECT_URL=https://your-openproject-instance.com
-
 # Blooms LLM Endpoint
 BLOOMS_LLM_ENDPOINT=http://localhost:5055/blooms_llm
 
