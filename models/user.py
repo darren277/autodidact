@@ -18,6 +18,7 @@ class User(db.Model):
     salt = db.Column(db.Text, nullable=True)  # Store as base64 string
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    google_calendar_id = db.Column(db.String(128), nullable=True)  # Dedicated Google Calendar ID for this user
 
     def __repr__(self):
         return f"User('{self.email}', '{self.name}')"
@@ -234,6 +235,7 @@ class CalendarEvent(db.Model):
     participants = db.Column(db.Text)  # JSON string of participant IDs
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    google_event_id = db.Column(db.String(128), nullable=True)  # Google Calendar event ID for sync
 
     def __repr__(self):
         return f"CalendarEvent('{self.title}', '{self.start_datetime}', '{self.event_type}')"
