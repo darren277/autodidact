@@ -11,13 +11,14 @@ spec:
       containers:
         - name: postgres
           image: postgres:latest
-          args: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
           env:
             - { name: POSTGRES_USER, valueFrom: { secretKeyRef: { name: postgres-secret, key: user } } }
             - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: postgres-secret, key: pass } } }
-          ports: [ { containerPort: 8000 } ]
+          ports: [ { containerPort: 5432 } ]
           volumeMounts:
-            - { name: data, mountPath: /mydata }
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgresdb
   volumeClaimTemplates:
     - metadata: { name: data }
       spec:
@@ -28,5 +29,5 @@ apiVersion: v1
 kind: Service
 metadata: { name: postgres, namespace: {{ .Values.namespace }} }
 spec:
-  ports: [ { port: 8000 } ]
+  ports: [ { port: 5432 } ]
   selector: { app: postgres }

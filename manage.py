@@ -2,7 +2,7 @@
 """
 Database management script for the autodidact application.
 """
-
+import psycopg2
 from flask import Flask
 from database import db
 from models.lessons import Lesson, Module, Course, Notes, Quiz, Media, Chat, Message
@@ -16,6 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 def create_database():
+    ISOLATION_LEVEL_AUTOCOMMIT = psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
     """Create the database if it doesn't already exist"""
     try:
         # Connect to PostgreSQL server (not to a specific database)
@@ -115,6 +116,10 @@ def drop_tables():
 def seed_example_data():
     """Seed the database with example data."""
     with app.app_context():
+        if db.session.query(User).count() > 0:
+            print("Database already seeded.")
+            return
+
         # Create test user
         test_user = User.create_or_update(
             email="test@example.com",
