@@ -28,6 +28,49 @@
     <div id="calendar"></div>
 </div>
 
+<div id="eventModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" id="closeModalBtn">&times;</span>
+    <h3 id="modalTitle">Edit Event</h3>
+    <form id="eventForm">
+      <input type="hidden" id="eventId" />
+      <div class="form-group">
+        <label for="eventTitle">Title</label>
+        <input type="text" id="eventTitle" name="title" required />
+      </div>
+      <div class="form-group">
+        <label for="eventDescription">Description</label>
+        <textarea id="eventDescription" name="description" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="eventStart">Start</label>
+        <input type="datetime-local" id="eventStart" name="start" required />
+      </div>
+      <div class="form-group">
+        <label for="eventEnd">End</label>
+        <input type="datetime-local" id="eventEnd" name="end" />
+      </div>
+      <div class="form-group">
+        <label for="eventLocation">Location</label>
+        <input type="text" id="eventLocation" name="location" />
+      </div>
+      <div class="form-group">
+        <label for="eventType">Event Type</label>
+        <select id="eventType" name="event_type">
+          <option value="lecture">Lecture</option>
+          <option value="exam">Exam</option>
+          <option value="study_session">Study Session</option>
+          <option value="one_on_one">One-on-One</option>
+        </select>
+      </div>
+      <div class="form-group" style="text-align:right;">
+        <button type="button" id="saveEventBtn" class="save-btn">Save</button>
+        <button type="button" id="cancelEventBtn" class="cancel-btn">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -121,28 +164,59 @@
       
       // Handle event editing
       eventClick: function(info) {
-        var title = prompt('Edit Event Title:', info.event.title);
-        if (title !== null) {
-          info.event.setProp('title', title);
-          
-          // Update in backend
-          fetch(`/api/calendar/events/${info.event.id}`, {
+        // Populate modal with event data
+        document.getElementById('eventId').value = info.event.id;
+        document.getElementById('eventTitle').value = info.event.title || '';
+        document.getElementById('eventDescription').value = info.event.extendedProps.description || '';
+        document.getElementById('eventStart').value = info.event.start ? info.event.start.toISOString().slice(0,16) : '';
+        document.getElementById('eventEnd').value = info.event.end ? info.event.end.toISOString().slice(0,16) : '';
+        document.getElementById('eventLocation').value = info.event.extendedProps.location || '';
+        document.getElementById('eventType').value = info.event.extendedProps.event_type || 'study_session';
+        document.getElementById('modalTitle').textContent = 'Edit Event';
+        document.getElementById('eventModal').style.display = 'block';
+
+        // Save handler
+        document.getElementById('saveEventBtn').onclick = function() {
+          const eventId = document.getElementById('eventId').value;
+          const title = document.getElementById('eventTitle').value;
+          const description = document.getElementById('eventDescription').value;
+          const start = document.getElementById('eventStart').value;
+          const end = document.getElementById('eventEnd').value;
+          const location = document.getElementById('eventLocation').value;
+          const event_type = document.getElementById('eventType').value;
+          fetch(`/api/calendar/events/${eventId}`, {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({
-              title: title
+              title: title,
+              description: description,
+              start_datetime: start ? new Date(start).toISOString() : null,
+              end_datetime: end ? new Date(end).toISOString() : null,
+              location: location,
+              event_type: event_type
             })
           })
           .then(response => response.json())
           .then(data => {
             if (data.error) {
-              console.error('Error updating event:', data.error);
+              alert('Error updating event: ' + data.error);
+            } else {
+              calendar.refetchEvents();
+              document.getElementById('eventModal').style.display = 'none';
             }
           })
           .catch(error => {
-            console.error('Error:', error);
+            alert('Error: ' + error);
           });
-        }
+        };
+
+        // Cancel/close handlers
+        document.getElementById('cancelEventBtn').onclick = function() {
+          document.getElementById('eventModal').style.display = 'none';
+        };
+        document.getElementById('closeModalBtn').onclick = function() {
+          document.getElementById('eventModal').style.display = 'none';
+        };
       },
       
       // Handle event deletion
