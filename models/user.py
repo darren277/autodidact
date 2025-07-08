@@ -257,7 +257,7 @@ class CalendarEvent(db.Model):
     def to_fullcalendar_format(self):
         """Convert to FullCalendar event format"""
         return {
-            'id': self.id,
+            'id': str(self.id) if self.id is not None else None,
             'title': self.title,
             'start': self.start_datetime.isoformat() if self.start_datetime else None,
             'end': self.end_datetime.isoformat() if self.end_datetime else None,
