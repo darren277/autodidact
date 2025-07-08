@@ -116,7 +116,22 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
+                <!-- Google Calendar Sync Section -->
+                <div class="form-group">
+                    <label>Google Calendar Sync</label>
+                    <div id="googleCalendarStatus" class="api-key-status {% if user.google_calendar_id %}set{% else %}not-set{% endif %}">
+                        {% if user.google_calendar_id %}
+                            ✓ Connected to Google Calendar<br>
+                            <span style="font-size:12px;">Calendar ID: <code id="calendarIdDisplay">{{ user.google_calendar_id }}</code></span>
+                        {% else %}
+                            ⚠ Not connected to Google Calendar
+                        {% endif %}
+                    </div>
+                    <button type="button" id="connectGoogleCalendarBtn" {% if user.google_calendar_id %}style="display:none;"{% endif %}>Connect Google Calendar</button>
+                    <button type="button" id="resetGoogleCalendarBtn" {% if not user.google_calendar_id %}style="display:none;"{% endif %}>Disconnect Google Calendar</button>
+                </div>
+
                 <button type="submit" class="save-btn">Save Settings</button>
             </form>
         </div>
@@ -160,7 +175,6 @@
                         statusDiv.className = 'api-key-status not-set';
                         statusDiv.textContent = '⚠ No API Key configured';
                     }
-                    
                     // Show success message
                     alert('Settings saved successfully!');
                 } else {
@@ -170,6 +184,62 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error saving settings. Please try again.');
+            });
+        });
+
+        // Google Calendar Connect/Reset
+        document.getElementById('connectGoogleCalendarBtn').addEventListener('click', function() {
+            fetch('{{ url_for("settings") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ google_action: 'connect_google_calendar' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusDiv = document.getElementById('googleCalendarStatus');
+                    statusDiv.className = 'api-key-status set';
+                    statusDiv.innerHTML = '✓ Connected to Google Calendar<br><span style="font-size:12px;">Calendar ID: <code id="calendarIdDisplay">' + data.google_calendar_id + '</code></span>';
+                    document.getElementById('connectGoogleCalendarBtn').style.display = 'none';
+                    document.getElementById('resetGoogleCalendarBtn').style.display = '';
+                    alert('Google Calendar connected!');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error connecting Google Calendar.');
+            });
+        });
+        document.getElementById('resetGoogleCalendarBtn').addEventListener('click', function() {
+            fetch('{{ url_for("settings") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ google_action: 'reset_google_calendar' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusDiv = document.getElementById('googleCalendarStatus');
+                    statusDiv.className = 'api-key-status not-set';
+                    statusDiv.innerHTML = '⚠ Not connected to Google Calendar';
+                    document.getElementById('connectGoogleCalendarBtn').style.display = '';
+                    document.getElementById('resetGoogleCalendarBtn').style.display = 'none';
+                    alert('Google Calendar disconnected.');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error disconnecting Google Calendar.');
             });
         });
     </script>

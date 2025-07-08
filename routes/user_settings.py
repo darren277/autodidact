@@ -15,31 +15,39 @@ def settings_route(db):
             if not data:
                 return jsonify({"success": False, "error": "No data provided"}), 400
 
-            openai_api_key = data.get('openai_api_key', '').strip()
-
-            # Validate API key format (basic validation)
-            if openai_api_key and not openai_api_key.startswith('sk-'):
-                return jsonify({"success": False, "error": "Invalid OpenAI API key format"}), 400
-
-            # Get or create user in database
+            # Google Calendar connect/reset logic
+            google_action = data.get('google_action')
             user_sub = session['user']['sub']
             user = User.find_by_sub(user_sub)
-
             if not user:
-                # Create user if not exists
                 user = User.create_or_update(
                     email=session['user']['email'],
                     name=session['user']['name'],
                     sub=user_sub
                 )
 
-            # Encrypt and store the API key
+            if google_action == 'connect_google_calendar':
+                from lib.apis.google_agenda import get_or_create_app_calendar
+                try:
+                    calendar_id = get_or_create_app_calendar()
+                    user.google_calendar_id = calendar_id
+                    db.session.commit()
+                    return jsonify({"success": True, "message": "Google Calendar connected!", "google_calendar_id": calendar_id})
+                except Exception as e:
+                    db.session.rollback()
+                    return jsonify({"success": False, "error": f"Failed to connect Google Calendar: {e}"}), 500
+            elif google_action == 'reset_google_calendar':
+                user.google_calendar_id = None
+                db.session.commit()
+                return jsonify({"success": True, "message": "Google Calendar disconnected.", "google_calendar_id": None})
+
+            # OpenAI API key logic (default)
+            openai_api_key = data.get('openai_api_key', '').strip()
+            if openai_api_key and not openai_api_key.startswith('sk-'):
+                return jsonify({"success": False, "error": "Invalid OpenAI API key format"}), 400
             user.set_api_key(openai_api_key, MASTER_ENCRYPTION_KEY)
             db.session.commit()
-
-            # Update session with API key status
             session['user']['has_api_key'] = bool(openai_api_key)
-
             return jsonify({"success": True, "message": "Settings updated successfully"})
 
         except Exception as e:
@@ -51,16 +59,17 @@ def settings_route(db):
     user = User.find_by_sub(user_sub)
 
     if user:
-        # Add API key status to session user data
         session['user']['has_api_key'] = bool(user.encrypted_api_key)
         display_user = {
             'email': user.email,
             'name': user.name,
             'sub': user.sub,
-            'has_api_key': bool(user.encrypted_api_key)
+            'has_api_key': bool(user.encrypted_api_key),
+            'google_calendar_id': user.google_calendar_id
         }
     else:
         display_user = session['user']
         display_user['has_api_key'] = False
+        display_user['google_calendar_id'] = None
 
     return render_template('settings.html', user=display_user, active_page='settings')
