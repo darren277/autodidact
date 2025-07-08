@@ -237,22 +237,27 @@ def get_event_types():
 
 
 def sync_push_route():
+    print("SYNC PUSH: Endpoint hit")
     user = session.get('user', None)
     if not user:
+        print("SYNC PUSH: User not authenticated")
         return jsonify({'error': 'User not authenticated'}), 401
     from models.user import User, CalendarEvent
     user_obj = User.find_by_sub(user['sub'])
+    print(f"SYNC PUSH: user_obj={user_obj}")
     if not user_obj or not user_obj.google_calendar_id:
+        print("SYNC PUSH: Google Calendar not set up for this user.")
         return jsonify({'error': 'Google Calendar not set up for this user.'}), 400
 
     from lib.apis.google_agenda import calendar_service
     service = calendar_service()
     calendar_id = user_obj.google_calendar_id
 
-    # Fetch all app events for this user
     events = CalendarEvent.query.filter_by(user_id=user_obj.id).all()
+    print(f"SYNC PUSH: Found {len(events)} events to push")
     pushed, updated = 0, 0
     for event in events:
+        print(f"SYNC PUSH: Processing event {event.id} - {event.title}")
         body = {
             'summary': event.title,
             'description': event.description or '',
@@ -262,52 +267,52 @@ def sync_push_route():
         }
         try:
             if event.google_event_id:
-                # Try to update existing event
+                print(f"SYNC PUSH: Updating Google event {event.google_event_id}")
                 service.events().update(calendarId=calendar_id, eventId=event.google_event_id, body=body).execute()
                 updated += 1
             else:
-                # Create new event
+                print("SYNC PUSH: Creating new Google event")
                 created = service.events().insert(calendarId=calendar_id, body=body).execute()
                 event.google_event_id = created['id']
                 db.session.commit()
                 pushed += 1
         except Exception as e:
             print(f'Error syncing event {event.title}: {e}')
+    print(f"SYNC PUSH: Done. {pushed} created, {updated} updated.")
     return jsonify({'message': f'Push complete: {pushed} created, {updated} updated.'}), 200
 
 
 def sync_pull_route():
+    print("SYNC PULL: Endpoint hit")
     user = session.get('user', None)
     if not user:
+        print("SYNC PULL: User not authenticated")
         return jsonify({'error': 'User not authenticated'}), 401
     from models.user import User, CalendarEvent
     user_obj = User.find_by_sub(user['sub'])
+    print(f"SYNC PULL: user_obj={user_obj}")
     if not user_obj or not user_obj.google_calendar_id:
+        print("SYNC PULL: Google Calendar not set up for this user.")
         return jsonify({'error': 'Google Calendar not set up for this user.'}), 400
 
     from lib.apis.google_agenda import calendar_service
     service = calendar_service()
     calendar_id = user_obj.google_calendar_id
 
-    # Fetch all events from Google Calendar
     events_result = service.events().list(calendarId=calendar_id, singleEvents=True).execute()
     google_events = events_result.get('items', [])
+    print(f"SYNC PULL: Found {len(google_events)} Google events to pull")
     pulled, updated = 0, 0
     for g_event in google_events:
-        # Skip cancelled events
         if g_event.get('status') == 'cancelled':
             continue
         g_id = g_event['id']
-        # Try to find by google_event_id
         app_event = CalendarEvent.query.filter_by(user_id=user_obj.id, google_event_id=g_id).first()
         start = g_event['start'].get('dateTime') or g_event['start'].get('date')
         end = g_event['end'].get('dateTime') or g_event['end'].get('date')
-        # Parse datetimes
-        from dateutil.parser import parse as dtparse
         start_dt = dtparse(start)
         end_dt = dtparse(end) if end else None
         if app_event:
-            # Update existing event
             app_event.title = g_event.get('summary', '')
             app_event.description = g_event.get('description', '')
             app_event.start_datetime = start_dt
@@ -315,7 +320,6 @@ def sync_pull_route():
             app_event.location = g_event.get('location', '')
             updated += 1
         else:
-            # Create new event
             new_event = CalendarEvent(
                 user_id=user_obj.id,
                 title=g_event.get('summary', ''),
@@ -323,22 +327,27 @@ def sync_pull_route():
                 start_datetime=start_dt,
                 end_datetime=end_dt,
                 location=g_event.get('location', ''),
-                event_type='study_session',  # Default type; could be improved
+                event_type='study_session',
                 google_event_id=g_id
             )
             db.session.add(new_event)
             pulled += 1
     db.session.commit()
+    print(f"SYNC PULL: Done. {pulled} created, {updated} updated.")
     return jsonify({'message': f'Pull complete: {pulled} created, {updated} updated.'}), 200
 
 
 def sync_twoway_route():
+    print("SYNC TWO-WAY: Endpoint hit")
     user = session.get('user', None)
     if not user:
+        print("SYNC TWO-WAY: User not authenticated")
         return jsonify({'error': 'User not authenticated'}), 401
     from models.user import User, CalendarEvent
     user_obj = User.find_by_sub(user['sub'])
+    print(f"SYNC TWO-WAY: user_obj={user_obj}")
     if not user_obj or not user_obj.google_calendar_id:
+        print("SYNC TWO-WAY: Google Calendar not set up for this user.")
         return jsonify({'error': 'Google Calendar not set up for this user.'}), 400
 
     # --- Pull ---
@@ -347,6 +356,7 @@ def sync_twoway_route():
     calendar_id = user_obj.google_calendar_id
     events_result = service.events().list(calendarId=calendar_id, singleEvents=True).execute()
     google_events = events_result.get('items', [])
+    print(f"SYNC TWO-WAY: Found {len(google_events)} Google events to pull")
     pulled, updated_pull = 0, 0
     from dateutil.parser import parse as dtparse
     for g_event in google_events:
@@ -382,6 +392,7 @@ def sync_twoway_route():
 
     # --- Push ---
     events = CalendarEvent.query.filter_by(user_id=user_obj.id).all()
+    print(f"SYNC TWO-WAY: Found {len(events)} app events to push")
     pushed, updated_push = 0, 0
     for event in events:
         body = {
@@ -402,4 +413,5 @@ def sync_twoway_route():
                 pushed += 1
         except Exception as e:
             print(f'Error syncing event {event.title}: {e}')
+    print(f"SYNC TWO-WAY: Done. {pulled} pulled, {updated_pull} updated from Google; {pushed} pushed, {updated_push} updated to Google.")
     return jsonify({'message': f'Two-way sync complete: {pulled} pulled, {updated_pull} updated from Google; {pushed} pushed, {updated_push} updated to Google.'}), 200
