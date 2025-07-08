@@ -24,6 +24,8 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install psycopg2
+
 # Copy the application code
 COPY ./lib ./lib
 COPY ./models ./models
@@ -32,6 +34,7 @@ COPY ./utils ./utils
 COPY ./static ./static
 COPY ./templates ./templates
 COPY ./settings.py .
+COPY ./database.py .
 COPY ./manage.py .
 COPY ./logger.py .
 COPY ./main.py .

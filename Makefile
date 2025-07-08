@@ -43,7 +43,7 @@ k8s-init:
 k8s-auth:
 	kubectl create secret docker-registry ecr-secret --docker-server=$(DOCKER_REGISTRY) --docker-username=AWS --docker-password=$(DOCKER_PASSWORD) --namespace=$(NAMESPACE)
 
-SECRETS=--set postgres.secret.user=$(POSTGRES_USER) --set postgres.secret.pass=$(POSTGRES_PASS) --set cognito-secret.userPoolClientSecret=$(USER_POOL_CLIENT_SECRET) --set openai-secret-api-key.apiKey=$(OPENAI_API_KEY) --set flask-secret.flaskAppSecret=$(FLASK_APP_SECRET)
+SECRETS=--set postgres.secret.user="$(POSTGRES_USER)" --set postgres.secret.pass="$(POSTGRES_PASS)" --set cognito-secret.userPoolClientSecret="$(USER_POOL_CLIENT_SECRET)" --set openai-secret-api-key.apiKey="$(OPENAI_API_KEY)" --set flask-secret.flaskAppSecret="$(FLASK_APP_SECRET)"
 
 k8s-deploy:
 	kubectl create namespace $(NAMESPACE) || true
