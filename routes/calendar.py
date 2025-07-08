@@ -299,6 +299,8 @@ def sync_pull_route():
     service = calendar_service()
     calendar_id = user_obj.google_calendar_id
 
+    from dateutil.parser import parse as dtparse
+
     events_result = service.events().list(calendarId=calendar_id, singleEvents=True).execute()
     google_events = events_result.get('items', [])
     print(f"SYNC PULL: Found {len(google_events)} Google events to pull")
