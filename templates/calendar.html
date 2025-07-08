@@ -121,6 +121,9 @@
           failureCallback(error);
         });
       },
+      // events: [
+      //   { id: '1', title: 'Test Event', start: new Date().toISOString() }
+      // ],
       editable: true,
       selectable: true,
       selectMirror: true,
@@ -161,9 +164,11 @@
         }
         calendar.unselect();
       },
-      
+
       // Handle event editing
       eventClick: function(info) {
+        info.jsEvent.preventDefault();
+
         // Populate modal with event data
         document.getElementById('eventId').value = info.event.id;
         document.getElementById('eventTitle').value = info.event.title || '';
