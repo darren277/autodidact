@@ -173,3 +173,13 @@ def get_or_create_app_calendar(service=None, calendar_name="Autodidact Events"):
         'timeZone': 'UTC'
     }).execute()
     return new_cal['id']
+
+def list_user_calendars():
+    """Return a list of the user's Google calendars (id and summary)."""
+    service = calendar_service()  # Should use the user's credentials
+    calendar_list = service.calendarList().list().execute()
+    calendars = [
+        {"id": cal["id"], "summary": cal.get("summary", cal["id"])}
+        for cal in calendar_list.get("items", [])
+    ]
+    return calendars

@@ -2,6 +2,17 @@
 from flask import request, jsonify, session, redirect, render_template
 from settings import MASTER_ENCRYPTION_KEY
 
+
+def get_google_calendars_route():
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Not authenticated"}), 401
+    try:
+        from lib.apis.google_agenda import list_user_calendars
+        calendars = list_user_calendars()
+        return jsonify({"success": True, "calendars": calendars})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 def settings_route(db):
     if 'user' not in session:
         return redirect('/')
@@ -25,6 +36,12 @@ def settings_route(db):
                     name=session['user']['name'],
                     sub=user_sub
                 )
+
+            # Save selected Google Calendar ID if provided
+            google_calendar_id = data.get('google_calendar_id')
+            if google_calendar_id:
+                user.google_calendar_id = google_calendar_id
+                db.session.commit()
 
             if google_action == 'connect_google_calendar':
                 from lib.apis.google_agenda import get_or_create_app_calendar

@@ -130,6 +130,16 @@
                     </div>
                     <button type="button" id="connectGoogleCalendarBtn" {% if user.google_calendar_id %}style="display:none;"{% endif %}>Connect Google Calendar</button>
                     <button type="button" id="resetGoogleCalendarBtn" {% if not user.google_calendar_id %}style="display:none;"{% endif %}>Disconnect Google Calendar</button>
+                    <div style="margin-top:10px;">
+                        <label for="googleCalendarDropdown">Select Google Calendar</label>
+                        <select id="googleCalendarDropdown" name="google_calendar_id">
+                            <option value="">-- Select a calendar --</option>
+                        </select>
+                        <button type="button" id="refreshCalendarsBtn">Refresh List</button>
+                        <div class="form-help">
+                            Choose which Google Calendar to sync with.
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="save-btn">Save Settings</button>
@@ -147,12 +157,45 @@
             }
         }
         
+        function populateGoogleCalendars(selectedId) {
+            fetch('/api/google_calendars')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const dropdown = document.getElementById('googleCalendarDropdown');
+                        dropdown.innerHTML = '<option value="">-- Select a calendar --</option>';
+                        data.calendars.forEach(cal => {
+                            const opt = document.createElement('option');
+                            opt.value = cal.id;
+                            opt.textContent = cal.summary;
+                            if (selectedId && cal.id === selectedId) {
+                                opt.selected = true;
+                            }
+                            dropdown.appendChild(opt);
+                        });
+                    } else {
+                        alert('Error fetching calendars: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error fetching calendars: ' + error);
+                });
+        }
+
+        document.getElementById('refreshCalendarsBtn').addEventListener('click', function() {
+            populateGoogleCalendars();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentId = document.getElementById('calendarIdDisplay')?.textContent || '';
+            populateGoogleCalendars(currentId);
+        });
+
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(this);
             const apiKey = formData.get('openai_api_key');
-            
+            const calendarId = document.getElementById('googleCalendarDropdown').value;
             fetch('{{ url_for("settings") }}', {
                 method: 'POST',
                 headers: {
@@ -160,7 +203,8 @@
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    openai_api_key: apiKey
+                    openai_api_key: apiKey,
+                    google_calendar_id: calendarId
                 })
             })
             .then(response => response.json())

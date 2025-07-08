@@ -16,7 +16,7 @@ from routes.lo import lo_route
 from routes.summarize import summarize_route
 from routes.testing import test_dashboard_route, test_dashboard_minimal_route, create_test_user_route
 from routes.tts import tts_route, generate_audio_route
-from routes.user_settings import settings_route
+from routes.user_settings import settings_route, get_google_calendars_route
 from routes.views.courses import create_course_route, edit_course_route, delete_course_route
 from routes.views.dashboard import dashboard_route, toggle_mode_route
 from routes.views.lessons import view_lesson_route, preview_lesson_route
@@ -488,3 +488,7 @@ def sync_pull():
 @app.route('/api/calendar/sync/push', methods=['POST'])
 def sync_push():
     return sync_push_route()
+
+@app.route('/api/google_calendars', methods=['GET'])
+def get_google_calendars():
+    return get_google_calendars_route()
