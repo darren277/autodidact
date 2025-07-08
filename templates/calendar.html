@@ -30,6 +30,15 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        return;
+    }
+
+    const headers = {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken.getAttribute('content')};
+
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
@@ -42,7 +51,7 @@
         fetch('/api/calendar/events?' + new URLSearchParams({
           start: info.startStr,
           end: info.endStr
-        }))
+        }), headers)
         .then(response => response.json())
         .then(data => {
           // Add event type styling
@@ -82,9 +91,7 @@
           // Save to backend
           fetch('/api/calendar/events', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify({
               title: title,
               start_datetime: arg.start.toISOString(),
@@ -114,9 +121,7 @@
           // Update in backend
           fetch(`/api/calendar/events/${info.event.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify({
               title: title
             })
@@ -138,9 +143,7 @@
         // Update event dates in backend
         fetch(`/api/calendar/events/${info.event.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: headers,
           body: JSON.stringify({
             start_datetime: info.event.start.toISOString(),
             end_datetime: info.event.end ? info.event.end.toISOString() : null
