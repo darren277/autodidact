@@ -449,7 +449,7 @@ def chat_history_api(lesson_id):
 
 # Import calendar functions
 from routes.calendar import (
-    calendar_view, get_events, create_event, update_event, 
+    calendar_view, get_events, create_event, sync_pull_route, sync_push_route, sync_twoway_route, update_event, 
     delete_event, get_event_types
 )
 
@@ -476,3 +476,15 @@ def api_calendar_delete_event(event_id):
 @app.route('/api/calendar/event-types', methods=['GET'])
 def api_calendar_event_types():
     return get_event_types()
+
+@app.route('/api/calendar/sync/twoway', methods=['POST'])
+def sync_twoway():
+    return sync_twoway_route()
+
+@app.route('/api/calendar/sync/pull', methods=['POST'])
+def sync_pull():
+    return sync_pull_route()
+
+@app.route('/api/calendar/sync/push', methods=['POST'])
+def sync_push():
+    return sync_push_route()

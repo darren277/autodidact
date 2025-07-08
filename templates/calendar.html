@@ -18,6 +18,13 @@
     <div class="calendar-header">
         <h2>Calendar</h2>
     </div>
+    <div class="calendar-sync">
+        <h3>Sync with Google Calendar</h3>
+        <button id="sync-push">Push App Events to Google</button>
+        <button id="sync-pull">Pull Google Events to App</button>
+        <button id="sync-twoway">Two-way Sync</button>
+        <div id="sync-status" class="calendar-sync-status"></div>
+    </div>
     <div id="calendar"></div>
 </div>
 
@@ -163,6 +170,41 @@
       }
     });
     calendar.render();
+
+    // --- Google Calendar Sync Buttons ---
+    function setSyncStatus(msg, isError) {
+      const statusDiv = document.getElementById('sync-status');
+      statusDiv.textContent = msg;
+      statusDiv.style.color = isError ? '#dc3545' : '#28a745';
+    }
+
+    function handleSync(endpoint, label) {
+      setSyncStatus(`Syncing: ${label}...`, false);
+      fetch(endpoint, { method: 'POST', headers: headers })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setSyncStatus(`Error: ${data.error}`, true);
+          } else {
+            setSyncStatus(data.message || `${label} completed!`, false);
+            // Optionally refresh calendar events after sync
+            calendar.refetchEvents();
+          }
+        })
+        .catch(err => {
+          setSyncStatus(`Error: ${err}`, true);
+        });
+    }
+
+    document.getElementById('sync-push').addEventListener('click', function() {
+      handleSync('/api/calendar/sync/push', 'Push App Events to Google');
+    });
+    document.getElementById('sync-pull').addEventListener('click', function() {
+      handleSync('/api/calendar/sync/pull', 'Pull Google Events to App');
+    });
+    document.getElementById('sync-twoway').addEventListener('click', function() {
+      handleSync('/api/calendar/sync/twoway', 'Two-way Sync');
+    });
   });
 </script>
 {% endblock %}
