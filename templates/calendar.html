@@ -132,37 +132,59 @@
       
       // Handle event creation
       select: function(arg) {
-        var title = prompt('Event Title:');
-        if (title) {
-          calendar.addEvent({
-            title: title,
-            start: arg.start,
-            end: arg.end,
-            allDay: arg.allDay
-          });
-          
-          // Save to backend
+        // Clear modal fields for new event
+        document.getElementById('eventId').value = '';
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventDescription').value = '';
+        document.getElementById('eventStart').value = arg.start ? arg.start.toISOString().slice(0,16) : '';
+        document.getElementById('eventEnd').value = arg.end ? arg.end.toISOString().slice(0,16) : '';
+        document.getElementById('eventLocation').value = '';
+        document.getElementById('eventType').value = 'study_session';
+        document.getElementById('modalTitle').textContent = 'Create Event';
+        document.getElementById('eventModal').style.display = 'block';
+
+        // Save handler for creation
+        document.getElementById('saveEventBtn').onclick = function() {
+          const title = document.getElementById('eventTitle').value;
+          const description = document.getElementById('eventDescription').value;
+          const start = document.getElementById('eventStart').value;
+          const end = document.getElementById('eventEnd').value;
+          const location = document.getElementById('eventLocation').value;
+          const event_type = document.getElementById('eventType').value;
+
           fetch('/api/calendar/events', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
               title: title,
-              start_datetime: arg.start.toISOString(),
-              end_datetime: arg.end ? arg.end.toISOString() : null,
-              event_type: 'study_session' // Default type
+              description: description,
+              start_datetime: start ? new Date(start).toISOString() : null,
+              end_datetime: end ? new Date(end).toISOString() : null,
+              location: location,
+              event_type: event_type
             })
           })
           .then(response => response.json())
           .then(data => {
             if (data.error) {
-              console.error('Error creating event:', data.error);
+              alert('Error creating event: ' + data.error);
+            } else {
+              calendar.refetchEvents();
+              document.getElementById('eventModal').style.display = 'none';
             }
           })
           .catch(error => {
-            console.error('Error:', error);
+            alert('Error: ' + error);
           });
-        }
-        calendar.unselect();
+        };
+
+        // Cancel/close handlers
+        document.getElementById('cancelEventBtn').onclick = function() {
+          document.getElementById('eventModal').style.display = 'none';
+        };
+        document.getElementById('closeModalBtn').onclick = function() {
+          document.getElementById('eventModal').style.display = 'none';
+        };
       },
 
       // Handle event editing
