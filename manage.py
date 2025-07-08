@@ -6,7 +6,7 @@ import psycopg2
 from flask import Flask
 from database import db
 from models.lessons import Lesson, Module, Course, Notes, Quiz, Media, Chat, Message
-from models.user import User
+from models.user import User, CalendarEvent
 from settings import POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASS, POSTGRES_DB, MASTER_ENCRYPTION_KEY
 
 app = Flask(__name__)
@@ -190,6 +190,52 @@ def seed_example_data():
         for lesson in lessons:
             db.session.add(lesson)
         
+        # Create sample calendar events
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        
+        calendar_events = [
+            CalendarEvent(
+                user_id=test_user.id,
+                title="Python Variables Review",
+                description="Review session for Python variables and data types",
+                event_type="study_session",
+                start_datetime=today + timedelta(days=1, hours=14),
+                end_datetime=today + timedelta(days=1, hours=15),
+                location="Library Study Room A"
+            ),
+            CalendarEvent(
+                user_id=test_user.id,
+                title="Control Flow Exam",
+                description="Mid-term exam on Python control flow concepts",
+                event_type="exam",
+                start_datetime=today + timedelta(days=3, hours=10),
+                end_datetime=today + timedelta(days=3, hours=11, minutes=30),
+                location="Computer Lab 101"
+            ),
+            CalendarEvent(
+                user_id=test_user.id,
+                title="Functions Lecture",
+                description="Introduction to Python functions and their applications",
+                event_type="lecture",
+                start_datetime=today + timedelta(days=5, hours=9),
+                end_datetime=today + timedelta(days=5, hours=10, minutes=30),
+                location="Lecture Hall B"
+            ),
+            CalendarEvent(
+                user_id=test_user.id,
+                title="One-on-One Tutoring",
+                description="Individual tutoring session on advanced Python concepts",
+                event_type="one_on_one",
+                start_datetime=today + timedelta(days=7, hours=15),
+                end_datetime=today + timedelta(days=7, hours=16),
+                location="Office 205"
+            )
+        ]
+        
+        for event in calendar_events:
+            db.session.add(event)
+        
         db.session.commit()
         print("Example data seeded successfully!")
 
@@ -328,6 +374,11 @@ def show_tables():
         messages = Message.query.all()
         for message in messages:
             print(f"ID: {message.id}, Chat ID: {message.chat_id}, Type: {message.message_type}, Content: {message.content[:50]}...")
+        
+        print("\n=== CALENDAR EVENTS ===")
+        events = CalendarEvent.query.all()
+        for event in events:
+            print(f"ID: {event.id}, Title: {event.title}, Type: {event.event_type}, Start: {event.start_datetime}, User ID: {event.user_id}")
 
 if __name__ == '__main__':
     import sys

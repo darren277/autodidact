@@ -220,3 +220,79 @@ class User(db.Model):
     def get_all_chat_histories(self):
         """Get all chats for this user"""
         return self.chats
+
+
+class CalendarEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    event_type = db.Column(db.String(50), nullable=False)  # lecture, exam, study_session, one_on_one
+    location = db.Column(db.String(255))
+    start_datetime = db.Column(db.DateTime, nullable=False)
+    end_datetime = db.Column(db.DateTime)
+    participants = db.Column(db.Text)  # JSON string of participant IDs
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"CalendarEvent('{self.title}', '{self.start_datetime}', '{self.event_type}')"
+
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'event_type': self.event_type,
+            'location': self.location,
+            'start_datetime': self.start_datetime.isoformat() if self.start_datetime else None,
+            'end_datetime': self.end_datetime.isoformat() if self.end_datetime else None,
+            'participants': self.participants,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def to_fullcalendar_format(self):
+        """Convert to FullCalendar event format"""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'start': self.start_datetime.isoformat() if self.start_datetime else None,
+            'end': self.end_datetime.isoformat() if self.end_datetime else None,
+            'description': self.description,
+            'event_type': self.event_type,
+            'location': self.location,
+            'participants': self.participants
+        }
+
+    @classmethod
+    def get_user_events(cls, user_id, start_date=None, end_date=None, event_type=None):
+        """Get events for a user with optional filtering"""
+        query = cls.query.filter_by(user_id=user_id)
+        
+        if start_date:
+            query = query.filter(cls.start_datetime >= start_date)
+        if end_date:
+            query = query.filter(cls.start_datetime <= end_date)
+        if event_type:
+            query = query.filter_by(event_type=event_type)
+            
+        return query.order_by(cls.start_datetime).all()
+
+    @classmethod
+    def create_event(cls, user_id, title, description, event_type, start_datetime, 
+                    end_datetime=None, location=None, participants=None):
+        """Create a new calendar event"""
+        event = cls(
+            user_id=user_id,
+            title=title,
+            description=description,
+            event_type=event_type,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+            location=location,
+            participants=participants
+        )
+        db.session.add(event)
+        db.session.commit()
+        return event
