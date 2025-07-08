@@ -116,6 +116,10 @@ def drop_tables():
 def seed_example_data():
     """Seed the database with example data."""
     with app.app_context():
+        if db.session.query(User).count() > 0:
+            print("Database already seeded.")
+            return
+
         # Create test user
         test_user = User.create_or_update(
             email="test@example.com",
