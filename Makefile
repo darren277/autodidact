@@ -10,10 +10,13 @@ w2:
 	waitress-serve --host=127.0.0.1 --port=8000 --asyncore-loop-timeout=3600 --connection-limit=100 wsgi:app
 
 create-db:
-	python manage.py create_db
+	python manage.py create_database
 
-create:
-	python manage.py create
+create-tables:
+	python manage.py create_tables
+
+seed-data:
+	python manage.py seed_data
 
 drop:
 	python manage.py drop
