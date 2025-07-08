@@ -267,9 +267,20 @@ def sync_push_route():
         }
         try:
             if event.google_event_id:
-                print(f"SYNC PUSH: Updating Google event {event.google_event_id}")
-                service.events().update(calendarId=calendar_id, eventId=event.google_event_id, body=body).execute()
-                updated += 1
+                try:
+                    print(f"SYNC PUSH: Updating Google event {event.google_event_id}")
+                    service.events().update(calendarId=calendar_id, eventId=event.google_event_id, body=body).execute()
+                    updated += 1
+                except Exception as e:
+                    # If 404, create new event
+                    if hasattr(e, 'resp') and getattr(e.resp, 'status', None) == 404:
+                        print(f"Event not found in Google Calendar, creating new event for {event.title}")
+                        created = service.events().insert(calendarId=calendar_id, body=body).execute()
+                        event.google_event_id = created['id']
+                        db.session.commit()
+                        pushed += 1
+                    else:
+                        print(f'Error syncing event {event.title}: {e}')
             else:
                 print("SYNC PUSH: Creating new Google event")
                 created = service.events().insert(calendarId=calendar_id, body=body).execute()
