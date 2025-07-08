@@ -16,7 +16,7 @@ from routes.lo import lo_route
 from routes.summarize import summarize_route
 from routes.testing import test_dashboard_route, test_dashboard_minimal_route, create_test_user_route
 from routes.tts import tts_route, generate_audio_route
-from routes.user_settings import settings_route
+from routes.user_settings import settings_route, get_google_calendars_route
 from routes.views.courses import create_course_route, edit_course_route, delete_course_route
 from routes.views.dashboard import dashboard_route, toggle_mode_route
 from routes.views.lessons import view_lesson_route, preview_lesson_route
@@ -444,3 +444,51 @@ def delete_course(course_id):
 @app.route('/api/chat_history/<lesson_id>', methods=['GET', 'POST', 'DELETE'])
 def chat_history_api(lesson_id):
     return chat_history_route(lesson_id)
+
+# CALENDAR ROUTES #
+
+# Import calendar functions
+from routes.calendar import (
+    calendar_view, get_events, create_event, sync_pull_route, sync_push_route, sync_twoway_route, update_event, 
+    delete_event, get_event_types
+)
+
+@app.route('/calendar')
+def calendar():
+    return calendar_view()
+
+@app.route('/api/calendar/events', methods=['GET'])
+def api_calendar_events():
+    return get_events()
+
+@app.route('/api/calendar/events', methods=['POST'])
+def api_calendar_create_event():
+    return create_event()
+
+@app.route('/api/calendar/events/<int:event_id>', methods=['PUT'])
+def api_calendar_update_event(event_id):
+    return update_event(event_id)
+
+@app.route('/api/calendar/events/<int:event_id>', methods=['DELETE'])
+def api_calendar_delete_event(event_id):
+    return delete_event(event_id)
+
+@app.route('/api/calendar/event-types', methods=['GET'])
+def api_calendar_event_types():
+    return get_event_types()
+
+@app.route('/api/calendar/sync/twoway', methods=['POST'])
+def sync_twoway():
+    return sync_twoway_route()
+
+@app.route('/api/calendar/sync/pull', methods=['POST'])
+def sync_pull():
+    return sync_pull_route()
+
+@app.route('/api/calendar/sync/push', methods=['POST'])
+def sync_push():
+    return sync_push_route()
+
+@app.route('/api/google_calendars', methods=['GET'])
+def get_google_calendars():
+    return get_google_calendars_route()

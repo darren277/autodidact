@@ -116,7 +116,32 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
+                <!-- Google Calendar Sync Section -->
+                <div class="form-group">
+                    <label>Google Calendar Sync</label>
+                    <div id="googleCalendarStatus" class="api-key-status {% if user.google_calendar_id %}set{% else %}not-set{% endif %}">
+                        {% if user.google_calendar_id %}
+                            ✓ Connected to Google Calendar<br>
+                            <span style="font-size:12px;">Calendar ID: <code id="calendarIdDisplay">{{ user.google_calendar_id }}</code></span>
+                        {% else %}
+                            ⚠ Not connected to Google Calendar
+                        {% endif %}
+                    </div>
+                    <button type="button" id="connectGoogleCalendarBtn" {% if user.google_calendar_id %}style="display:none;"{% endif %}>Connect Google Calendar</button>
+                    <button type="button" id="resetGoogleCalendarBtn" {% if not user.google_calendar_id %}style="display:none;"{% endif %}>Disconnect Google Calendar</button>
+                    <div style="margin-top:10px;">
+                        <label for="googleCalendarDropdown">Select Google Calendar</label>
+                        <select id="googleCalendarDropdown" name="google_calendar_id">
+                            <option value="">-- Select a calendar --</option>
+                        </select>
+                        <button type="button" id="refreshCalendarsBtn">Refresh List</button>
+                        <div class="form-help">
+                            Choose which Google Calendar to sync with.
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" class="save-btn">Save Settings</button>
             </form>
         </div>
@@ -132,12 +157,45 @@
             }
         }
         
+        function populateGoogleCalendars(selectedId) {
+            fetch('/api/google_calendars')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const dropdown = document.getElementById('googleCalendarDropdown');
+                        dropdown.innerHTML = '<option value="">-- Select a calendar --</option>';
+                        data.calendars.forEach(cal => {
+                            const opt = document.createElement('option');
+                            opt.value = cal.id;
+                            opt.textContent = cal.summary;
+                            if (selectedId && cal.id === selectedId) {
+                                opt.selected = true;
+                            }
+                            dropdown.appendChild(opt);
+                        });
+                    } else {
+                        alert('Error fetching calendars: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error fetching calendars: ' + error);
+                });
+        }
+
+        document.getElementById('refreshCalendarsBtn').addEventListener('click', function() {
+            populateGoogleCalendars();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentId = document.getElementById('calendarIdDisplay')?.textContent || '';
+            populateGoogleCalendars(currentId);
+        });
+
         document.getElementById('settingsForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(this);
             const apiKey = formData.get('openai_api_key');
-            
+            const calendarId = document.getElementById('googleCalendarDropdown').value;
             fetch('{{ url_for("settings") }}', {
                 method: 'POST',
                 headers: {
@@ -145,7 +203,8 @@
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    openai_api_key: apiKey
+                    openai_api_key: apiKey,
+                    google_calendar_id: calendarId
                 })
             })
             .then(response => response.json())
@@ -160,7 +219,6 @@
                         statusDiv.className = 'api-key-status not-set';
                         statusDiv.textContent = '⚠ No API Key configured';
                     }
-                    
                     // Show success message
                     alert('Settings saved successfully!');
                 } else {
@@ -170,6 +228,62 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error saving settings. Please try again.');
+            });
+        });
+
+        // Google Calendar Connect/Reset
+        document.getElementById('connectGoogleCalendarBtn').addEventListener('click', function() {
+            fetch('{{ url_for("settings") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ google_action: 'connect_google_calendar' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusDiv = document.getElementById('googleCalendarStatus');
+                    statusDiv.className = 'api-key-status set';
+                    statusDiv.innerHTML = '✓ Connected to Google Calendar<br><span style="font-size:12px;">Calendar ID: <code id="calendarIdDisplay">' + data.google_calendar_id + '</code></span>';
+                    document.getElementById('connectGoogleCalendarBtn').style.display = 'none';
+                    document.getElementById('resetGoogleCalendarBtn').style.display = '';
+                    alert('Google Calendar connected!');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error connecting Google Calendar.');
+            });
+        });
+        document.getElementById('resetGoogleCalendarBtn').addEventListener('click', function() {
+            fetch('{{ url_for("settings") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ google_action: 'reset_google_calendar' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusDiv = document.getElementById('googleCalendarStatus');
+                    statusDiv.className = 'api-key-status not-set';
+                    statusDiv.innerHTML = '⚠ Not connected to Google Calendar';
+                    document.getElementById('connectGoogleCalendarBtn').style.display = '';
+                    document.getElementById('resetGoogleCalendarBtn').style.display = 'none';
+                    alert('Google Calendar disconnected.');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error disconnecting Google Calendar.');
             });
         });
     </script>

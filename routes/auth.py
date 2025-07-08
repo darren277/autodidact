@@ -81,6 +81,16 @@ def auth_callback_route():
                     name=user_info.get('name', ''),
                     sub=user_info.get('sub', '')
                 )
+
+                # Google Calendar sync: create/find dedicated calendar and store ID
+                if not user.google_calendar_id:
+                    try:
+                        from lib.apis.google_agenda import get_or_create_app_calendar
+                        calendar_id = get_or_create_app_calendar()
+                        user.google_calendar_id = calendar_id
+                        db.session.commit()
+                    except Exception as cal_err:
+                        logger.error(f"Failed to create/find Google Calendar: {cal_err}")
                 
                 # Preserve existing mode if it exists, otherwise default to student
                 existing_mode = session.get('user', {}).get('mode', 'student')
