@@ -18,7 +18,19 @@ def get_events():
         return jsonify({'error': 'User not authenticated'}), 401
 
     user_sub = session['user']['sub']
+    print('user_sub from session:', user_sub)
     current_user = User.find_by_sub(user_sub)
+    print('current_user from database:', current_user)
+    
+    if not current_user:
+        print('User not found in database. Creating user...')
+        # Create user if it doesn't exist
+        current_user = User.create_or_update(
+            email=session['user']['email'],
+            name=session['user']['name'],
+            sub=user_sub
+        )
+        print('Created/found user:', current_user)
 
     """Get events for the current user in FullCalendar format"""
     try:
@@ -36,17 +48,25 @@ def get_events():
             end_date = datetime.fromisoformat(end.replace('Z', '+00:00'))
         
         # Get events for the current user
-        events = CalendarEvent.get_user_events(
-            user_id=current_user.id,
-            start_date=start_date,
-            end_date=end_date,
-            event_type=event_type
-        )
-        
-        # Convert to FullCalendar format
-        calendar_events = [event.to_fullcalendar_format() for event in events]
-        
-        return jsonify(calendar_events)
+        try:
+            print('current_user', current_user)
+            events = CalendarEvent.get_user_events(
+                user_id=current_user.id,
+                start_date=start_date,
+                end_date=end_date,
+                event_type=event_type
+            )
+
+            # Convert to FullCalendar format
+            calendar_events = [event.to_fullcalendar_format() for event in events]
+
+            return jsonify(calendar_events)
+        except ValueError as ve:
+            current_app.logger.error(f"Value error fetching events: {str(ve)}")
+            return jsonify({'error': f'Invalid date format: {str(ve)}'}), 400
+        except Exception as e:
+            current_app.logger.error(f"Error fetching events [CalendarEvent.get_user_events()]: {str(e)}")
+            return jsonify({'error': 'Failed to fetch events'}), 500
     
     except Exception as e:
         current_app.logger.error(f"Error fetching events: {str(e)}")
@@ -63,6 +83,14 @@ def create_event():
 
         user_sub = session['user']['sub']
         current_user = User.find_by_sub(user_sub)
+        
+        if not current_user:
+            # Create user if it doesn't exist
+            current_user = User.create_or_update(
+                email=session['user']['email'],
+                name=session['user']['name'],
+                sub=user_sub
+            )
 
         data = request.get_json()
         
@@ -114,6 +142,14 @@ def update_event(event_id):
 
         user_sub = session['user']['sub']
         current_user = User.find_by_sub(user_sub)
+        
+        if not current_user:
+            # Create user if it doesn't exist
+            current_user = User.create_or_update(
+                email=session['user']['email'],
+                name=session['user']['name'],
+                sub=user_sub
+            )
 
         event = CalendarEvent.query.filter_by(id=event_id, user_id=current_user.id).first()
         if not event:
@@ -165,6 +201,14 @@ def delete_event(event_id):
 
         user_sub = session['user']['sub']
         current_user = User.find_by_sub(user_sub)
+        
+        if not current_user:
+            # Create user if it doesn't exist
+            current_user = User.create_or_update(
+                email=session['user']['email'],
+                name=session['user']['name'],
+                sub=user_sub
+            )
 
         event = CalendarEvent.query.filter_by(id=event_id, user_id=current_user.id).first()
         if not event:
