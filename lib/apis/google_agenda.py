@@ -15,8 +15,9 @@ from google.oauth2.credentials import Credentials
 CLIENT_SECRET_FILE = Path(__file__).with_name("google-credentials.json")
 TOKEN_FILE         = Path(__file__).with_name("token.json")
 SCOPES = [
-    "https://www.googleapis.com/auth/calendar.events",   # read/write Calendar
-    "https://www.googleapis.com/auth/tasks",            # read/write Tasks
+    "https://www.googleapis.com/auth/calendar",  # FULL calendar access (required!)
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/tasks",
 ]
 
 # ── AUTH ────────────────────────────────────────────────────────────────
@@ -28,10 +29,11 @@ def _get_credentials() -> Credentials:
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
+            TOKEN_FILE.write_text(creds.to_json())  # Save refreshed token!
         else:
             flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-            creds = flow.run_local_server(port=5055)
-        TOKEN_FILE.write_text(creds.to_json())  # cache for next time
+            creds = flow.run_local_server(port=5055, prompt='consent')
+            TOKEN_FILE.write_text(creds.to_json())
     return creds
 
 # ── SERVICE BUILDERS ────────────────────────────────────────────────────
