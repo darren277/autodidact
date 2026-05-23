@@ -82,18 +82,19 @@ deploy-stack:
 			GoogleClientSecret=$(GOOGLE_CLIENT_SECRET) \
 			CallbackURL=$(CALLBACK_URL) \
 		--capabilities CAPABILITY_IAM \
-		--region $(AWS_REGION)
+		--region $(AWS_REGION) \
+		--profile $(AWS_PROFILE)
 
 # Get stack outputs
 .PHONY: get-outputs
 get-outputs:
 	@echo "Getting CloudFormation stack outputs..."
-	$(eval USER_POOL_ID := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-UserPoolId'].OutputValue" --output text --region $(AWS_REGION)))
-	$(eval USER_POOL_CLIENT_ID := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-UserPoolClientId'].OutputValue" --output text --region $(AWS_REGION)))
-	$(eval COGNITO_DOMAIN := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-CognitoDomain'].OutputValue" --output text --region $(AWS_REGION)))
+	$(eval USER_POOL_ID := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-UserPoolId'].OutputValue" --output text --region $(AWS_REGION) --profile $(AWS_PROFILE)))
+	$(eval USER_POOL_CLIENT_ID := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-UserPoolClientId'].OutputValue" --output text --region $(AWS_REGION) --profile $(AWS_PROFILE)))
+	$(eval COGNITO_DOMAIN := $(shell aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query "Stacks[0].Outputs[?ExportName=='$(STACK_NAME)-CognitoDomain'].OutputValue" --output text --region $(AWS_REGION) --profile $(AWS_PROFILE)))
 
 	@echo "Getting User Pool Client Secret..."
-	$(eval USER_POOL_CLIENT_SECRET := $(shell aws cognito-idp describe-user-pool-client --user-pool-id $(USER_POOL_ID) --client-id $(USER_POOL_CLIENT_ID) --query "UserPoolClient.ClientSecret" --output text --region $(AWS_REGION)))
+	$(eval USER_POOL_CLIENT_SECRET := $(shell aws cognito-idp describe-user-pool-client --user-pool-id $(USER_POOL_ID) --client-id $(USER_POOL_CLIENT_ID) --query "UserPoolClient.ClientSecret" --output text --region $(AWS_REGION) --profile $(AWS_PROFILE)))
 
 	@echo "----------------------------------------"
 	@echo "Cognito Configuration:"
